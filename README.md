@@ -4,13 +4,12 @@
 Central repository for coordinating the U-Space microservices ecosystem. This repository serves as the single source of truth for system-wide configurations, documentation, and integration specifications.
 
 ## Architecture
-- **Architecture**: ![U-Space system architecture](architecture/architecture.png "System architecture")
 - **System Components**:
-    - [Drone-identification](https://gitlab.com/u-space_lecco_brianza/drone-identification)
-    - [Geo-authorization](https://gitlab.com/u-space_lecco_brianza/geo-authorization)
-    - [Geo-awareness](https://gitlab.com/u-space_lecco_brianza/geo-awareness)
-    - [Weather](https://gitlab.com/u-space_lecco_brianza/weather) 
-    - [UI](https://gitlab.com/u-space_lecco_brianza/ui) 
+    - Drone-identification
+    - Geo-authorization
+    - Geo-awareness
+    - Weather
+    - UI
 - **Tech Stack**:
     - Frontend Framework: *React*
     - Backend Framework: *Spring Boot*
