@@ -1,0 +1,132 @@
+package com.brianzolilecchesi.drone_identification.dto;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class DroneDTO {
+	
+	private String id;
+	private String name;
+	private String model;
+	private String owner;
+	private String operationCategory;
+	private String planDefinitionTimestamp;
+	private PositionDTO source;
+	private PositionDTO destination;
+
+	public DroneDTO() {
+	}
+
+	@JsonCreator
+	public DroneDTO(
+			@JsonProperty("id") String id, 
+			@JsonProperty("name") String name, 
+			@JsonProperty("model") String model, 
+			@JsonProperty("owner") String owner,
+			@JsonProperty("operation_category") String operationCategory,
+			@JsonProperty("plan_definition_timestamp") String planDefinitionTimestamp,
+			@JsonProperty("source") PositionDTO source,
+			@JsonProperty("destination") PositionDTO destination
+			) {
+		
+		setId(id);
+		setName(name);
+		setModel(model);
+		setOwner(owner);
+		setOperationCategory(operationCategory);
+		setPlanDefinitionTimestamp(planDefinitionTimestamp);
+		setSource(source);
+		setDestination(destination);
+	}
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getModel() {
+		return model;
+	}
+
+	public void setModel(String model) {
+		this.model = model;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+	
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	public String getOperationCategory() {
+		return operationCategory;
+	}
+	
+	public void setOperationCategory(String operationCategory) {
+		this.operationCategory = operationCategory;
+	}
+	
+	public String getPlanDefinitionTimestamp() {
+		return planDefinitionTimestamp;
+	}
+	
+	public void setPlanDefinitionTimestamp(String planDefinitionTimestamp) {
+		this.planDefinitionTimestamp = planDefinitionTimestamp;
+	}
+	
+	public PositionDTO getSource() {
+		return source;
+	}
+	
+	public void setSource(PositionDTO source) {
+		this.source = source;
+	}
+	
+	public PositionDTO getDestination() {
+		return destination;
+	}
+	
+	public void setDestination(PositionDTO destination) {
+		this.destination = destination;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format(
+                "Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, source=%s, destination=%s]",
+                id,
+                name,
+                model,
+                owner,
+                operationCategory,
+                planDefinitionTimestamp,
+                source,
+                destination
+                );
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		DroneDTO other = (DroneDTO) obj;
+		return id != null && id.equals(other.id);
+	}
+}

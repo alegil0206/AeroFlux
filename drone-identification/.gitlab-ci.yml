@@ -1,0 +1,63 @@
+stages:
+  - build
+  - deploy
+
+docker-build:
+  image: docker:cli
+  stage: build
+  services:
+    - docker:dind
+  variables:
+  # Tag the Docker image with the commit sha
+    DOCKER_IMAGE_NAME_TAGGED: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  # Every image is tagged with the commit sha. The last image built is also tagged with `latest`.
+  script:
+    - docker build --pull -t "$DOCKER_IMAGE_NAME_TAGGED" .
+    - docker push "$DOCKER_IMAGE_NAME_TAGGED"
+    - docker tag "$DOCKER_IMAGE_NAME_TAGGED" "$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Run this job only if the Dockerfile exists
+      exists:
+        - Dockerfile
+    # Run this job only if any source file, Dockerfile or .gitlab-ci.yml have been modified.
+      changes:
+        - Dockerfile
+        - src/**/*
+        - .gitlab-ci.yml
+    
+kubernetes-deploy:
+  stage: deploy
+  environment:
+    name: deployment
+    url: http://api.uspace.local/drone
+  variables:
+    VM_HOST: "ml-lab-a08e3194-10fa-4b3b-b775-9e0c8a18d169.westeurope.cloudapp.azure.com"
+    VM_PORT: "61999"
+    VM_USERNAME: "studente"
+    K8S_NAMESPACE: "u-space"
+    K8S_DEPLOYMENT_FOLDER: "/home/studente/cloud-computing-lab/u-space/drone-identification/kubernetes"
+    K8S_DEPLOYMENT_MANIFEST: "drone-identification-app.yml"
+    K8S_DEPLOYMENT: "drone-identification-app-deployment"
+    IMAGE_LATEST: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  before_script:
+    - apt-get update -qq
+    - apt-get install -qq git
+    # Setup SSH deploy keys
+    - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  script:
+    # Update the repository, apply the deployment manifest and update the deployment
+    - ssh -p $VM_PORT $VM_USERNAME@$VM_HOST "cd $K8S_DEPLOYMENT_FOLDER && git checkout main && git pull origin main && kubectl -n u-space set image -n $K8S_NAMESPACE deployment $K8S_DEPLOYMENT *=$IMAGE_LATEST && exit"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - Dockerfile
+        - src/**/*
+        - .gitlab-ci.yml

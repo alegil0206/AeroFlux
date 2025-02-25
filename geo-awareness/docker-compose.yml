@@ -1,0 +1,86 @@
+services:
+  # ActiveMQ
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: activemq
+    environment:
+      ACTIVEMQ_ADMIN_USER: ${ACTIVEMQ_ADMIN_USER}
+      ACTIVEMQ_ADMIN_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+    ports:
+      - "8161:8161"    # Porta per la console web di ActiveMQ
+    networks:
+      - uspace-network
+    restart: "always"
+
+# Geo-awareness
+  geo-awareness-db:
+    image: mongo:latest
+    container_name: mongo-geo-awareness
+    volumes:
+      - geo-awareness-mongo-data:/data/db
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: "always"
+
+  geo-awareness-db-init:
+    build: 
+      context:
+        ./mongo-init
+    container_name: mongo-init-geo-awareness
+    depends_on:
+      - geo-awareness-db
+    environment:
+      MONGODB_URI: ${GEOAWARENESS_MONGODB_URI}
+      MONGODB_DATABASE: ${GEOAWARENESS_MONGODB_DATABASE}
+      TYPE_COLLECTION: ${GEOAWARENESS_TYPE_COLLECTION}
+      CATEGORY_COLLECTION: ${GEOAWARENESS_CATEGORY_COLLECTION}
+      STATUS_COLLECTION: ${GEOAWARENESS_STATUS_COLLECTION}
+      ALTITUDE_COLLECTION: ${GEOAWARENESS_ALTITUDE_COLLECTION}
+    command: ["python", "mongo_init.py"]
+    networks:
+      - uspace-network
+    restart: "on-failure:3"
+
+  geo-awareness:
+    build:
+      context: .
+    container_name: spring-geo-awareness
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
+      REGISTRY_INIT_DELAY_MILLIS: 0
+      MONGODB_URI:  ${GEOAWARENESS_MONGODB_URI}
+      MESSAGE_BROKER_SERVICE: ${ACTIVEMQ_SERVICE}
+      MESSAGE_BROKER_PORT: ${ACTIVEMQ_PORT}
+      MESSAGE_BROKER_USER: ${ACTIVEMQ_ADMIN_USER}
+      MESSAGE_BROKER_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+      NEW_GEOZONE_TOPIC: ${NEW_GEOZONE_TOPIC}
+      UPDATED_GEOZONE_TOPIC: ${UPDATED_GEOZONE_TOPIC}
+      DELETED_GEOZONE_TOPIC: ${DELETED_GEOZONE_TOPIC}
+    depends_on:
+      - geo-awareness-db
+      - geo-awareness-db-init
+      - activemq
+    ports:
+      - "8083:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 3
+      start_period: 30s
+    restart: "on-failure:3"
+
+volumes:
+  geo-awareness-mongo-data:
+    driver: local
+
+networks:
+  uspace-network:
+    driver: bridge

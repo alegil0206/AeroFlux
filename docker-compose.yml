@@ -1,0 +1,270 @@
+services:
+# ActiveMQ
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: activemq
+    environment:
+      ACTIVEMQ_ADMIN_USER: ${ACTIVEMQ_ADMIN_USER}
+      ACTIVEMQ_ADMIN_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+    ports:
+      - "8161:8161"    # Porta per la console web di ActiveMQ
+    networks:
+      - uspace-network
+    restart: "always"
+
+# Geo-awareness
+  geo-awareness-db:
+    image: mongo:latest
+    container_name: mongo-geo-awareness
+    volumes:
+      - geo-awareness-mongo-data:/data/db
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "always"
+
+  geo-awareness-db-init:
+    build: 
+      context:
+        ./geo-awareness/mongo-init
+    container_name: mongo-init-geo-awareness
+    depends_on:
+      - geo-awareness-db
+    environment:
+      MONGODB_URI: ${GEOAWARENESS_MONGODB_URI}
+      MONGODB_DATABASE: ${GEOAWARENESS_MONGODB_DATABASE}
+      TYPE_COLLECTION: ${GEOAWARENESS_TYPE_COLLECTION}
+      CATEGORY_COLLECTION: ${GEOAWARENESS_CATEGORY_COLLECTION}
+      STATUS_COLLECTION: ${GEOAWARENESS_STATUS_COLLECTION}
+      ALTITUDE_COLLECTION: ${GEOAWARENESS_ALTITUDE_COLLECTION}
+    command: ["python", "mongo_init.py"]
+    networks:
+      - uspace-network
+    restart: "on-failure:3"
+
+  geo-awareness:
+    build:
+      context: ./geo-awareness
+    container_name: spring-geo-awareness
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
+      REGISTRY_INIT_DELAY_MILLIS: 1000
+      MONGODB_URI:  ${GEOAWARENESS_MONGODB_URI}
+      MESSAGE_BROKER_SERVICE: ${ACTIVEMQ_SERVICE}
+      MESSAGE_BROKER_PORT: ${ACTIVEMQ_PORT}
+      MESSAGE_BROKER_USER: ${ACTIVEMQ_ADMIN_USER}
+      MESSAGE_BROKER_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+      NEW_GEOZONE_TOPIC: ${NEW_GEOZONE_TOPIC}
+      UPDATED_GEOZONE_TOPIC: ${UPDATED_GEOZONE_TOPIC}
+      DELETED_GEOZONE_TOPIC: ${DELETED_GEOZONE_TOPIC}
+    depends_on:
+      - geo-awareness-db
+      - geo-awareness-db-init
+      - activemq
+    ports:
+      - "8083:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    restart: "on-failure:3"
+
+# Geo-authorization
+  geo-authorization-db:
+    image: postgres:latest
+    container_name: postgres-geo-authorization
+    environment:
+      POSTGRES_USER: ${GEOAUTHORIZATION_DB_USERNAME}
+      POSTGRES_PASSWORD: ${GEOAUTHORIZATION_DB_PASSWORD}
+      POSTGRES_DB: ${GEOAUTHORIZATION_DB_NAME}
+    networks:
+      - uspace-network
+    volumes:
+      - geo-authorization-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GEOAUTHORIZATION_DB_USERNAME} -d ${GEOAUTHORIZATION_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "always"
+
+  geo-authorization:
+    build:
+      context: ./geo-authorization
+    container_name: spring-geo-authorization
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
+      DB_URL: ${GEOAUTHORIZATION_DB_URL}
+      DB_USERNAME: ${GEOAUTHORIZATION_DB_USERNAME}
+      DB_PASSWORD: ${GEOAUTHORIZATION_DB_PASSWORD}
+      DB_HIBERNATE_DDL_AUTO: ${GEOAUTHORIZATION_DB_HIBERNATE_DDL_AUTO}
+      MESSAGE_BROKER_SERVICE: ${ACTIVEMQ_SERVICE}
+      MESSAGE_BROKER_PORT: ${ACTIVEMQ_PORT}
+      MESSAGE_BROKER_USER: ${ACTIVEMQ_ADMIN_USER}
+      MESSAGE_BROKER_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+      NEW_GEOZONE_TOPIC: ${NEW_GEOZONE_TOPIC}
+      UPDATED_GEOZONE_TOPIC: ${UPDATED_GEOZONE_TOPIC}
+      DELETED_GEOZONE_TOPIC: ${DELETED_GEOZONE_TOPIC}
+      NEW_DRONE_TOPIC: ${NEW_DRONE_TOPIC}
+      UPDATED_DRONE_TOPIC: ${UPDATED_DRONE_TOPIC}
+      DELETED_DRONE_TOPIC: ${DELETED_DRONE_TOPIC}
+    depends_on:
+      - geo-authorization-db
+      - activemq
+    ports:
+      - "8082:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    restart: "on-failure:3"
+
+# Drone-identification
+  drone-identification-db:
+    image: mongo:latest
+    container_name: mongo-drone-identification
+    volumes:
+      - drone-identification-mongo-data:/data/db
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "always"
+
+  drone-identification-db-init:
+    build: 
+      context:
+        ./drone-identification/mongo-init
+    container_name: mongo-init-drone-identification
+    depends_on:
+      - drone-identification-db
+    environment:
+      MONGODB_URI: ${DRONEIDENTIFICATION_MONGODB_URI}
+      MONGODB_DATABASE: ${DRONEIDENTIFICATION_MONGODB_DATABASE}
+      OPERATION_CATEGORY_COLLECTION: ${DRONEIDENTIFICATION_OPERATION_CATEGORY_COLLECTION}
+    command: ["python", "mongo_init.py"]
+    networks:
+      - uspace-network
+    restart: "on-failure:3"
+
+  drone-identification:
+    build:
+      context: ./drone-identification
+    container_name: spring-drone-identification
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
+      REGISTRY_INIT_DELAY_MILLIS: 1000
+      MONGODB_URI:  ${DRONEIDENTIFICATION_MONGODB_URI}
+      MESSAGE_BROKER_SERVICE: ${ACTIVEMQ_SERVICE}
+      MESSAGE_BROKER_PORT: ${ACTIVEMQ_PORT}
+      MESSAGE_BROKER_USER: ${ACTIVEMQ_ADMIN_USER}
+      MESSAGE_BROKER_PASSWORD: ${ACTIVEMQ_ADMIN_PASSWORD}
+      NEW_DRONE_TOPIC: ${NEW_DRONE_TOPIC}
+      UPDATED_DRONE_TOPIC: ${UPDATED_DRONE_TOPIC}
+      DELETED_DRONE_TOPIC: ${DELETED_DRONE_TOPIC}
+    depends_on:
+      - drone-identification-db
+      - drone-identification-db-init
+      - activemq
+    ports:
+      - "8081:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    restart: "on-failure:3"
+
+# Weather
+  #  weather:
+  #    build:
+  #      context: ../weather
+  #    container_name: spring-weather
+  #    environment:
+  #      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
+  #      WEATHER_SERVICE_URL: ${WEATHER_SERVICE_URL}
+  #      WEATHER_SERVICE_API_KEY: ${WEATHER_SERVICE_API_KEY}
+  #      WEATHER_SERVICE_SERVER_PORT: ${WEATHER_SERVICE_SERVER_PORT}
+  #    ports:
+  #      - "8084:8080"
+  #    networks:
+  #      - uspace-network
+  #    healthcheck:
+  #      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+  #      interval: 10s
+  #      retries: 5
+  #      start_period: 30s
+  #    restart: "on-failure:3"
+    
+# UI
+  ui:
+    build:
+      context: ./ui
+    container_name: uspace-ui
+    environment:
+      DRONE_IDENTIFICATION_ENDPOINT: ${DRONE_IDENTIFICATION_ENDPOINT}
+      GEO_AWARENESS_ENDPOINT: ${GEO_AWARENESS_ENDPOINT}
+      GEO_AUTHORIZATION_ENDPOINT: ${GEO_AUTHORIZATION_ENDPOINT}
+      WEATHER_ENDPOINT: ${WEATHER_ENDPOINT}
+      UI_CONTAINER_URL: ${UI_CONTAINER_URL}
+    ports:
+      - "5000:80"
+    networks:
+      - uspace-network
+    depends_on:
+      - geo-awareness
+      - geo-authorization
+      - drone-identification
+#      - weather
+
+# Ingress
+  ingress:
+    build:
+      context: .
+    container_name: uspace-ingress
+    environment:
+      DRONE_IDENTIFICATION_CONTAINER_URL: ${DRONE_IDENTIFICATION_CONTAINER_URL}
+      GEOZONE_CONTAINER_URL: ${GEOZONE_CONTAINER_URL}
+      AUTHORIZATION_CONTAINER_URL: ${AUTHORIZATION_CONTAINER_URL}
+      WEATHER_CONTAINER_URL: ${WEATHER_CONTAINER_URL}
+      UI_CONTAINER_URL: ${UI_CONTAINER_URL}
+    ports:
+      - "80:80"
+    networks:
+      - uspace-network
+    depends_on:
+      - geo-awareness
+      - geo-authorization
+      - drone-identification
+#      - weather
+      - ui
+
+volumes:
+  geo-awareness-mongo-data:
+    driver: local
+  drone-identification-mongo-data:
+    driver: local
+  geo-authorization-postgres-data:
+    driver: local
+
+networks:
+  uspace-network:
+    driver: bridge
