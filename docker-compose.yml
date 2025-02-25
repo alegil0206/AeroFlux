@@ -194,25 +194,20 @@ services:
     restart: "on-failure:3"
 
 # Weather
-  #  weather:
-  #    build:
-  #      context: ../weather
-  #    container_name: spring-weather
-  #    environment:
-  #      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
-  #      WEATHER_SERVICE_URL: ${WEATHER_SERVICE_URL}
-  #      WEATHER_SERVICE_API_KEY: ${WEATHER_SERVICE_API_KEY}
-  #      WEATHER_SERVICE_SERVER_PORT: ${WEATHER_SERVICE_SERVER_PORT}
-  #    ports:
-  #      - "8084:8080"
-  #    networks:
-  #      - uspace-network
-  #    healthcheck:
-  #      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
-  #      interval: 10s
-  #      retries: 5
-  #      start_period: 30s
-  #    restart: "on-failure:3"
+  weather:
+    build:
+      context: ./weather
+    container_name: spring-weather
+    ports:
+      - "8084:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    restart: "on-failure:3"
     
 # UI
   ui:
@@ -233,7 +228,7 @@ services:
       - geo-awareness
       - geo-authorization
       - drone-identification
-#      - weather
+      - weather
 
 # Ingress
   ingress:
@@ -254,7 +249,7 @@ services:
       - geo-awareness
       - geo-authorization
       - drone-identification
-#      - weather
+      - weather
       - ui
 
 volumes:
