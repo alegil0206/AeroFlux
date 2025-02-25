@@ -15,7 +15,6 @@ Central repository for coordinating the U-Space microservices ecosystem. This re
     - Backend Framework: *Spring Boot*
     - DBMS: *MongoDB, PostgreSQL*
     - Message Broker: *Apache ActiveMQ*
-    - Container Orchestration: *Kubernetes*
     - Containerization: *Docker*
     - Web Server: *NGINX*
 
