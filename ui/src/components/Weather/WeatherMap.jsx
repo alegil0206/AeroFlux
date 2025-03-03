@@ -1,15 +1,24 @@
-import Map, { NavigationControl, FullscreenControl, ScaleControl } from '@vis.gl/react-maplibre';
+import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
+import { getDefaultInitialViewState, getDefaultMapBounds } from '../../utils/utils';
 import Card from '@mui/material/Card';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import '@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css';
 
-import GeocoderControl from './geocoder-control';
-import { Marker } from '@vis.gl/react-maplibre';
+export default function WeatherMap({ weatherData }) {
 
-
-export default function WeatherMap({ coordinates, onCoordinatesChange }) {
-
+  const geoJsonData = {
+    type: "FeatureCollection",
+    features: weatherData.map((cell, index) => ({
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          cell.coordinates.map(([lat, lon]) => [lon, lat]) 
+        ]
+      },
+      properties: { id: index }
+    }))
+  };
 
   return (
     <Card
@@ -17,31 +26,32 @@ export default function WeatherMap({ coordinates, onCoordinatesChange }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={{
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          zoom: 10,
-        }}        
+        initialViewState={ getDefaultInitialViewState() }
+        maxBounds={ getDefaultMapBounds() }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />
         <NavigationControl position="top-right" />
         <ScaleControl />
-        <GeocoderControl position="top-left"
-          coordinates={coordinates}
-          onResult={(newCoordinates) => {
-              onCoordinatesChange(newCoordinates);
-            }
-          }
-        />
-        <Marker longitude={coordinates.longitude} latitude={coordinates.latitude}/>
+
+
+        <Source id="rain-cells" type="geojson" data={geoJsonData}>
+          <Layer
+            id="rain-layer"
+            type="fill"
+            paint={{
+              'fill-color': '#007AFF',
+              'fill-opacity': 0.5
+            }}
+          />
+        </Source>
+
       </Map>
     </Card>
   );
 }
 
 WeatherMap.propTypes = {
-  coordinates: PropTypes.object.isRequired,
-  onCoordinatesChange: PropTypes.func.isRequired,
+  weatherData: PropTypes.object.isRequired,
 };

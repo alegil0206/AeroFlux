@@ -32,32 +32,32 @@ function GeoZonesMap({ geoZones }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-      initialViewState={ getDefaultInitialViewState() }
-      mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-      maxBounds={ getDefaultMapBounds() }
-      style={{ width: '100%', height: 'calc(100vh - 77px)' }}
-    >
-      <FullscreenControl position="top-right" />
-      <NavigationControl position="top-right" />
-      <ScaleControl />
-      <Source id="geoZones" type="geojson" data={geoJsonData}>
-        <Layer 
-          id="geoZones-layer-lines"
-          type="line"
-          paint={{
-            'line-color': ['get', 'color'],
-            'line-width': 2,
-          }}
-        />
-        <Layer
-          id="geoZones-layer-fill"
-          type="fill"
-          paint={{
-            'fill-color': ['get', 'color'],
-            'fill-opacity': 0.5,
-          }}
-        />
-      </Source>
+        initialViewState={ getDefaultInitialViewState() }
+        mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+        maxBounds={ getDefaultMapBounds() }
+        style={{ width: '100%', height: 'calc(100vh - 77px)' }}
+      >
+        <FullscreenControl position="top-right" />
+        <NavigationControl position="top-right" />
+        <ScaleControl />
+        <Source id="geoZones" type="geojson" data={geoJsonData}>
+          <Layer 
+            id="geoZones-layer-lines"
+            type="line"
+            paint={{
+              'line-color': ['get', 'color'],
+              'line-width': 2,
+            }}
+          />
+          <Layer
+            id="geoZones-layer-fill"
+            type="fill"
+            paint={{
+              'fill-color': ['get', 'color'],
+              'fill-opacity': 0.5,
+            }}
+          />
+        </Source>
     </Map>
   </Card>
   );
