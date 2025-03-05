@@ -1,9 +1,10 @@
 package com.brianzolilecchesi.weather.service;
 
 import com.brianzolilecchesi.weather.dto.RainCellDTO;
+import com.brianzolilecchesi.weather.dto.WeatherConfigDTO;
 import com.brianzolilecchesi.weather.model.GridCell;
 import com.brianzolilecchesi.weather.model.WeatherGrid;
-
+import com.brianzolilecchesi.weather.model.RainCluster;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -11,87 +12,132 @@ import java.util.*;
 
 @Service
 public class WeatherService {
-    private static final int GRID_SIZE = 60; // 60 x 60 celle da 1000m -> 60km x 60km
-    private static final double NEW_STORM_PROBABILITY = 0.05; // 10%
-    private static final double PROPAGATION_PROBABILITY = 0.35; // 35%
-    private static final double DISSIPATION_PROBABILITY = 0.35; // 35%
-
+    private static final int GRID_SIZE = 60;
     private WeatherGrid weatherGrid;
+    private List<RainCluster> rainClusters = new ArrayList<>();
     private Random random = new Random();
+
+    private double windDirection = 0;
+    private double windIntensity = 1;
+    private int minClusters = 1;
+    private int maxClusters = 3;
+    private int maxClusterSize = 3;
 
     public WeatherService() {
         weatherGrid = new WeatherGrid(45.476592, 9.219752, GRID_SIZE);
+        initializeClusters();
     }
 
     public List<RainCellDTO> getRainCells() {
         List<RainCellDTO> rainCells = new ArrayList<>();
-        GridCell[][] gridCells = weatherGrid.getGridCells();
-
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                if (gridCells[i][j].isRaining()) {
-                    rainCells.add(new RainCellDTO(gridCells[i][j].getCoordinates()));
+        for(int i=0; i<GRID_SIZE; i++) {
+            for(int j=0; j<GRID_SIZE; j++) {
+                GridCell cell = weatherGrid.getCell(i, j);
+                if(cell.isRaining()) {
+                    rainCells.add(new RainCellDTO(cell.getCoordinates()));
                 }
             }
         }
         return rainCells;
     }
 
+    public WeatherConfigDTO updateConfig(WeatherConfigDTO config) {
+        windDirection = config.getWindDirection();
+        windIntensity = config.getWindIntensity();
+        minClusters = config.getMinClusters();
+        maxClusters = config.getMaxClusters();
+        maxClusterSize = config.getMaxClusterSize();
+        return getConfig();
+    }
 
-    @Scheduled(fixedRate = 10000) // Ogni 10 secondi
-    private void generateRain() {
-        GridCell[][] gridCells = weatherGrid.getGridCells();
-        double windX = 1.0; // Direzione del vento sulla X (ad esempio, da Ovest a Est)
-        double windY = 0.5; // Direzione del vento sulla Y (ad esempio, da Nord a Sud)
-    
-        // Creazione di nuove celle temporalesche (10% di probabilità)
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                if (!gridCells[i][j].isRaining() && random.nextDouble() < NEW_STORM_PROBABILITY) {
-                    gridCells[i][j].setRaining(true);
-                }
-            }
+    public WeatherConfigDTO getConfig() {
+        WeatherConfigDTO config = new WeatherConfigDTO();
+        config.setWindDirection(windDirection);
+        config.setWindIntensity(windIntensity);
+        config.setMinClusters(minClusters);
+        config.setMaxClusters(maxClusters);
+        config.setMaxClusterSize(maxClusterSize);
+        return config;
+    }
+
+
+    private void initializeClusters() {
+        int newClusters = random.nextInt(maxClusters - minClusters + 1) + minClusters - rainClusters.size();
+        for (int i = 0; i < newClusters; i++) {
+            int x = random.nextInt(GRID_SIZE);
+            int y = random.nextInt(GRID_SIZE);
+            rainClusters.add(new RainCluster(x, y, maxClusterSize));
         }
-    
-        // Propagazione & Dissipazione della pioggia
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                GridCell cell = gridCells[i][j];
-    
-                if (cell.isRaining()) {
-                    // Dissipazione della pioggia (35%)
-                    if (random.nextDouble() < DISSIPATION_PROBABILITY + windSpeedEffect()) {
-                        cell.setRaining(false);
-                    } else {
-                        // Propagazione alle celle vicine in direzione del vento (35%)
-                        propagateRain(gridCells, i, j, windX, windY); // Propaga nella direzione del vento
-                        propagateRain(gridCells, i, j, -windX, -windY); // Propaga nell'opposta direzione
+    }
+
+    @Scheduled(fixedRate = 5000)
+    private void updateRain() {
+
+        clearClusters();
+
+        Iterator<RainCluster> iterator = rainClusters.iterator();
+        while (iterator.hasNext()) {
+            RainCluster cluster = iterator.next();
+        
+            cluster.move(windDirection, windIntensity);
+        
+            int cx = cluster.getCenterX();
+            int cy = cluster.getCenterY();
+        
+            if (cx < -cluster.getMaxSize() || cx > GRID_SIZE + cluster.getMaxSize() ||
+                cy < -cluster.getMaxSize() || cy > GRID_SIZE + cluster.getMaxSize()) {
+                iterator.remove(); // Safe removal
+                continue;
+            }
+
+            int incrementSize = 0;
+            if(cluster.getActualSize() == cluster.getMaxSize()) {
+                incrementSize = random.nextBoolean() ? -1 : 0;
+            } else {
+                incrementSize = random.nextInt(3) - 1;
+            }
+            cluster.setActualSize(cluster.getActualSize() + incrementSize); 
+
+            if(cluster.getActualSize() == 0) {
+                iterator.remove();
+                continue;
+            }
+
+            for (int i = -cluster.getActualSize(); i < cluster.getActualSize(); i++) {
+                for (int j = -cluster.getActualSize(); j < cluster.getActualSize(); j++) {
+                    int nx = cx + i;
+                    int ny = cy + j;
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                        double distance = Math.sqrt(i * i + j * j);
+                        double maxDistance = cluster.getActualSize();
+                        // Interpolazione lineare della probabilità (dal 100% al 50%)
+                        double rainChanceThreshold = 1.0 - (0.5 * (distance / maxDistance));
+                        if (random.nextDouble() <= rainChanceThreshold) {
+                            weatherGrid.getCell(nx, ny).setRaining(true);
+                        }
                     }
                 }
             }
         }
-    
-        System.out.println("Aggiornamento pioggia completato.");
+        
+        initializeClusters();
+
     }
-    
-    // Calcola l'effetto del vento sulla dissipazione della pioggia
-    private double windSpeedEffect() {
-        double windSpeed = 10.0; // Velocità del vento in km/h (puoi prendere questi dati da un'API)
-        return Math.min(windSpeed / 100, 0.35); // Limitiamo l'effetto della dissipazione a un massimo del 35%
-    }
-    
-    // Metodo helper per propagare la pioggia nella direzione del vento
-    private void propagateRain(GridCell[][] gridCells, int x, int y, double windX, double windY) {
-        int newX = (int) (x + windX);
-        int newY = (int) (y + windY);
-    
-        if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
-            // Calcola la probabilità di propagazione in base alla direzione del vento
-            double propagationProbability = random.nextDouble() + Math.abs(windX + windY) * 0.2;
-            if (!gridCells[newX][newY].isRaining() && propagationProbability < PROPAGATION_PROBABILITY) {
-                gridCells[newX][newY].setRaining(true);
+
+    private void clearClusters() {
+        Iterator<RainCluster> iterator = rainClusters.iterator();
+        while (iterator.hasNext()) {
+            RainCluster cluster = iterator.next();
+            for (int i = -cluster.getActualSize(); i < cluster.getActualSize(); i++) {
+                for (int j = -cluster.getActualSize(); j < cluster.getActualSize(); j++) {
+                    int nx = cluster.getCenterX() + i;
+                    int ny = cluster.getCenterY() + j;
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
+                        weatherGrid.getCell(nx, ny).setRaining(false);
+                    }
+                }
             }
         }
     }
-
 }
+

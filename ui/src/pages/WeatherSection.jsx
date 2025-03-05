@@ -2,49 +2,99 @@ import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import Grid from "@mui/material/Grid2";
 import WeatherMap from "../components/Weather/WeatherMap";
-import Typography from "@mui/material/Typography";
-import { fetchWeather } from "../services/weather";
+import WeatherSettingsCard from "../components/Weather/WeatherSettingsCard";
+import { Snackbar, Alert } from "@mui/material";
+import { fetchWeather, fetchWeatherConfig, updateWeatherConfig } from "../services/weather";
 
 function WeatherSection() {
 
   const [weatherData, setWeatherData] = useState([]);
-  const [error, setError] = useState(null);
+  const [weatherSettings, setWeatherSettings] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
+
+  const showSnackbar = (type, message) => {
+    setAlertMessage({ type: type, text: message });
+    setSnackbarOpen(true);
+  }
+
+  const closeSnackbar = () => {
+    setSnackbarOpen(false);
+    setAlertMessage(null);
+  }
+
+  const loadWeatherSettings = async () => {
+    try {
+      const data = await fetchWeatherConfig();
+      setWeatherSettings(data);
+    } catch (error) {
+      showSnackbar("error", error.message);
+    }
+  }
+
+  useEffect(() => {
+    if (!weatherSettings)
+      loadWeatherSettings();
+    const interval = setInterval(() => {
+      if (!weatherSettings) {
+        loadWeatherSettings();
+      } else {
+        clearInterval(interval);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [weatherSettings]);
 
   const loadWeatherData = async () => {
-    setError(null);
     try {
       const data = await fetchWeather();
       setWeatherData(data);
     } catch (err) {
-      console.error("Error loading weather data:", err);
-      setError("Failed to load weather data. Please try again.");
+      showSnackbar("error", error.message);
     }
   };
 
   useEffect(() => {
     loadWeatherData();
-    const interval = setInterval(loadWeatherData, 10000);
+    const interval = setInterval(loadWeatherData, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleEditConfig = async (config) => {
+    try {
+      await updateWeatherConfig(config);
+      showSnackbar("success", "Weather config updated successfully.");
+      setWeatherSettings(config);
+    } catch (error) {
+      showSnackbar("error", error.message);
+    }
+  }
 
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
       <Grid container spacing={1} columns={12}>
-        <Grid size={{ xs: 12, lg: 10 }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <WeatherMap
             weatherData={weatherData}
           />
         </Grid>
-
-        {error && (
-          <Grid size={{ xs: 12, lg: 2 }}>
-            <Typography color="error" variant="h6" sx={{ textAlign: "center" }}>
-              {error}
-            </Typography>
-          </Grid>
-        )}
+        
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <WeatherSettingsCard weatherSettings = {weatherSettings} onSave = {handleEditConfig} />
+        </Grid>          
 
       </Grid>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert severity={alertMessage?.type} onClose={closeSnackbar}>
+          {alertMessage?.text}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

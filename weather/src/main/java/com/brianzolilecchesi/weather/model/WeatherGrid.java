@@ -1,7 +1,5 @@
 package com.brianzolilecchesi.weather.model;
 
-import com.brianzolilecchesi.weather.model.GridCell;
-
 import java.util.List;
 import java.util.ArrayList;
 
