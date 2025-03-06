@@ -1,13 +1,19 @@
-const API_ENDPOINT = window.env.DRONE_IDENTIFICATION_ENDPOINT;
+import { getEndpoint } from "./apiEndpoints";
 
 export const fetchDrones = async () => {
-  const response = await fetch(`${API_ENDPOINT}/drone`);
+  const endpoint = getEndpoint("drone_identification");
+  if (!endpoint) throw new Error("Drone Identification API endpoint not set");
+
+  const response = await fetch(`${endpoint}/drone`);
   if (!response.ok) throw new Error(`Failed to fetch drones: ${response.statusText}`);
   return await response.json();
 };
 
 export const addDrone = async (drone) => {
-  const response = await fetch(`${API_ENDPOINT}/drone`, {
+  const endpoint = getEndpoint("drone_identification");
+  if (!endpoint) throw new Error("Drone Identification API endpoint not set");
+
+  const response = await fetch(`${endpoint}/drone`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(drone),
@@ -19,7 +25,10 @@ export const addDrone = async (drone) => {
 };
 
 export const updateDrone = async (id, droneData) => {
-  const response = await fetch(`${API_ENDPOINT}/drone/${id}`, {
+  const endpoint = getEndpoint("drone_identification");
+  if (!endpoint) throw new Error("Drone Identification API endpoint not set");
+
+  const response = await fetch(`${endpoint}/drone/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(droneData),
@@ -29,7 +38,10 @@ export const updateDrone = async (id, droneData) => {
 };
 
 export const deleteDrone = async (id) => {
-  const response = await fetch(`${API_ENDPOINT}/drone/${id}`, {
+  const endpoint = getEndpoint("drone_identification");
+  if (!endpoint) throw new Error("Drone Identification API endpoint not set");
+
+  const response = await fetch(`${endpoint}/drone/${id}`, {
     method: "DELETE",
   });
   if (!response.ok) throw new Error(`Error deleting Drone ${id}: ${response.statusText}`);
@@ -37,7 +49,10 @@ export const deleteDrone = async (id) => {
 };
 
 export const deleteAllDrones = async () => {
-  const response = await fetch(`${API_ENDPOINT}/drone`, {
+  const endpoint = getEndpoint("drone_identification");
+  if (!endpoint) throw new Error("Drone Identification API endpoint not set");
+  
+  const response = await fetch(`${endpoint}/drone`, {
     method: "DELETE",
   });
   if (!response.ok) throw new Error(`Error deleting Drones: ${response.statusText}`);

@@ -1,6 +1,7 @@
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer, Marker } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
-import { getGeoZoneColor, getDefaultInitialViewState, getDefaultMapBounds } from '../../../utils/utils';
+import { getGeoZoneColor } from '../../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
 import { circle } from '@turf/circle';
 import { Card } from '@mui/material';
 import { useCallback } from 'react';
@@ -63,9 +64,9 @@ function GeoZoneDrawMap({ geoZone, handleChange }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-      initialViewState={ getDefaultInitialViewState() }
+      initialViewState={ getInitialViewState() }
       mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-      maxBounds={ getDefaultMapBounds() }
+      maxBounds={ getMapBounds() }
       style={{ width: '100%', height: 'calc(40vh)' }}
     >
       <FullscreenControl position="top-right" />

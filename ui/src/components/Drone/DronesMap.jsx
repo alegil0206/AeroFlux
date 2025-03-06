@@ -6,7 +6,7 @@ import DestinationPin from '../Pin/DestinationPin';
 import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
 import Card from '@mui/material/Card';
-import { getDefaultInitialViewState, getDefaultMapBounds } from '../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../utils/mapSettings';
 
 function DronesMap({ drones }) {
   const [popupInfo, setPopupInfo] = useState(null);
@@ -72,9 +72,9 @@ function DronesMap({ drones }) {
       sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState= {getDefaultInitialViewState()}
+        initialViewState= { getInitialViewState() }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        maxBounds={getDefaultMapBounds()}
+        maxBounds={ getMapBounds() }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />

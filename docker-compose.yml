@@ -214,12 +214,6 @@ services:
     build:
       context: ./ui
     container_name: uspace-ui
-    environment:
-      DRONE_IDENTIFICATION_ENDPOINT: ${DRONE_IDENTIFICATION_ENDPOINT}
-      GEO_AWARENESS_ENDPOINT: ${GEO_AWARENESS_ENDPOINT}
-      GEO_AUTHORIZATION_ENDPOINT: ${GEO_AUTHORIZATION_ENDPOINT}
-      WEATHER_ENDPOINT: ${WEATHER_ENDPOINT}
-      UI_CONTAINER_URL: ${UI_CONTAINER_URL}
     ports:
       - "5000:80"
     networks:

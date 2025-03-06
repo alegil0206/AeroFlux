@@ -7,7 +7,8 @@ import DestinationPin from '../Pin/DestinationPin';
 import DronePopup from '../MapPopup/DronePopup';
 import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
-import { getGeoZoneColor, getDefaultInitialViewState, getDefaultMapBounds } from '../../utils/utils';
+import { getGeoZoneColor } from '../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../utils/mapSettings';
 import { circle } from '@turf/circle';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card } from '@mui/material';
@@ -109,9 +110,9 @@ function FullMap({ drones, geoZones }) {
       sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={ getDefaultInitialViewState() } 
+        initialViewState={ getInitialViewState() } 
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        maxBounds={ getDefaultMapBounds() }
+        maxBounds={ getMapBounds() }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />

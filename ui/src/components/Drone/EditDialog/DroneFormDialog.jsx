@@ -9,11 +9,12 @@ import {
 import PropTypes from 'prop-types';
 import DroneDetailsForm from './DroneDetailsForm';
 import DroneDrawMap from './DroneDrawMap';
-import { getDefaultInitialViewState, getDefaultMapBounds } from '../../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
+
 
 export default function DroneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const defaultMapCenter = getDefaultInitialViewState();
+  const defaultMapCenter = getInitialViewState();
 
   const getDefaultDrone = () => ({
     id: '',
@@ -52,7 +53,7 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
     if (!drone.model) newErrors.model = 'Model is required.';
     if (!drone.owner) newErrors.owner = 'Owner is required.';
 
-    const bounds = getDefaultMapBounds();
+    const bounds = getMapBounds();
     
     const validateCoordinates = (coord, type) => {
       if (coord.latitude < bounds[0][1] || coord.latitude > bounds[1][1]) {

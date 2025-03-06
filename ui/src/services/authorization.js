@@ -1,13 +1,20 @@
-const API_ENDPOINT = window.env.GEO_AUTHORIZATION_ENDPOINT;
+import { getEndpoint } from "./apiEndpoints";
+
 
 export const fetchAuthorizations = async () => {
-  const response = await fetch(`${API_ENDPOINT}/authorization`);
+  const endpoint = getEndpoint("geo_authorization");
+  if (!endpoint) throw new Error("Authorization API endpoint not set");
+
+  const response = await fetch(`${endpoint}/authorization`);
   if (!response.ok) throw new Error(`Error fetching authorizations: ${response.statusText}`);
   return response.json();
 };
 
 export const addAuthorization = async (authorization) => {
-  const response = await fetch(`${API_ENDPOINT}/authorization`, {
+  const endpoint = getEndpoint("geo_authorization");
+  if (!endpoint) throw new Error("Authorization API endpoint not set");
+
+  const response = await fetch(`${endpoint}/authorization`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(authorization),
@@ -23,7 +30,10 @@ export const addAuthorization = async (authorization) => {
 };
 
 export const revokeAuthorization = async (id) => {
-  const response = await fetch(`${API_ENDPOINT}/authorization/revoked/${id}`, {
+  const endpoint = getEndpoint("geo_authorization");
+  if (!endpoint) throw new Error("Authorization API endpoint not set");
+
+  const response = await fetch(`${endpoint}/authorization/revoked/${id}`, {
     method: 'POST',
   });
   if (!response.ok) throw new Error(`Error revoking authorization ${id}: ${response.statusText}`);
@@ -31,7 +41,10 @@ export const revokeAuthorization = async (id) => {
 };
 
 export const deleteAllAuthorizations = async () => {
-  const response = await fetch(`${API_ENDPOINT}/authorization`, {
+  const endpoint = getEndpoint("geo_authorization");
+  if (!endpoint) throw new Error("Authorization API endpoint not set");
+
+  const response = await fetch(`${endpoint}/authorization`, {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error(`Error deleting authorizations: ${response.statusText}`);

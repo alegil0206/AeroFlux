@@ -9,11 +9,12 @@ import {
 import PropTypes from 'prop-types';
 import GeoZoneDetailsForm from './GeoZoneDetailsForm';
 import GeoZoneDrawMap from './GeoZoneDrawMap';
-import { getDefaultInitialViewState, getDefaultMapBounds } from '../../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
+
 
 export default function GeoZoneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const defaultMapCenter = getDefaultInitialViewState();
+  const defaultMapCenter = getInitialViewState();
 
   const defaultGeoZoneArea = {
     latitude: defaultMapCenter.latitude,
@@ -68,7 +69,7 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
 
   const validateFields = () => {
     const newErrors = {};
-    const bounds = getDefaultMapBounds();
+    const bounds = getMapBounds();
     if (!geoZone.name) newErrors.name = 'Name is required.';
     if (!geoZone.category) newErrors.category = 'Category is required.';
     if (!geoZone.type) newErrors.type = 'Type is required.';

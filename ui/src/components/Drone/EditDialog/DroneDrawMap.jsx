@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Card from '@mui/material/Card';
 import SourcePin from '../../Pin/SourcePin';
 import DestinationPin from '../../Pin/DestinationPin';
-import { getDefaultMapBounds } from '../../../utils/utils';
+import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
 
 export default function DroneDrawMap({ drone, handleChange }) {
   return (
@@ -12,12 +12,8 @@ export default function DroneDrawMap({ drone, handleChange }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={{
-          latitude: drone.source.latitude,
-          longitude: drone.source.longitude,
-          zoom: 1,
-        }}
-        maxBounds={ getDefaultMapBounds() }
+        initialViewState={ getInitialViewState() }
+        maxBounds={ getMapBounds() }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: '40vh' }}
       >
