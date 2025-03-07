@@ -1,0 +1,52 @@
+# Files di Maven
+target/
+!target/weather-0.0.1-SNAPSHOT.jar
+mvnw
+mvnw.cmd
+.mvn/
+bin/
+
+# IDE e editor
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs e file temporanei
+*.log
+logs/
+tmp/
+temp/
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# File di test e documentazione
+README.md
+CHANGELOG.md
+docs/
+test/
+
+# File di configurazione locale
+application-local.properties
+application-local.yml
+
+# Custom
+kubernetes/
+.gitlab-ci.yml
+docker-compose.yml
+LICENSE
+mvnw
+mvnw.cmd
+*.example

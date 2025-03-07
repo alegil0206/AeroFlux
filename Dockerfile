@@ -8,4 +8,4 @@ COPY nginx.template.conf /etc/nginx/nginx.template.conf
 EXPOSE 80
 
 # Avvia Nginx
-CMD envsubst '${UI_CONTAINER_URL} ${DRONE_IDENTIFICATION_CONTAINER_URL} ${GEOZONE_CONTAINER_URL} ${AUTHORIZATION_CONTAINER_URL} ${WEATHER_CONTAINER_URL}' < /etc/nginx/nginx.template.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+CMD envsubst '${UI_CONTAINER_URL} ${DRONE_IDENTIFICATION_CONTAINER_URL} ${GEOZONE_CONTAINER_URL} ${AUTHORIZATION_CONTAINER_URL} ${WEATHER_CONTAINER_URL} ${SIMULATOR_CONTAINER_URL}' < /etc/nginx/nginx.template.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'

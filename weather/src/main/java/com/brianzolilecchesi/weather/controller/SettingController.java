@@ -10,23 +10,23 @@ import com.brianzolilecchesi.weather.service.GridService;
 import com.brianzolilecchesi.weather.dto.CoordinatesDTO;
 
 @RestController
-@RequestMapping(GridController.GRID_BASE_URL)
-public class GridController {
+@RequestMapping(SettingController.SETTING_BASE_URL)
+public class SettingController {
 	
-	public static final String GRID_BASE_URL = "/grid";
+	public static final String SETTING_BASE_URL = "/setting";
 
     private final GridService gridService;
 
-    public GridController(GridService gridService) {
+    public SettingController(GridService gridService) {
         this.gridService = gridService;
     }
 
-    @GetMapping()
+    @GetMapping("/coordinates")
     public CoordinatesDTO getCenterCoordinates() {
         return gridService.getCenterCoordinatesDTO();
     }
 
-    @PutMapping()
+    @PutMapping("/coordinates")
     public CoordinatesDTO updateCenterCoordinates(@RequestBody CoordinatesDTO coordinates) {
         return gridService.setCenterCoordinates(coordinates);
     }

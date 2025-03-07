@@ -224,6 +224,24 @@ services:
       - drone-identification
       - weather
 
+
+# simulator
+  simulator:
+    build:
+      context: ./simulator
+    container_name: spring-simulator
+    ports:
+      - "8085:8080"
+    networks:
+      - uspace-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      retries: 3
+      start_period: 30s
+    restart: "on-failure:3"
+
+
 # Ingress
   ingress:
     build:
@@ -235,10 +253,15 @@ services:
       AUTHORIZATION_CONTAINER_URL: ${AUTHORIZATION_CONTAINER_URL}
       WEATHER_CONTAINER_URL: ${WEATHER_CONTAINER_URL}
       UI_CONTAINER_URL: ${UI_CONTAINER_URL}
+      SIMULATOR_CONTAINER_URL: ${SIMULATOR_CONTAINER_URL}
     ports:
       - "80:80"
     networks:
-      - uspace-network
+      uspace-network:
+        aliases:
+          - api.uspace.local
+          - uspace.local
+
     depends_on:
       - geo-awareness
       - geo-authorization
