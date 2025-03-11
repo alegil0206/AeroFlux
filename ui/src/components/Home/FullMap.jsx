@@ -8,13 +8,15 @@ import DronePopup from '../MapPopup/DronePopup';
 import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
 import { getGeoZoneColor } from '../../utils/utils';
-import { getInitialViewState, getMapBounds } from '../../utils/mapSettings';
 import { circle } from '@turf/circle';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card } from '@mui/material';
 
-function FullMap({ drones, geoZones }) {
+import { useMapSettings } from '../../hooks/useMapSettings';
+
+function FullMap({ drones, geoZones, weather }) {
   const [popupInfo, setPopupInfo] = useState(null);
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const routeLineGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
@@ -87,6 +89,20 @@ function FullMap({ drones, geoZones }) {
     [drones]
   );
 
+  const weatherGeoJsonData = {
+    type: "FeatureCollection",
+    features: weather.map((cell, index) => ({
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          cell.coordinates.map(([lat, lon]) => [lon, lat]) 
+        ]
+      },
+      properties: { id: index }
+    }))
+  };
+
   const geoZoneGeoJsonData = {
     type: 'FeatureCollection',
     features: geoZones.map((zone) => ({
@@ -110,9 +126,9 @@ function FullMap({ drones, geoZones }) {
       sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={ getInitialViewState() } 
+        initialViewState={ initialViewState } 
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        maxBounds={ getMapBounds() }
+        maxBounds={ mapBounds }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />
@@ -137,6 +153,18 @@ function FullMap({ drones, geoZones }) {
             }}
           />
         </Source>
+
+
+        <Source id="rain-cells" type="geojson" data={weatherGeoJsonData}>
+          <Layer
+            id="rain-layer"
+            type="fill"
+            paint={{
+              'fill-color': '#007AFF',
+              'fill-opacity': 0.5
+            }}
+          />
+        </Source>        
 
         {/* Renderizza le rotte GeoJSON */}
         <Source id="lines" type="geojson" data={routeLineGeoJSON}>
@@ -189,6 +217,7 @@ function FullMap({ drones, geoZones }) {
 FullMap.propTypes = {
   drones: PropTypes.array.isRequired,
   geoZones: PropTypes.array.isRequired,
+  weather: PropTypes.array.isRequired,
 };
 
 export default FullMap;

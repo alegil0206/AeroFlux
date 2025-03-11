@@ -46,14 +46,35 @@ public class ServiceEndpointsService {
 
     public void notifyServices(UserCoordinatesDTO coordinates) {
         for (ServiceEndpoint service : services) {
-            if (service.getName().equals("weather")) { 
-                try {
+            try {
+                // If the service is "weather", update only the coordinates
+                if (service.getName().equals("weather")) { 
                     restTemplate.put(service.getUrl() + "/setting/coordinates", coordinates);
-                    System.out.println("Notificato servizio: " + service.getName());
-                } catch (Exception e) {
-                    System.err.println("Errore nella notifica a: " + service.getName());
+                    System.out.println("Weather service notified with new coordinates.");
+                    continue; // Skip the rest of the code for the weather service
                 }
+    
+                // For other services, delete existing data
+                switch (service.getName()) {
+                    case "drone_identification":
+                        restTemplate.delete(service.getUrl() + "/drone");
+                        System.out.println("All drones deleted.");
+                        break;
+                    case "geo_authorization":
+                        restTemplate.delete(service.getUrl() + "/authorization");
+                        System.out.println("All authorizations deleted.");
+                        break;
+                    case "geo_awareness":
+                        restTemplate.delete(service.getUrl() + "/geozone");
+                        System.out.println("All geozones deleted.");
+                        break;
+                    default:
+                        System.out.println("No reset action for service: " + service.getName());
+                }
+            } catch (Exception e) {
+                System.err.println("Error notifying service: " + service.getName() + " - " + e.getMessage());
             }
         }
     }
+    
 }

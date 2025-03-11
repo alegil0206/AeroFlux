@@ -1,10 +1,13 @@
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
-import { getInitialViewState, getMapBounds } from '../../utils/mapSettings';
 import Card from '@mui/material/Card';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+import { useMapSettings } from '../../hooks/useMapSettings';
+
 export default function WeatherMap({ weatherData }) {
+
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const geoJsonData = {
     type: "FeatureCollection",
@@ -26,8 +29,8 @@ export default function WeatherMap({ weatherData }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={ getInitialViewState() }
-        maxBounds={ getMapBounds() }
+        initialViewState={ initialViewState }
+        maxBounds={ mapBounds }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >

@@ -7,14 +7,22 @@ import DronesDataGrid from "../components/Drone/DronesDataGrid";
 import DronesRoutesCard from "../components/Drone/DronesRoutesCard";
 import DronesFormDialog from "../components/Drone/EditDialog/DroneFormDialog";
 
-import { fetchDrones, addDrone, updateDrone, deleteDrone } from "../services/drones";
+import { useDroneIdentification } from "../hooks/useDroneIdentification";
 
 function DroneSection() {
-  const [drones, setDrones] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDrone, setEditingDrone] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+
+  const { 
+    drones,
+    error,
+    fetchDrones,
+    addDrone,
+    updateDrone,
+    deleteDrone,
+  } = useDroneIdentification();
 
   const showSnackbar = (type, message) => {
     setAlertMessage({ type: type, text: message });
@@ -26,50 +34,36 @@ function DroneSection() {
     setAlertMessage(null);
   };
 
-  const loadDrones = async () => {
-    try {
-      const data = await fetchDrones();
-      const dronesWithPosition = data.map((drone) => ({
-        ...drone,
-        position: { ...drone.source, height: 0 },
-      }));
-      setDrones(dronesWithPosition);
-    } catch (error) {
-      showSnackbar("error", error.message);
-    }
-  };
+  useEffect(() => {
+    if (error) showSnackbar("error", error.message);
+  }, [error]);
 
   useEffect(() => {
-    loadDrones();
-    const interval = setInterval(loadDrones, 10000);
+    fetchDrones();
+    const interval = setInterval(fetchDrones, 10000);
     return () => clearInterval(interval);
   }, []);
 
   const handleAddOrEdit = async (drone) => {
-    try {
-      if (editingDrone) {
-        const id = await updateDrone(editingDrone.id, drone);
+    if (editingDrone) {
+      const id = await updateDrone(drone);
+      if (id)
         showSnackbar("success", `Drone ${id} updated successfully.`);
-      } else {
-        const id = await addDrone(drone);
+    } else {
+      const id = await addDrone(drone);
+      if (id)
         showSnackbar("success", `Drone ${id} added successfully.`);
-      }
-      setIsDialogOpen(false);
-      setEditingDrone(null);
-      loadDrones();
-    } catch (error) {
-      showSnackbar("error", error.message);
     }
+    setIsDialogOpen(false);
+    setEditingDrone(null);
+    fetchDrones();
   };
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDrone(id);
+    const idDeleted = await deleteDrone(id);
+    if (idDeleted)
       showSnackbar("success", `Drone ${id} deleted successfully.`);
-      loadDrones();
-    } catch (error) {
-      setAlertMessage({ type: "error", text: error.message });
-    }
+    fetchDrones();
   };
 
   return (
@@ -113,7 +107,7 @@ function DroneSection() {
         onClose={closeSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={alertMessage?.type} onClose={closeSnackbar}>
+        <Alert severity={alertMessage?.type} onClose={closeSnackbar} variant="filled">
           {alertMessage?.text}
         </Alert>
       </Snackbar>

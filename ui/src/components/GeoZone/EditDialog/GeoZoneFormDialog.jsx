@@ -9,22 +9,23 @@ import {
 import PropTypes from 'prop-types';
 import GeoZoneDetailsForm from './GeoZoneDetailsForm';
 import GeoZoneDrawMap from './GeoZoneDrawMap';
-import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
+
+import { useMapSettings } from '../../../hooks/useMapSettings';
 
 
 export default function GeoZoneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const defaultMapCenter = getInitialViewState();
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const defaultGeoZoneArea = {
-    latitude: defaultMapCenter.latitude,
-    longitude: defaultMapCenter.longitude,
-    radius: 20,
+    latitude: initialViewState.latitude,
+    longitude: initialViewState.longitude,
+    radius: 5,
     coordinates: [
-      [defaultMapCenter.longitude, defaultMapCenter.latitude],
-      [defaultMapCenter.longitude + 0.1, defaultMapCenter.latitude + 0.1],
-      [defaultMapCenter.longitude + 0.1, defaultMapCenter.latitude - 0.1],
-      [defaultMapCenter.longitude, defaultMapCenter.latitude - 0.01],
+      [initialViewState.longitude, initialViewState.latitude],
+      [initialViewState.longitude + 0.1, initialViewState.latitude + 0.1],
+      [initialViewState.longitude + 0.1, initialViewState.latitude - 0.1],
+      [initialViewState.longitude, initialViewState.latitude - 0.01],
     ],
   };
 
@@ -69,7 +70,6 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
 
   const validateFields = () => {
     const newErrors = {};
-    const bounds = getMapBounds();
     if (!geoZone.name) newErrors.name = 'Name is required.';
     if (!geoZone.category) newErrors.category = 'Category is required.';
     if (!geoZone.type) newErrors.type = 'Type is required.';
@@ -77,20 +77,20 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
 
     if (geoZone.type === 'CIRCULAR') {
       if (geoZone.radius <= 0) newErrors.radius = 'Radius must be greater than 0.';
-      if (geoZone.latitude < bounds[0][1] || geoZone.latitude > bounds[1][1]) {
-        newErrors.latitude = `Latitude must be between ${bounds[0][1]} and ${bounds[1][1]}.`;
+      if (geoZone.latitude < mapBounds[0][1] || geoZone.latitude > mapBounds[1][1]) {
+        newErrors.latitude = `Latitude must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
       }
-      if (geoZone.longitude < bounds[0][0] || geoZone.longitude > bounds[1][0]) {
-        newErrors.longitude = `Longitude must be between ${bounds[0][0]} and ${bounds[1][0]}.`;
+      if (geoZone.longitude < mapBounds[0][0] || geoZone.longitude > mapBounds[1][0]) {
+        newErrors.longitude = `Longitude must be between ${mapBounds[0][0]} and ${mapBounds[1][0]}.`;
       }
     } else {
       if (geoZone.coordinates.length < 3) newErrors.coordinates = 'Polygon must have at least 3 coordinates.';
       geoZone.coordinates.forEach((coord, idx) => {
-        if (coord[1] < bounds[0][1] || coord[1] > bounds[1][1]) {
-          newErrors.coordinate = `Latitude ${idx+1} must be between ${bounds[0][1]} and ${bounds[1][1]}.`;
+        if (coord[1] < mapBounds[0][1] || coord[1] > mapBounds[1][1]) {
+          newErrors.coordinate = `Latitude ${idx+1} must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
         }
-        if (coord[0] < bounds[0][0] || coord[0] > bounds[1][0]) {
-          newErrors.coordinates =  `Longitude ${idx+1} must be between ${bounds[0][0]} and ${bounds[1][0]}.`;
+        if (coord[0] < mapBounds[0][0] || coord[0] > mapBounds[1][0]) {
+          newErrors.coordinates =  `Longitude ${idx+1} must be between ${mapBounds[0][0]} and ${mapBounds[1][0]}.`;
       }});
     };
     setErrors(newErrors);

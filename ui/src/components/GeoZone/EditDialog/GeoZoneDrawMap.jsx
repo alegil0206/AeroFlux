@@ -1,7 +1,6 @@
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer, Marker } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
 import { getGeoZoneColor } from '../../../utils/utils';
-import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
 import { circle } from '@turf/circle';
 import { Card } from '@mui/material';
 import { useCallback } from 'react';
@@ -9,7 +8,11 @@ import DrawControl from './draw-control';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+import { useMapSettings } from '../../../hooks/useMapSettings';
+
 function GeoZoneDrawMap({ geoZone, handleChange }) {
+
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const onMarkerDrag = useCallback((event) => {
     handleChange('latitude', event.lngLat.lat);
@@ -64,9 +67,9 @@ function GeoZoneDrawMap({ geoZone, handleChange }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-      initialViewState={ getInitialViewState() }
+      initialViewState={ initialViewState }
       mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-      maxBounds={ getMapBounds() }
+      maxBounds={ mapBounds }
       style={{ width: '100%', height: 'calc(40vh)' }}
     >
       <FullscreenControl position="top-right" />

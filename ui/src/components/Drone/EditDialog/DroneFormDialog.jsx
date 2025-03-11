@@ -9,12 +9,12 @@ import {
 import PropTypes from 'prop-types';
 import DroneDetailsForm from './DroneDetailsForm';
 import DroneDrawMap from './DroneDrawMap';
-import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
 
+import { useMapSettings } from '../../../hooks/useMapSettings';
 
 export default function DroneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const defaultMapCenter = getInitialViewState();
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const getDefaultDrone = () => ({
     id: '',
@@ -22,8 +22,8 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
     model: '',
     operation_category: 'SPECIFIC',
     owner: '',
-    source: { latitude: defaultMapCenter.latitude - 0.01, longitude: defaultMapCenter.longitude - 0.01 },
-    destination: { latitude: defaultMapCenter.latitude + 0.01, longitude: defaultMapCenter.longitude + 0.01 },
+    source: { latitude: initialViewState.latitude - 0.01, longitude: initialViewState.longitude - 0.01 },
+    destination: { latitude: initialViewState.latitude + 0.01, longitude: initialViewState.longitude + 0.01 },
   });
 
   const [drone, setDrone] = useState(getDefaultDrone());
@@ -52,15 +52,13 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
     if (!drone.name) newErrors.name = 'Name is required.';
     if (!drone.model) newErrors.model = 'Model is required.';
     if (!drone.owner) newErrors.owner = 'Owner is required.';
-
-    const bounds = getMapBounds();
-    
+   
     const validateCoordinates = (coord, type) => {
-      if (coord.latitude < bounds[0][1] || coord.latitude > bounds[1][1]) {
-        newErrors[`${type}_latitude`] = `Latitude must be between ${bounds[0][1]} and ${bounds[1][1]}.`;
+      if (coord.latitude < mapBounds[0][1] || coord.latitude > mapBounds[1][1]) {
+        newErrors[`${type}_latitude`] = `Latitude must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
       }
-      if (coord.longitude < bounds[0][0] || coord.longitude > bounds[1][0]) {
-        newErrors[`${type}_longitude`] = `Longitude must be between ${bounds[0][0]} and ${bounds[1][0]}.`;
+      if (coord.longitude < mapBounds[0][0] || coord.longitude > mapBounds[1][0]) {
+        newErrors[`${type}_longitude`] = `Longitude must be between ${mapBounds[0][0]} and ${mapBounds[1][0]}.`;
       }
     };
 

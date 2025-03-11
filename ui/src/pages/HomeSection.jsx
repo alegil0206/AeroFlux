@@ -6,17 +6,43 @@ import DronesPositionsCard from "../components/Home/DronesPositionsCard";
 import DronesAuthorizationDataGrid from "../components/Home/DronesAuthorizationDataGrid";
 import AuthorizationRequestCard from "../components/Home/AuthorizationRequestCard";
 import FullMap from "../components/Home/FullMap";
-import { fetchDrones } from "../services/drones";
-import { fetchGeoZones } from "../services/geoZones";
-import { fetchAuthorizations, addAuthorization, revokeAuthorization } from "../services/authorization";
+
+import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
+import { useDroneIdentification } from "../hooks/useDroneIdentification";
+import { useGeoAwareness } from "../hooks/useGeoAwareness";
+import { useWeather } from "../hooks/useWeather";
 
 function HomeSection() {
 
-  const [drones, setDrones] = useState([]);
-  const [geoZones, setGeoZones] = useState([]);
-  const [authorization, setAuthorization] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+
+  const [dronesPositions, setDronesPositions] = useState([]);
+
+  const { 
+    geoZones,
+    error: geoZonesError,
+    fetchGeoZones
+  } = useGeoAwareness();
+
+  const {
+    drones,
+    error: dronesError,
+    fetchDrones
+  } = useDroneIdentification();
+
+  const { 
+    authorization,
+    error: authorizationError,
+    fetchAuthorizations,
+    addAuthorization,
+    revokeAuthorization,
+  } = useGeoAuthorization();
+
+  const { 
+    weather,
+    error: weatherError, 
+    fetchWeather} = useWeather();
 
   const showSnackbar = (type, message) => {
     setAlertMessage({ type: type, text: message });
@@ -28,69 +54,50 @@ function HomeSection() {
     setAlertMessage(null);
   }
 
-  const loadDrones = async () => {
-    try {
-      const data = await fetchDrones();
-      const dronesWithPosition = data.map((drone) => ({
-        ...drone,
-        position: { ...drone.source, height: 0 },
-      }));
-      setDrones(dronesWithPosition);
-    } catch (error) {
-      showSnackbar("error", error.message);
-    }
-  };
+  useEffect(() => {
+    if (geoZonesError) showSnackbar("error", geoZonesError.message);
+    if (authorizationError) showSnackbar("error", authorizationError.message);
+    if (dronesError) showSnackbar("error", dronesError.message);
+    if (weatherError) showSnackbar("error", weatherError.message);
+  }, [geoZonesError, authorizationError, dronesError, weatherError]);
 
-  const loadGeoZones = async () => {
-    try {
-      const data = await fetchGeoZones();
-      setGeoZones(data);
-    } catch (error) {
-      showSnackbar("error", error.message);
-    }
-  };
-
-  const loadAuthorizations = async () => {
-    try {
-      const data = await fetchAuthorizations();
-      setAuthorization(data);
-    } catch (error) {
-      showSnackbar("error", error.message);
-    }
-  }
+  useEffect(() => {
+    const dronesWithPosition = drones.map((drone) => ({
+      ...drone,
+      position: { ...drone.source, height: 0 },
+    }));
+    setDronesPositions(dronesWithPosition);
+  }, [drones]);
 
   useEffect(() => {
     const loadAllData = async () => {
       await Promise.all([
-        loadDrones(),
-        loadGeoZones(),
-        loadAuthorizations(),
+        fetchDrones(),
+        fetchGeoZones(),
+        fetchAuthorizations(),
+        fetchWeather()
       ]);
     };
   
     loadAllData();
-  
     const interval = setInterval(loadAllData, 10000);
     return () => clearInterval(interval);
   }, []);
 
   const handleAdd = async (authorizationRequest) => {
-    try {
-      const id = await addAuthorization(authorizationRequest);
+    const id = await addAuthorization(authorizationRequest);
+    if (id){
       showSnackbar("success", `Authorization ${id} requested successfully.`);
-      loadAuthorizations();
-    } catch (error) {
-      showSnackbar("error", error.message);
+      fetchAuthorizations();
     }
   };
 
   const handleRevoke = async (id) => {
-    try {
-      await revokeAuthorization(id);
+    
+    const revokedId = await revokeAuthorization(id);
+    if (revokedId){
       showSnackbar("success", `Authorization ${id} revoked successfully.`);
-      loadAuthorizations();
-    } catch (error) {
-      showSnackbar("error", error.message);
+      fetchAuthorizations();
     }
   };
 
@@ -103,18 +110,18 @@ function HomeSection() {
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}
       >
         <Grid size={{ xs: 12, lg: 7 }}>
-          <FullMap drones={ drones } geoZones={geoZones}/>
+          <FullMap drones={ dronesPositions } geoZones={geoZones} weather={weather}/>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
-          <DronesPositionsCard data={drones} />
-          <AuthorizationRequestCard drones={drones} geoZones={geoZones} onAdd = {handleAdd} />
+          <DronesPositionsCard data={dronesPositions} />
+          <AuthorizationRequestCard drones={dronesPositions} geoZones={geoZones} onAdd = {handleAdd} />
         </Grid>
       </Grid>
 
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         Authorization Requests
       </Typography>
-      <DronesAuthorizationDataGrid drones={drones} geoZones={geoZones} authorization={authorization} onRevoke={handleRevoke} />
+      <DronesAuthorizationDataGrid drones={dronesPositions} geoZones={geoZones} authorization={authorization} onRevoke={handleRevoke} />
 
       <Snackbar
         open={snackbarOpen}

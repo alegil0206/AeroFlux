@@ -1,13 +1,16 @@
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
 import { getGeoZoneColor } from '../../utils/utils';
-import { getInitialViewState, getMapBounds } from '../../utils/mapSettings';
 import { circle } from '@turf/circle';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card } from '@mui/material';
 
+import { useMapSettings } from '../../hooks/useMapSettings';
+
 
 function GeoZonesMap({ geoZones }) {
+
+  const { initialViewState, mapBounds } = useMapSettings();
 
   const geoJsonData = {
     type: 'FeatureCollection',
@@ -33,9 +36,9 @@ function GeoZonesMap({ geoZones }) {
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={ getInitialViewState() }
+        initialViewState={ initialViewState }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        maxBounds={ getMapBounds() }
+        maxBounds={ mapBounds }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />

@@ -3,17 +3,21 @@ import PropTypes from 'prop-types';
 import Card from '@mui/material/Card';
 import SourcePin from '../../Pin/SourcePin';
 import DestinationPin from '../../Pin/DestinationPin';
-import { getInitialViewState, getMapBounds } from '../../../utils/mapSettings';
+
+import { useMapSettings } from '../../../hooks/useMapSettings';
 
 export default function DroneDrawMap({ drone, handleChange }) {
+
+  const { initialViewState, mapBounds } = useMapSettings();
+
   return (
     <Card
     variant="outlined"
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <Map
-        initialViewState={ getInitialViewState() }
-        maxBounds={ getMapBounds() }
+        initialViewState={ initialViewState }
+        maxBounds={ mapBounds }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: '40vh' }}
       >

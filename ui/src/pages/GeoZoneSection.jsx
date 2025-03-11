@@ -7,16 +7,23 @@ import GeoZoneActivationCard from "../components/GeoZone/GeoZoneActivationCard";
 import GeoZoneFormDialog from '../components/GeoZone/EditDialog/GeoZoneFormDialog';
 import GeoZonesMap from '../components/GeoZone/GeoZonesMap';
 
-
-import { fetchGeoZones, addGeoZone, updateGeoZone, deleteGeoZone } from '../services/geoZones';
+import { useGeoAwareness } from '../hooks/useGeoAwareness';
 
 function GeoZoneSection() {
 
-  const [geoZones, setGeoZones] = useState([]);
   const [isDialogOpen, setIsFormOpen] = useState(false);
   const [editingGeoZone, setEditingGeoZone] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+
+  const {
+  geoZones,
+  error,
+  fetchGeoZones,
+  addGeoZone,
+  updateGeoZone,
+  deleteGeoZone,
+  } = useGeoAwareness();
 
   const showSnackbar = (type, message) => {
     setAlertMessage({ type: type, text: message });
@@ -28,63 +35,46 @@ function GeoZoneSection() {
     setAlertMessage(null);
   };
 
-  const loadGeoZones = async () => {
-    try {
-      const data = await fetchGeoZones();
-      setGeoZones(data);
-    } catch (error) {
-      showSnackbar("error", error.message);
-    }
-  };
+  useEffect(() => {
+    if (error) showSnackbar("error", error.message);
+  }, [error]);
 
   useEffect(() => {
-    loadGeoZones();
-    const interval = setInterval(loadGeoZones, 10000);
+    fetchGeoZones();
+    const interval = setInterval(fetchGeoZones, 10000);
     return () => clearInterval(interval);
   }, []);
 
   const handleAddOrEdit = async (geoZone) => {
-    try {
-      if (editingGeoZone) {
-        const id = await updateGeoZone(geoZone);
+    if (editingGeoZone) {
+      const id = await updateGeoZone(geoZone);
+      if (id)
         showSnackbar( "success", `GeoZone ${id} updated successfully.`);
-      } else {
-        const id = await addGeoZone(geoZone);
+    } else {
+      const id = await addGeoZone(geoZone);
+      if (id)
         showSnackbar("success", `GeoZone ${id} created successfully.`);
       }
-      loadGeoZones();
       setIsFormOpen(false);
       setEditingGeoZone(null);
-    } catch (error) {
-      showSnackbar("error", `Error: ${error.message}`);
-    }
-  };
-
-  const handleEdit = (zone) => {
-    setEditingGeoZone(zone);
-    setIsFormOpen(true);
-  };
+      fetchGeoZones();
+    };
   
   const handleDelete = async (id) => {
-    try {
-      await deleteGeoZone(id);
+    const idDeleted = await deleteGeoZone(id);
+    if (idDeleted)
       showSnackbar("success", `GeoZone ${id} deleted successfully.`);
-      loadGeoZones();
-    } catch (error) {
-      showSnackbar("error", `Error: ${error.message}`);
-    }
+    fetchGeoZones();
+
   };
 
   const handleToggleStatus = async (id) => {
-    try {
-      const zone = geoZones.find((z) => z.id === id);
-      const updatedZone = { ...zone, status: zone.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' };
-      const id_response = await updateGeoZone(updatedZone);
-      showSnackbar("success", `GeoZone ${id_response} status updated successfully.`);
-      loadGeoZones();
-    } catch (error) {
-      showSnackbar("error", `Error: ${error.message}`);
-    }
+    const zone = geoZones.find((z) => z.id === id);
+    const updatedZone = { ...zone, status: zone.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' };
+    const idUpdated = await updateGeoZone(updatedZone);
+    if (idUpdated)  
+      showSnackbar("success", `GeoZone ${idUpdated} status updated successfully.`);
+    fetchGeoZones();
   };
 
   return (
@@ -111,8 +101,11 @@ function GeoZoneSection() {
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         GeoZones Details
       </Typography>
-      <GeoZoneDataGrid data={geoZones} onEdit={handleEdit} onDelete={handleDelete} />
-
+      <GeoZoneDataGrid data={geoZones} openEditDialog={ (geoZone) => {
+          setEditingGeoZone(geoZone);
+          setIsFormOpen(true);
+        }}
+        onDelete={handleDelete} />
       <GeoZoneFormDialog
           open={isDialogOpen}
           onClose={() => {
@@ -128,7 +121,7 @@ function GeoZoneSection() {
         onClose={closeSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={alertMessage?.type} onClose={closeSnackbar}>
+        <Alert severity={alertMessage?.type} onClose={closeSnackbar} variant="filled">
           {alertMessage?.text}
         </Alert>
       </Snackbar>      

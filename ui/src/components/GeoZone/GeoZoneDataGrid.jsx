@@ -6,7 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PenIcon from '@mui/icons-material/Edit';
 
-export default function GeoZoneDataGrid({ data, onEdit, onDelete }) {
+export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
   // Funzione per il rendering dello stato
   const renderStatus = (status) => {
     const colors = {
@@ -98,7 +98,7 @@ export default function GeoZoneDataGrid({ data, onEdit, onDelete }) {
             <Button
               size="small"
               color="primary"
-              onClick={() => onEdit(params.row)}
+              onClick={() => openEditDialog(params.row)}
               style={{ minWidth: 'auto', padding: '4px' }}
             >
               <PenIcon />
@@ -139,6 +139,6 @@ export default function GeoZoneDataGrid({ data, onEdit, onDelete }) {
 
 GeoZoneDataGrid.propTypes = {
   data: PropTypes.array.isRequired,
-  onEdit: PropTypes.func.isRequired,
+  openEditDialog: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };

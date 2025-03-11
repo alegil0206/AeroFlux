@@ -3,19 +3,31 @@ import Grid from "@mui/material/Grid2";
 import Card from "@mui/material/Card";
 import { CardContent, CardHeader } from "@mui/material";
 import Button from "@mui/material/Button";
-import { deleteAllDrones } from "../services/drones";
-import { deleteAllGeoZones } from "../services/geoZones";
-import { deleteAllAuthorizations } from "../services/authorization";
 import { Snackbar, Alert, TextField } from "@mui/material";
-import { useState } from "react";
-import { getEndpoint, setEndpoint } from "../services/apiEndpoints";
-import { setCoordinates, getCoordinates, updateMapBounds } from "../utils/mapSettings";
-import { updateGridSettings } from "../services/weather";
+import { useState, useEffect } from "react";
+
+import { useSettings } from "../context/SettingContext";
+import { useDroneIdentification } from "../hooks/useDroneIdentification";
+import { useGeoAwareness } from "../hooks/useGeoAwareness";
+import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
 
 function SettingsSection() {
+    const { coordinates, services, error: settingError, updateCoordinates, updateServiceUrl, fetchSettings } = useSettings();
+    
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState(null);
 
+    const { deleteAllDrones, error: errorDrones } = useDroneIdentification();
+    const { deleteAllGeoZones, error: errorGeoZones } = useGeoAwareness();
+    const { deleteAllAuthorizations, error: errorAuthorizations } = useGeoAuthorization();
+
+    useEffect(() => {
+        if (errorDrones) showSnackbar("error", errorDrones.message);
+        if (errorGeoZones) showSnackbar("error", errorGeoZones.message);
+        if (errorAuthorizations) showSnackbar("error", errorAuthorizations.message);
+        if (settingError) showSnackbar("error", settingError.message);
+    }, [errorDrones, errorGeoZones, errorAuthorizations, settingError]);
+    
     const showSnackbar = (type, message) => {
         setAlertMessage({ type: type, text: message });
         setSnackbarOpen(true);
@@ -26,109 +38,66 @@ function SettingsSection() {
         setAlertMessage(null);
     };
 
-    // Stato locale per gli endpoint
-    const [endpoints, setEndpoints] = useState({
-        drone_identification: getEndpoint("drone_identification") || "",
-        geo_awareness: getEndpoint("geo_awareness") || "",
-        geo_authorization: getEndpoint("geo_authorization") || "",
-        weather: getEndpoint("weather") || ""
-    });
-
-    const [mapCoordinates, setMapCoordinates] = useState(getCoordinates());
+    const [tempCoordinates, setTempCoordinates] = useState(coordinates);
+    const [tempEndpoints, setTempEndpoints] = useState(services);
 
     const handleCoordinateChange = (e) => {
         const { name, value } = e.target;
-        setMapCoordinates((prev) => ({
+        setTempCoordinates((prev) => ({
             ...prev,
             [name]: parseFloat(value),
         }));
     };
 
-    const handleSaveCoordinates = () => {
-        setCoordinates(mapCoordinates.longitude, mapCoordinates.latitude);
-        updateMapBounds();
-        try {
-            updateGridSettings(mapCoordinates);
+    const handleSaveCoordinates = async () => {
+        const responseOk = await updateCoordinates(tempCoordinates);
+        if (responseOk)
             showSnackbar("success", "Map coordinates updated successfully");
-        }
-        catch (error) {
-            showSnackbar("error", error.message);
-        }
+        fetchSettings();
     };
 
     const handleEndpointChange = (key, value) => {
-        setEndpoints((prev) => ({ ...prev, [key]: value }));
+        setTempEndpoints((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleSave = (key) => {
-        setEndpoint(key, endpoints[key]);
-        showSnackbar("success", `${key} endpoint updated successfully`);
+    const handleSaveEndpoint = async (key) => {
+        const responseOk = await updateServiceUrl(key, tempEndpoints[key]);
+        if (responseOk)
+            showSnackbar("success", `${key} endpoint updated successfully`);
+        fetchSettings();
     };
 
     const data = [
-        {
-            element: "Drone Identification",
-            key: "drone_identification",
-            dropFunction: async () => {
-                try {
-                    await deleteAllDrones();
-                    showSnackbar("success", "Drones deleted successfully");
-                } catch (error) {
-                    showSnackbar("error", error.message);
-                }
-            }
-        },
-        {
-            element: "Geo Awareness",
-            key: "geo_awareness",
-            dropFunction: async () => {
-                try {
-                    await deleteAllGeoZones();
-                    showSnackbar("success", "Geo Awareness zones deleted successfully");
-                } catch (error) {
-                    showSnackbar("error", error.message);
-                }
-            }
-        },
-        {
-            element: "Geo Authorization",
-            key: "geo_authorization",
-            dropFunction: async () => {
-                try {
-                    await deleteAllAuthorizations();
-                    showSnackbar("success", "Authorizations deleted successfully");
-                } catch (error) {
-                    showSnackbar("error", error.message);
-                }
-            }
-        },
-        {
-            element: "Weather",
-            key: "weather",
-            dropFunction: null // Nessuna funzione di reset per il meteo
-        }
+        { element: "Drone Identification", key: "drone_identification", dropFunction: deleteAllDrones },
+        { element: "Geo Awareness", key: "geo_awareness", dropFunction: deleteAllGeoZones },
+        { element: "Geo Authorization", key: "geo_authorization", dropFunction: deleteAllAuthorizations },
+        { element: "Weather", key: "weather", dropFunction: null }
     ];
 
     return (
         <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
-            <Grid container spacing={2} columns={12}>
+            <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }} >
                 {data.map((item) => (
-                    <Grid key={item.element} xs={12} md={4}>
-                        <Card variant="outlined" sx={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1, p: 2 }}>
+                    <Grid key={item.element} size={{ xs: 12, md: 6, lg: 4 }}>
+                        <Card variant="outlined" 
+                            sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
+                        >
                             <CardHeader title={`${item.element} Microservice`} />
                             <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                {/* Campo di input per l'endpoint */}
                                 <TextField
-                                    label={`Endpoint`}
-                                    value={endpoints[item.key]}
+                                    label="Endpoint"
+                                    value={tempEndpoints[item.key] || ""}
                                     onChange={(e) => handleEndpointChange(item.key, e.target.value)}
                                     fullWidth
                                 />
-                                <Button variant="outlined" onClick={() => handleSave(item.key)}>Save Endpoint</Button>
+                                <Button variant="outlined" onClick={() => handleSaveEndpoint(item.key)}>Save Endpoint</Button>
 
-                                {/* Pulsante per eliminare tutti gli elementi (se disponibile) */}
                                 {item.dropFunction && (
-                                    <Button onClick={item.dropFunction} variant="contained" color="error">
+                                    <Button onClick={async () => {
+                                        const responseOk = await item.dropFunction();
+                                        if (responseOk)
+                                            showSnackbar("success", `${item.element} reset successfully`);
+                                    }} variant="contained" color="error">
                                         Restore Microservice
                                     </Button>
                                 )}
@@ -137,16 +106,21 @@ function SettingsSection() {
                     </Grid>
                 ))}
 
-                {/* Card per le coordinate della mappa */}
-                <Grid xs={12} md={4}>
-                    <Card variant="outlined" sx={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1, p: 2 }}>
+                {/* Card for Map Coordinates */}
+                <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                    <Card variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}>
                         <CardHeader title="Map Center Coordinates" />
                         <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            {/* Warning message */}
+                            <Alert severity="warning" variant="outlined">
+                                Changing coordinates will reset all microservices data.
+                            </Alert>
+
                             <TextField
                                 label="Longitude"
                                 type="number"
                                 name="longitude"
-                                value={mapCoordinates.longitude}
+                                value={tempCoordinates?.longitude || ""}
                                 onChange={handleCoordinateChange}
                                 fullWidth
                             />
@@ -154,7 +128,7 @@ function SettingsSection() {
                                 label="Latitude"
                                 type="number"
                                 name="latitude"
-                                value={mapCoordinates.latitude}
+                                value={tempCoordinates?.latitude || ""}
                                 onChange={handleCoordinateChange}
                                 fullWidth
                             />
@@ -162,11 +136,9 @@ function SettingsSection() {
                         </CardContent>
                     </Card>
                 </Grid>
-
-
             </Grid>
 
-            {/* Snackbar per notifiche */}
+            {/* Snackbar for notifications */}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={5000}
