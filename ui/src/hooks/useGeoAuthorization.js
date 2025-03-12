@@ -67,7 +67,7 @@ export const useGeoAuthorization = () => {
         }
     }, [services.geo_authorization]);
 
-    const deleteAllAuthorization = useCallback(async () => {
+    const deleteAllAuthorizations = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -93,7 +93,7 @@ export const useGeoAuthorization = () => {
         fetchAuthorizations,
         addAuthorization,
         revokeAuthorization,
-        deleteAllAuthorization,
+        deleteAllAuthorizations,
     };
 }
 

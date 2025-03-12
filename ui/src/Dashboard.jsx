@@ -19,7 +19,6 @@ import LocalPoliceRoundedIcon from '@mui/icons-material/LocalPoliceRounded';
 import HouseRoundedIcon from '@mui/icons-material/HouseRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import SettingsIcon from '@mui/icons-material/Settings';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -37,6 +36,7 @@ import GeoZoneSection from './pages/GeoZoneSection';
 import WeatherSection from './pages/WeatherSection';
 import HomeSection from './pages/HomeSection';
 import SettingSection from './pages/SettingSection';
+import LoadingSection from './pages/LoadingSection';
 
 import logoImage from './assets/logo.png';
 
@@ -61,12 +61,10 @@ export default function Dashboard(props) {
       <CssBaseline enableColorScheme />
 
       { loading && 
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <CircularProgress />
-        </Box> 
+        <LoadingSection logo = {logoImage} />
       }
 
-      {!loading &&
+      { !loading &&
 
         <BrowserRouter>
           <Box sx={{ display: 'flex' }}>
@@ -77,9 +75,13 @@ export default function Dashboard(props) {
               component="main"
               sx={(theme) => ({
                 flexGrow: 1,
-                backgroundColor: theme.vars
-                  ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-                  : alpha(theme.palette.background.default, 1),
+                backgroundImage:
+                  'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+                backgroundRepeat: 'no-repeat',
+                ...theme.applyStyles('dark', {
+                  backgroundImage:
+                    'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+                }),
                 overflow: 'auto',
               })}
             >

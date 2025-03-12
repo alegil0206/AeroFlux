@@ -118,7 +118,7 @@ function SettingsSection() {
 
                             <TextField
                                 label="Longitude"
-                                type="number"
+                                type="number"   
                                 name="longitude"
                                 value={tempCoordinates?.longitude || ""}
                                 onChange={handleCoordinateChange}
