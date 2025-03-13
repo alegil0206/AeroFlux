@@ -3,13 +3,14 @@ import Grid from "@mui/material/Grid2";
 import Card from "@mui/material/Card";
 import { CardContent, CardHeader } from "@mui/material";
 import Button from "@mui/material/Button";
-import { Snackbar, Alert, TextField } from "@mui/material";
+import { Snackbar, Alert, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 
 import { useSettings } from "../context/SettingContext";
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
 import { useGeoAwareness } from "../hooks/useGeoAwareness";
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
+import SettingMap from "../components/Setting/SettingMap";
 
 function SettingsSection() {
     const { coordinates, services, error: settingError, updateCoordinates, updateServiceUrl, fetchSettings } = useSettings();
@@ -49,6 +50,10 @@ function SettingsSection() {
         }));
     };
 
+    const handleCoordinatesChangeOnMap = (newCoordinates) => {
+        setTempCoordinates(newCoordinates);
+    };
+
     const handleSaveCoordinates = async () => {
         const responseOk = await updateCoordinates(tempCoordinates);
         if (responseOk)
@@ -76,6 +81,9 @@ function SettingsSection() {
 
     return (
         <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
+            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+                Microservices Settings
+            </Typography>
             <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }} >
                 {data.map((item) => (
                     <Grid key={item.element} size={{ xs: 12, md: 6, lg: 4 }}>
@@ -105,7 +113,11 @@ function SettingsSection() {
                         </Card>
                     </Grid>
                 ))}
-
+            </Grid>
+            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+                Map Settings 
+            </Typography>
+            <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }} >
                 {/* Card for Map Coordinates */}
                 <Grid size={{ xs: 12, md: 6, lg: 4 }}>
                     <Card variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}>
@@ -135,6 +147,12 @@ function SettingsSection() {
                             <Button variant="outlined" onClick={handleSaveCoordinates}>Save Coordinates</Button>
                         </CardContent>
                     </Card>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+                    <SettingMap
+                        coordinates={tempCoordinates}
+                        onCoordinatesChange={handleCoordinatesChangeOnMap}
+                    />
                 </Grid>
             </Grid>
 
