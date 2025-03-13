@@ -34,6 +34,16 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
     );
   };
 
+  const renderShapeDescription = (row) => {
+    if (row.type === 'CIRCULAR') {
+      return `The geo-zone has center (${row.latitude}, ${row.longitude}) and radius ${row.radius} km`;
+    }
+    if (row.coordinates) {
+      return `The geo-zone is bounded by the following coordinates: ${row.coordinates.map(coord => `(${coord[0]}, ${coord[1]})`).join(', ')}`;
+    }
+    return 'Shape information not available';
+  };
+
   // Definizione delle colonne
   const columns = [
     {
@@ -49,7 +59,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
     {
       field: 'name',
       headerName: 'Name',
-      flex: 2,
+      flex: 1,
       renderCell: (params) => (
         <Tooltip title={`GeoZone Name: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -89,6 +99,16 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       ),
     },
     {
+      field: 'shape_description',
+      headerName: 'Description',
+      flex: 3,
+      renderCell: (params) => (
+        <Tooltip title={renderShapeDescription(params.row)} arrow>
+          <span>{renderShapeDescription(params.row)}</span>
+        </Tooltip>
+      ),
+    },
+    {
       field: 'actions',
       headerName: ' ',
       sortable: false,
@@ -122,6 +142,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
   return (
     <DataGrid
       autoHeight
+      getRowHeight={() => 'auto'}
       rows={data}
       columns={columns}
       getRowClassName={(params) =>

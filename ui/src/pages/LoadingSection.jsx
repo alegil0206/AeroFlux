@@ -12,8 +12,8 @@ import PropTypes from 'prop-types';
 
 import ThunderstormRoundedIcon from '@mui/icons-material/ThunderstormRounded';
 import AirplanemodeActiveRoundedIcon from '@mui/icons-material/AirplanemodeActiveRounded';
-import LocalPoliceRoundedIcon from '@mui/icons-material/LocalPoliceRounded';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import PublicIcon from '@mui/icons-material/Public';
 
 
 export default function LoadingSection( { logo } ) {
@@ -31,7 +31,7 @@ export default function LoadingSection( { logo } ) {
 
     const items = [
         {
-          icon: <LocalPoliceRoundedIcon sx={{ color: 'text.secondary' }} />,
+          icon: <PublicIcon sx={{ color: 'text.secondary' }} />,
           title: 'Geo-Awareness Service',
           description:
             'The Geo-Awareness Service provides information about the geo-zones. It is used to manage the geo-zones.',

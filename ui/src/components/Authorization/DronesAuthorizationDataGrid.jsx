@@ -26,6 +26,19 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     return <Chip label={category} color={colors[category]} size="small" />;
   };
 
+  const renderAuthorizationCategory = (category) => {
+    const colors = {
+      EXCLUDED: 'error',
+      RESTRICTED: 'warning',
+    };
+
+    return (
+      <Tooltip title={`Category: ${category}`} arrow>
+        <Chip label={category} color={colors[category]} size="small" />
+      </Tooltip>
+    );
+  };
+
   const rows = authorization.map((auth) => {
     const drone = drones.find((d) => d.id === auth.drone_id) || {};
     const geoZone = geoZones.find((g) => g.id === auth.geozone_id) || {};
@@ -37,6 +50,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       operationCategory: drone.operation_category,
       geoZoneId: geoZone.id,
       geoZoneName: geoZone.name,
+      geoZoneCategory: geoZone.category,
       status: auth.status,
       createdAt: new Date(auth.start_time).toLocaleString(),
       expiresAt: auth.revocation_time
@@ -44,6 +58,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       : auth.end_time
       ? new Date(auth.end_time).toLocaleString()
       : '-',
+      reason: auth.reason,
     };
   });
 
@@ -99,6 +114,12 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       ),
     },
     {
+      field: 'geoZoneCategory',
+      headerName: 'Geozone Category',
+      flex: 1,
+      renderCell: (params) => renderAuthorizationCategory(params.value),
+    },
+    {
       field: 'status',
       headerName: 'Status',
       flex: 1.5,
@@ -124,6 +145,16 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Expires At: ${params.value}`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: 'reason',
+      headerName: 'Annotation',
+      flex: 3,
+      renderCell: (params) => (
+        <Tooltip title={`Annotation: ${params.value}`} arrow>
           <span>{params.value}</span>
         </Tooltip>
       ),
@@ -155,8 +186,10 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
   return (
     <DataGrid
       autoHeight
+      getRowHeight={() => 'auto'}
       rows={rows}
       columns={columns}
+      
       getRowClassName={(params) =>
         params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
       }
@@ -179,6 +212,7 @@ DronesAuthorizationDataGrid.propTypes = {
       start_time: PropTypes.string.isRequired,
       end_time: PropTypes.string,
       revocation_time: PropTypes.string,
+      reason: PropTypes.string,
     })
   ).isRequired,
   onRevoke: PropTypes.func.isRequired,

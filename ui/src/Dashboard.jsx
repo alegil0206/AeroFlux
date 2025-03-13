@@ -15,10 +15,12 @@ import {
 
 import ThunderstormRoundedIcon from '@mui/icons-material/ThunderstormRounded';
 import AirplanemodeActiveRoundedIcon from '@mui/icons-material/AirplanemodeActiveRounded';
-import LocalPoliceRoundedIcon from '@mui/icons-material/LocalPoliceRounded';
 import HouseRoundedIcon from '@mui/icons-material/HouseRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import SettingsIcon from '@mui/icons-material/Settings';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import PublicIcon from '@mui/icons-material/Public';
+
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -35,21 +37,24 @@ import DroneSection from './pages/DroneSection';
 import GeoZoneSection from './pages/GeoZoneSection';
 import WeatherSection from './pages/WeatherSection';
 import HomeSection from './pages/HomeSection';
+import AuthorizationSection from './pages/AuthorizationSection';
 import SettingSection from './pages/SettingSection';
 import LoadingSection from './pages/LoadingSection';
+
 
 import logoImage from './assets/logo.png';
 
 const primaryListItems = [
   { text: 'Home', path: '/', icon: <HouseRoundedIcon /> },
-  { text: 'GeoZone', path: '/geozone', icon: <LocalPoliceRoundedIcon /> },
+  { text: 'GeoZone', path: '/geozone', icon: <PublicIcon /> },
   { text: 'Drone', path: '/drone', icon: <AirplanemodeActiveRoundedIcon /> },
+  { text: 'Authorization', path: '/authorization', icon: <FactCheckIcon /> },
   { text: 'Weather', path: '/weather', icon: <ThunderstormRoundedIcon /> },
   { text: 'Setting', path: '/setting', icon: <SettingsIcon /> },
 ];
 
 const secondaryListItems = [
-  { text: 'About', path: 'https://gitlab.com/u-space_lecco_brianza',  icon: <InfoRoundedIcon /> }
+  { text: 'About', path: 'https://github.com/alegil0206/U-space',  icon: <InfoRoundedIcon /> }
 ];
 
 export default function Dashboard(props) {
@@ -97,6 +102,7 @@ export default function Dashboard(props) {
                 <Header />
                 <Routes>
                   <Route path="/" element={<HomeSection />} /> {/* Home */}
+                  <Route path="/authorization" element={<AuthorizationSection />} />
                   <Route path="/geozone" element={<GeoZoneSection />} />
                   <Route path="/drone" element={<DroneSection />} />
                   <Route path="/weather" element={<WeatherSection />} />

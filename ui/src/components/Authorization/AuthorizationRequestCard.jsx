@@ -35,7 +35,7 @@ export default function AuthorizationRequestCard({ drones, geoZones, onAdd }) {
   return (
     <Card
       variant="outlined"
-      sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1, mt: 2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
     >
       <CardContent>
         <Typography variant="h6" component="div" sx={{ marginBottom: 2 }}>

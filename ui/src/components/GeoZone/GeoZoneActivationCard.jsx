@@ -2,8 +2,24 @@ import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+
 
 export default function GeoZoneActivationCard({ data, onToggleStatus }) {
+  
+  const renderAuthorizationCategory = (category) => {
+    const colors = {
+      EXCLUDED: 'error',
+      RESTRICTED: 'warning',
+    };
+
+    return (
+      <Tooltip title={`Category: ${category}`} arrow>
+        <Chip label={" "} color={colors[category]} size="small" />
+      </Tooltip>
+    );
+  };
+
   const columns = [
     {
       field: 'id',
@@ -24,6 +40,12 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
           <span>{params.value}</span>
         </Tooltip>
       ),
+    },
+    {
+      field: 'category',
+      headerName: 'Cat.',
+      flex: 1,
+      renderCell: (params) => renderAuthorizationCategory(params.value),
     },
     {
       field: 'status',
@@ -63,6 +85,7 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
       pageSizeOptions={[10, 20, 50]}
       disableColumnResize
       density="compact"
+      sx={{ mt: 2}}
     />
   );
 }
@@ -73,6 +96,7 @@ GeoZoneActivationCard.propTypes = {
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
       status: PropTypes.string.isRequired,
+      category: PropTypes.string.isRequired,
     })
   ).isRequired,
   onToggleStatus: PropTypes.func.isRequired,

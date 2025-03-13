@@ -84,10 +84,10 @@ function GeoZoneSection() {
         Maps
       </Typography>
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
-        <Grid size={{ xs: 12, lg: 9 }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <GeoZonesMap geoZones={ geoZones }/>
         </Grid>
-        <Grid size={{ xs: 12, lg: 3 }}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
             <Button variant="contained" fullWidth onClick={() => setIsFormOpen(true)}>
               Add New GeoZone
