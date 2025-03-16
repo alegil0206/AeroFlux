@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useState } from 'react';
-import { useSettings } from '../context/SettingContext';
+import { useSettings } from '../contexts/SettingContext';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
@@ -20,7 +20,7 @@ export default function LoadingSection( { logo } ) {
 
     const { connectToMainService, error } = useSettings();
 
-    const [tempEndpoint, setTempEndpoint] = useState("http://api.uspace.local/simulator");
+    const [tempEndpoint, setTempEndpoint] = useState("api.uspace.local/simulator");
     const [isConnecting, setIsConnecting] = useState(false);
 
     const handleButtonClick = async () => {

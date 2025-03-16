@@ -2,6 +2,7 @@ package com.brianzolilecchesi.simulator.controller;
 
 import com.brianzolilecchesi.simulator.service.ExecutionService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -30,5 +31,11 @@ public class ExecutionController {
     @MessageMapping("/resume")
     public void resumeSimulation() {
         executionService.resume();
+    }
+
+    @MessageMapping("/status")
+    @SendTo("/topic/status")
+    public String getStatus() {
+        return executionService.getStatus();
     }
 }

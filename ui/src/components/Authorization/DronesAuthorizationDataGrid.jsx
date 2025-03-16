@@ -189,7 +189,6 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       getRowHeight={() => 'auto'}
       rows={rows}
       columns={columns}
-      
       getRowClassName={(params) =>
         params.indexRelativeToCurrentPage % 2 === 0 ? 'even' : 'odd'
       }

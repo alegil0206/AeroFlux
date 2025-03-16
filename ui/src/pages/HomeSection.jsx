@@ -5,6 +5,8 @@ import Box from "@mui/material/Box";
 import DronesPositionsCard from "../components/Drone/DronesPositionsCard";
 import DronesAuthorizationDataGrid from "../components/Authorization/DronesAuthorizationDataGrid";
 import FullMap from "../components/Home/FullMap";
+import LogViewer from "../components/Home/LogViewer";
+import ExecutionControls from "../components/Home/ExecutionControls";
 
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
@@ -113,6 +115,8 @@ function HomeSection() {
           <FullMap drones={ dronesPositions } geoZones={geoZones} weather={weather}/>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
+          <ExecutionControls />
+          <LogViewer />
           <DronesPositionsCard data={dronesPositions} />
           <GeoZoneActivationCard data = {geoZones} onToggleStatus={handleToggleStatus} />
         </Grid>

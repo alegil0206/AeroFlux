@@ -1,5 +1,5 @@
 import { useState, useCallback} from 'react';
-import { useSettings } from '../context/SettingContext';
+import { useSettings } from '../contexts/SettingContext';
 
 export const useDroneIdentification = () => {
     const { services } = useSettings();

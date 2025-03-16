@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import { Snackbar, Alert, TextField, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 
-import { useSettings } from "../context/SettingContext";
+import { useSettings } from "../contexts/SettingContext";
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
 import { useGeoAwareness } from "../hooks/useGeoAwareness";
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";

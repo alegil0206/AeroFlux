@@ -38,4 +38,12 @@ public class ExecutionState {
     public void setPaused(boolean paused) {
         this.paused = paused;
     }
+
+    public String getStatus() {
+        if (running) {
+            return paused ? "Paused" : "Running";
+        } 
+        return "Stopped";
+    }
+    
 }

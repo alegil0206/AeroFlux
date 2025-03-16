@@ -24,7 +24,7 @@ import PublicIcon from '@mui/icons-material/Public';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { useSettings } from './context/SettingContext'; 
+import { useSettings } from './contexts/SettingContext'; 
 
 const xThemeComponents = {
   ...chartsCustomizations,

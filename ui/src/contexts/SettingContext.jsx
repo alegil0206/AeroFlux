@@ -16,7 +16,7 @@ export const SettingProvider = ({ children }) => {
   // Funzione per recuperare le coordinate
   const fetchCoordinates = async () => {
     try {
-      const response = await fetch(`${mainService}/setting/coordinates`);
+      const response = await fetch(`http://${mainService}/setting/coordinates`);
       if (!response.ok) throw new Error('Failed to fetch coordinates');
       const data = await response.json();
       setCoordinates(data);
@@ -28,7 +28,7 @@ export const SettingProvider = ({ children }) => {
   // Funzione per recuperare i servizi
   const fetchServices = async () => {
     try {
-      const response = await fetch(`${mainService}/setting/service`);
+      const response = await fetch(`http://${mainService}/setting/service`);
       if (!response.ok) throw new Error('Failed to fetch services');
       const data = await response.json();
       const services = data.reduce((acc, service) => {
@@ -58,7 +58,7 @@ export const SettingProvider = ({ children }) => {
   const updateCoordinates = async (newCoordinates) => {
     setError(null);
     try {
-      const response = await fetch(`${mainService}/setting/coordinates`, {
+      const response = await fetch(`http://${mainService}/setting/coordinates`, {
         method: 'PUT',
         body: JSON.stringify(newCoordinates),
         headers: {
@@ -75,7 +75,7 @@ export const SettingProvider = ({ children }) => {
 
   const updateServiceUrl = async (serviceName, newUrl) => {
     try {
-      const response = await fetch(`${mainService}/setting/service/${serviceName}?newUrl=${encodeURIComponent(newUrl)}`, {
+      const response = await fetch(`http://${mainService}/setting/service/${serviceName}?newUrl=${encodeURIComponent(newUrl)}`, {
         method: 'PUT',
       });
       if (!response.ok) throw new Error('Failed to update service URL');

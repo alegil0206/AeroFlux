@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSettings } from "../context/SettingContext";
+import { useSettings } from "../contexts/SettingContext";
 
 const EARTH_RADIUS = 6378137.0; // Raggio della Terra in metri
 const HALF_SQUARE_SIZE = 30000; // 30 km

@@ -57,6 +57,10 @@ public class ExecutionService {
         logService.sendLog("INFO", "Execution resumed");
     }
 
+    public String getStatus() {
+        return executionState.getStatus();
+    }
+
     private void scheduleExecutionLoop() {
         scheduledTask = taskScheduler.scheduleAtFixedRate(() -> {
             if (!executionState.isPaused()) {

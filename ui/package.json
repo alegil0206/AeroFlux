@@ -26,7 +26,8 @@
     "maplibre-gl": "^5.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.1.0"
+    "react-router-dom": "^7.1.0",
+    "@stomp/stompjs": "^5.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
