@@ -68,9 +68,6 @@ function DroneSection() {
 
   return (
     <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-        Maps
-      </Typography>
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
         <Grid size={{ xs: 12, lg: 7 }}>
           <DronesMap drones={drones} />

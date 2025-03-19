@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.brianzolilecchesi.drone_identification.dto.AdaptiveCapabilitiesDTO;
 import com.brianzolilecchesi.drone_identification.dto.PositionDTO;
 import com.brianzolilecchesi.drone_identification.util.Constants;
 
@@ -27,6 +28,11 @@ public class Drone {
 	
 	@Field("plan_definition_timestamp")
 	private LocalDateTime planDefinitionTimestamp;
+
+	@Field("adaptive_capabilities")
+	private AdaptiveCapabilities adaptiveCapabilities;
+	@Field("flight_autonomy")
+	private Integer flightAutonomy;
 	
 	@Field("source")
 	private GeoJsonPoint source;
@@ -39,6 +45,8 @@ public class Drone {
 			final String owner, 
 			final String operationCategory, 
 			final LocalDateTime registrationTimestamp,
+			final AdaptiveCapabilities adaptiveCapabilities,
+			final Integer flightAutonomy,
 			final GeoJsonPoint source,
 			final GeoJsonPoint destination
 			) {
@@ -48,6 +56,8 @@ public class Drone {
 		setOwner(owner);
 		setOperationCategory(operationCategory);
 		setPlanDefinitionTimestamp(registrationTimestamp);
+		setAdaptiveCapabilities(adaptiveCapabilities);
+		setFlightAutonomy(flightAutonomy);
 		setSource(source);
 		setDestination(destination);
 	}
@@ -102,6 +112,32 @@ public class Drone {
 	void setPlanDefinitionTimestamp(LocalDateTime planDefinitionTimestamp) {
         this.planDefinitionTimestamp = planDefinitionTimestamp;
     }
+
+	public AdaptiveCapabilities getAdaptiveCapabilities() {
+		return adaptiveCapabilities;
+	}
+
+	void setAdaptiveCapabilities(AdaptiveCapabilities adaptiveCapabilities) {
+		this.adaptiveCapabilities = adaptiveCapabilities;
+	}
+
+	void setAdaptiveCapabilities(AdaptiveCapabilitiesDTO adaptiveCapabilitiesDTO) {
+		this.adaptiveCapabilities = new AdaptiveCapabilities(
+				adaptiveCapabilitiesDTO.getSafeLanding(),
+				adaptiveCapabilitiesDTO.getCollisionAvoidance(),
+				adaptiveCapabilitiesDTO.getGeoAwareness(),
+				adaptiveCapabilitiesDTO.getAutoAuthorization(),
+				adaptiveCapabilitiesDTO.getFlightAutonomyManagement()
+				);
+	}
+
+	public Integer getFlightAutonomy() {
+		return flightAutonomy;
+	}
+
+	void setFlightAutonomy(Integer flightAutonomy) {
+		this.flightAutonomy = flightAutonomy;
+	}
 	
 	public GeoJsonPoint getSource() {
 		return source;
@@ -144,13 +180,15 @@ public class Drone {
 	@Override
 	public String toString() {
 		return String.format(
-				"Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, source=%s, destination=%s]",
+				"Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, flightAutonomy=%s, source=%s, destination=%s]",
 				id,
 				name,
 				model,
 				owner,
 				operationCategory,
 				planDefinitionTimestamp,
+				adaptiveCapabilities,
+				flightAutonomy,
 				source,
 				destination
 				);

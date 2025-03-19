@@ -14,23 +14,27 @@ public class ExecutionController {
     }
 
     @MessageMapping("/start")
-    public void startSimulation() {
-        executionService.start();
+    @SendTo("/topic/status")
+    public String startSimulation() {
+        return executionService.start();
     }
 
     @MessageMapping("/stop")
-    public void stopSimulation() {
-        executionService.stop();
+    @SendTo("/topic/status")
+    public String stopSimulation() {
+        return executionService.stop();
     }
 
     @MessageMapping("/pause")
-    public void pauseSimulation() {
-        executionService.pause();
+    @SendTo("/topic/status")
+    public String pauseSimulation() {
+        return executionService.pause();
     }
 
     @MessageMapping("/resume")
-    public void resumeSimulation() {
-        executionService.resume();
+    @SendTo("/topic/status")
+    public String resumeSimulation() {
+        return executionService.resume();
     }
 
     @MessageMapping("/status")

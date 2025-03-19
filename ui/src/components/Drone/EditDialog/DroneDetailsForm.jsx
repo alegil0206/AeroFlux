@@ -6,12 +6,17 @@ import {
   InputLabel,
   Grid2 as Grid,
   FormHelperText,
+  Typography,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import PropTypes from 'prop-types';
 
 export default function DroneDetailsForm({ drone, errors, handleChange }) {
+
   return (
     <div>
+      <Typography component="h3" variant="h6">Drone Details</Typography>
       <FormControl fullWidth margin="normal" error={!!errors.name}>
         <TextField
           label="Name"
@@ -58,7 +63,49 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
         <FormHelperText>{errors.owner}</FormHelperText>
       </FormControl>
 
-      <strong>Source Position</strong>
+      <Typography component="h3" variant="h6">Drone Characteristics</Typography>
+      <FormControl fullWidth margin="normal" error={!!errors.flight_autonomy}>
+          <TextField
+            fullWidth
+            type="number"
+            label="Flight Autonomy (minutes)"
+            name="flight_autonomy"
+            value={drone.flight_autonomy}
+            onChange={(e) => handleChange(e.target.name, parseFloat(e.target.value))}
+            inputProps={{ min: 0, step: 1 }}
+          />
+          <FormHelperText>{errors.flight_autonomy}</FormHelperText>
+      </FormControl>
+
+      <Grid container columns={12} >
+        {[
+          { key: 'safe_landing', label: 'Safe Landing' },
+          { key: 'collision_avoidance', label: 'Collision Avoidance' },
+          { key: 'geo_awareness', label: 'Geo Awareness' },
+          { key: 'auto_authorization', label: 'Auto Authorization' },
+          { key: 'flight_autonomy_management', label: 'Flight Autonomy Management' },
+        ].map(({ key, label }) => (
+          <Grid size={{ xs: 12, md: 6 }} key={key}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={drone.adaptive_capabilities[key]}
+                  onChange={(e) =>
+                    handleChange('adaptive_capabilities', {
+                      ...drone.adaptive_capabilities,
+                      [key]: e.target.checked,
+                    })
+                  }                
+                />
+              }
+              label={label}
+            />
+          </Grid>
+        ))}
+      </Grid>
+
+
+      <Typography component="h3" variant="h6">Source Position</Typography>
       <Grid container columns={12} spacing={2} sx={{ mb: (theme) => theme.spacing(2) }}>
         <Grid size={{ xs: 12, md: 6 }}>
           <TextField
@@ -86,7 +133,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
         </Grid>
       </Grid>
 
-      <strong>Destination Position</strong>
+      <Typography component="h3" variant="h6">Destination Position</Typography>
       <Grid container columns={12} spacing={2} sx={{ mb: (theme) => theme.spacing(2) }}>
         <Grid size={{ xs: 12, md: 6 }}>
           <TextField

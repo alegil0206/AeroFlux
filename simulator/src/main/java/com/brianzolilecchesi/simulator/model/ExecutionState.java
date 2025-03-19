@@ -41,9 +41,9 @@ public class ExecutionState {
 
     public String getStatus() {
         if (running) {
-            return paused ? "Paused" : "Running";
+            return paused ? "PAUSED" : "RUNNING";
         } 
-        return "Stopped";
+        return "STOPPED";
     }
     
 }

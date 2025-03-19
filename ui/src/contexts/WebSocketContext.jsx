@@ -12,8 +12,9 @@ export const WebSocketProvider = ({ children }) => {
   const { mainService } = useSettings();
 
   useEffect(() => {
+    if (!mainService) return;
     const stompClient = new Client({
-      brokerURL: `ws://${mainService}/ws`,
+      brokerURL: `ws://${mainService}/websocket`,
       reconnectDelay: 5000, 
       onConnect: () => {
         console.log("WebSocket connected!");

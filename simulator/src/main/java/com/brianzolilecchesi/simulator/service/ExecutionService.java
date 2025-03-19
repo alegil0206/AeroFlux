@@ -20,16 +20,18 @@ public class ExecutionService {
         this.taskScheduler.initialize();
     }
 
-    public void start() {
-        stop(); // Se già in esecuzione, resetta
+    public String start() {
+        if (executionState.isRunning() || executionState.isPaused())
+            stop(); // Se già in esecuzione, resetta
         executionState.setRunning(true);
         executionState.setPaused(false);
         executionState.resetCycle();
         scheduleExecutionLoop();
         logService.sendLog("INFO", "Execution started");
+        return executionState.getStatus();
     }
 
-    public void stop() {
+    public String stop() {
         if (scheduledTask != null) {
             scheduledTask.cancel(true);
         }
@@ -37,9 +39,10 @@ public class ExecutionService {
         executionState.setPaused(false);
         executionState.resetCycle();
         logService.sendLog("INFO", "Execution stopped");
+        return executionState.getStatus();
     }
 
-    public void pause() {
+    public String pause() {
         if (executionState.isRunning() && !executionState.isPaused()) {
             executionState.setPaused(true);
             if (scheduledTask != null) {
@@ -47,14 +50,16 @@ public class ExecutionService {
             }
         }
         logService.sendLog("INFO", "Execution paused");
+        return executionState.getStatus();
     }
 
-    public void resume() {
+    public String resume() {
         if (executionState.isRunning() && executionState.isPaused()) {
             executionState.setPaused(false);
             scheduleExecutionLoop();
         }
         logService.sendLog("INFO", "Execution resumed");
+        return executionState.getStatus();
     }
 
     public String getStatus() {
@@ -68,6 +73,6 @@ public class ExecutionService {
                 String message = "Ho fatto il " + executionState.getCycleCount() + "-esimo ciclo di esecuzione";
                 logService.sendLog("INFO", message);
             }
-        }, 1000);
+        }, 2000);
     }
 }

@@ -152,8 +152,18 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
         pagination: { paginationModel: { pageSize: 20 } },
       }}
       pageSizeOptions={[10, 20, 50]}
-      disableColumnResize
       density="compact"
+      sx={{
+        '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': {
+          py: 1,
+        },
+        '&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell': {
+          py: '15px',
+        },
+        '&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell': {
+          py: '22px',
+        },
+      }}
     />
   );
 }

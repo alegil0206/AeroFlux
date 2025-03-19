@@ -3,6 +3,7 @@ package com.brianzolilecchesi.drone_identification.model.persistency.drone;
 import java.time.LocalDateTime;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
+import com.brianzolilecchesi.drone_identification.dto.AdaptiveCapabilitiesDTO;
 import com.brianzolilecchesi.drone_identification.dto.DroneDTO;
 import com.brianzolilecchesi.drone_identification.dto.PositionDTO;
 
@@ -20,6 +21,14 @@ public class DroneFactory {
                 droneDTO.getOwner(), 
                 droneDTO.getOperationCategory(), 
                 LocalDateTime.now(),
+				new AdaptiveCapabilities(
+						droneDTO.getAdaptiveCapabilities().getSafeLanding(),
+						droneDTO.getAdaptiveCapabilities().getCollisionAvoidance(),
+						droneDTO.getAdaptiveCapabilities().getGeoAwareness(),
+						droneDTO.getAdaptiveCapabilities().getAutoAuthorization(),
+						droneDTO.getAdaptiveCapabilities().getFlightAutonomyManagement()
+						),
+				droneDTO.getFlightAutonomy(),
                 new GeoJsonPoint(
                 		droneDTO.getSource().getLongitude(),
                 		droneDTO.getSource().getLatitude()
@@ -41,6 +50,14 @@ public class DroneFactory {
 				drone.getOwner(),
 				drone.getOperationCategory(), 
 				drone.getPlanDefinitionTimestamp().toString(),
+				new AdaptiveCapabilitiesDTO(
+					drone.getAdaptiveCapabilities().getSafeLanding(),
+					drone.getAdaptiveCapabilities().getCollisionAvoidance(),
+					drone.getAdaptiveCapabilities().getGeoAwareness(),
+					drone.getAdaptiveCapabilities().getAutoAuthorization(),
+					drone.getAdaptiveCapabilities().getFlightAutonomyManagement()
+						),
+				drone.getFlightAutonomy(),
 				new PositionDTO(
 						drone.getSource().getX(),
 						drone.getSource().getY() 

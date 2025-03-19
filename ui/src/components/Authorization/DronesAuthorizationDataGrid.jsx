@@ -196,7 +196,18 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
         pagination: { paginationModel: { pageSize: 10 } },
       }}
       pageSizeOptions={[10, 20, 50]}
-      disableColumnResize
+      density="compact"
+      sx={{
+        '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': {
+          py: 1,
+        },
+        '&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell': {
+          py: '15px',
+        },
+        '&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell': {
+          py: '22px',
+        },
+      }}
     />
   );
 }

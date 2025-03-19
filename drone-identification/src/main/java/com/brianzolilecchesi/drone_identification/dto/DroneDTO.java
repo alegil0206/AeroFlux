@@ -11,6 +11,8 @@ public class DroneDTO {
 	private String owner;
 	private String operationCategory;
 	private String planDefinitionTimestamp;
+	private AdaptiveCapabilitiesDTO adaptiveCapabilities;
+	private Integer flightAutonomy;
 	private PositionDTO source;
 	private PositionDTO destination;
 
@@ -25,6 +27,8 @@ public class DroneDTO {
 			@JsonProperty("owner") String owner,
 			@JsonProperty("operation_category") String operationCategory,
 			@JsonProperty("plan_definition_timestamp") String planDefinitionTimestamp,
+			@JsonProperty("adaptive_capabilities") AdaptiveCapabilitiesDTO adaptiveCapabilities,
+			@JsonProperty("flight_autonomy") Integer flightAutonomy,
 			@JsonProperty("source") PositionDTO source,
 			@JsonProperty("destination") PositionDTO destination
 			) {
@@ -35,6 +39,8 @@ public class DroneDTO {
 		setOwner(owner);
 		setOperationCategory(operationCategory);
 		setPlanDefinitionTimestamp(planDefinitionTimestamp);
+		setAdaptiveCapabilities(adaptiveCapabilities);
+		setFlightAutonomy(flightAutonomy);
 		setSource(source);
 		setDestination(destination);
 	}
@@ -102,17 +108,35 @@ public class DroneDTO {
 	public void setDestination(PositionDTO destination) {
 		this.destination = destination;
 	}
+
+	public AdaptiveCapabilitiesDTO getAdaptiveCapabilities() {
+		return adaptiveCapabilities;
+	}
+
+	public void setAdaptiveCapabilities(AdaptiveCapabilitiesDTO adaptiveCapabilities) {
+		this.adaptiveCapabilities = adaptiveCapabilities;
+	}
+
+	public Integer getFlightAutonomy() {
+		return flightAutonomy;
+	}
+
+	public void setFlightAutonomy(Integer flightAutonomy) {
+		this.flightAutonomy = flightAutonomy;
+	}
 	
 	@Override
 	public String toString() {
 		return String.format(
-                "Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, source=%s, destination=%s]",
+                "Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, flightAutonomy=%s, source=%s, destination=%s]",
                 id,
                 name,
                 model,
                 owner,
                 operationCategory,
                 planDefinitionTimestamp,
+				adaptiveCapabilities,
+				flightAutonomy,
                 source,
                 destination
                 );
