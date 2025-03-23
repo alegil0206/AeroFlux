@@ -1,7 +1,13 @@
 package com.brianzolilecchesi.simulator.service.api;
 
+import java.util.List;
+
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
+
+import com.brianzolilecchesi.simulator.dto.DroneDTO;
 
 @Service
 public class DroneIdentificationService extends AbstractMicroservice {
@@ -26,6 +32,13 @@ public class DroneIdentificationService extends AbstractMicroservice {
         } catch (Exception e) {
             System.err.println("Error notifying drone_identification: " + e.getMessage());
         }
+    }
+
+    public List<DroneDTO> getAllDrones() {
+        return restTemplate.exchange(serviceUrl + "/drone", 
+                                     HttpMethod.GET, 
+                                     null, 
+                                     new ParameterizedTypeReference<List<DroneDTO>>() {}).getBody();
     }
     
 }
