@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.brianzolilecchesi.simulator.service.ServiceEndpointsService;
+import com.brianzolilecchesi.simulator.service.MicroserviceRegistryService;
 import com.brianzolilecchesi.simulator.service.UserCoordinatesService;
 
 import com.brianzolilecchesi.simulator.dto.ServiceEndpointDTO;
@@ -25,11 +25,11 @@ public class SettingController {
 	public static final String SETTING_BASE_URL = "/setting";
 
     private final UserCoordinatesService coordinatesService;
-    private final ServiceEndpointsService serviceEndpointsService;
+    private final MicroserviceRegistryService microserviceRegistryService;
 
-    public SettingController(UserCoordinatesService coordinatesService, ServiceEndpointsService serviceEndpointsService) {
+    public SettingController(UserCoordinatesService coordinatesService, MicroserviceRegistryService microserviceRegistryService) {
         this.coordinatesService = coordinatesService;
-        this.serviceEndpointsService = serviceEndpointsService;
+        this.microserviceRegistryService = microserviceRegistryService;
     }
 
     @GetMapping("/coordinates")
@@ -40,18 +40,18 @@ public class SettingController {
     @PutMapping("/coordinates")
     public ResponseEntity<Void> updateCoordinates(@RequestBody UserCoordinatesDTO newCoordinates) {
         coordinatesService.updateCoordinates(newCoordinates);
-        serviceEndpointsService.notifyServices(newCoordinates);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/service")
     public ResponseEntity<List<ServiceEndpointDTO>> getAllServices() {
-        return ResponseEntity.ok(serviceEndpointsService.getAllServices());
+        return ResponseEntity.ok(microserviceRegistryService.getAllServices());
     }
 
     @PutMapping("/service/{serviceName}")
-    public ResponseEntity<Void> updateServiceUrl(@PathVariable String serviceName, @RequestParam String newUrl) {
-        serviceEndpointsService.updateServiceUrl(serviceName, newUrl);
+    public ResponseEntity<Void> updateServiceUrl(@PathVariable("serviceName") String serviceName, @RequestParam("newUrl") String newUrl) {
+        System.out.println("Updating service " + serviceName + " with new URL: " + newUrl);
+        microserviceRegistryService.updateServiceUrl(serviceName, newUrl);
         return ResponseEntity.ok().build();
     }
 }
