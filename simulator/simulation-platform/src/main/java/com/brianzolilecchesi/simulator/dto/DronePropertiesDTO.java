@@ -1,9 +1,9 @@
-package com.brianzolilecchesi.drone_identification.dto;
+package com.brianzolilecchesi.simulator.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DroneDTO {
+public class DronePropertiesDTO {
 	
 	private String id;
 	private String name;
@@ -16,11 +16,11 @@ public class DroneDTO {
 	private PositionDTO source;
 	private PositionDTO destination;
 
-	public DroneDTO() {
+	public DronePropertiesDTO() {
 	}
 
 	@JsonCreator
-	public DroneDTO(
+	public DronePropertiesDTO(
 			@JsonProperty("id") String id, 
 			@JsonProperty("name") String name, 
 			@JsonProperty("model") String model, 
@@ -150,7 +150,7 @@ public class DroneDTO {
 		if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-		DroneDTO other = (DroneDTO) obj;
+		DronePropertiesDTO other = (DronePropertiesDTO) obj;
 		return id != null && id.equals(other.id);
 	}
 }

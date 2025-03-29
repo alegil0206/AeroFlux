@@ -16,7 +16,7 @@ public class DroneUpdater {
 		drone.setName(droneDTO.getName());
 		drone.setModel(droneDTO.getModel());
 		drone.setOwner(droneDTO.getOwner());
-		drone.setFlightAutonomy(droneDTO.getFlightAutonomy());
+		drone.setBattery(droneDTO.getBattery());
 		drone.setAdaptiveCapabilities(droneDTO.getAdaptiveCapabilities());
 				
 		if (!(

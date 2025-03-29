@@ -9,7 +9,7 @@ public class AdaptiveCapabilitiesDTO {
     private Boolean collisionAvoidance;
     private Boolean geoAwareness;
     private Boolean autoAuthorization;
-    private Boolean flightAutonomyManagement;
+    private Boolean batteryManagement;
 
     @JsonCreator
     public AdaptiveCapabilitiesDTO(
@@ -17,14 +17,14 @@ public class AdaptiveCapabilitiesDTO {
             @JsonProperty("collision_avoidance") Boolean collisionAvoidance,
             @JsonProperty("geo_awareness") Boolean geoAwareness,
             @JsonProperty("auto_authorization") Boolean autoAuthorization,
-            @JsonProperty("flight_autonomy_management") Boolean flightAutonomyManagement
+            @JsonProperty("battery_management") Boolean batteryManagement
             ) {
         
         setSafeLanding(safeLanding);
         setCollisionAvoidance(collisionAvoidance);
         setGeoAwareness(geoAwareness);
         setAutoAuthorization(autoAuthorization);
-        setFlightAutonomyManagement(flightAutonomyManagement);
+        setBatteryManagement(batteryManagement);
     }
     
     public Boolean getSafeLanding() {
@@ -59,22 +59,22 @@ public class AdaptiveCapabilitiesDTO {
         this.autoAuthorization = autoAuthorization;
     }
 
-    public Boolean getFlightAutonomyManagement() {
-        return flightAutonomyManagement;
+    public Boolean getBatteryManagement() {
+        return batteryManagement;
     }
 
-    public void setFlightAutonomyManagement(Boolean flightAutonomyManagement) {
-        this.flightAutonomyManagement = flightAutonomyManagement;
+    public void setBatteryManagement(Boolean batteryManagement) {
+        this.batteryManagement = batteryManagement;
     }
 
     public String toString() {
         return String.format(
-                "AdaptiveCapabilitiesDTO[safe_landing=%b, collisionAvoidance=%b, geoAwareness=%b, autoAuthorization=%b, flightAutonomyManagement=%b]",
+                "AdaptiveCapabilitiesDTO[safe_landing=%b, collisionAvoidance=%b, geoAwareness=%b, autoAuthorization=%b, batteryManagement=%b]",
                 safeLanding, 
                 collisionAvoidance, 
                 geoAwareness,
                 autoAuthorization,
-                flightAutonomyManagement
+                batteryManagement
                 );
     }
 
@@ -91,6 +91,6 @@ public class AdaptiveCapabilitiesDTO {
                 collisionAvoidance == other.getCollisionAvoidance() &&
                 geoAwareness == other.getGeoAwareness() &&
                 autoAuthorization == other.getAutoAuthorization() &&
-                flightAutonomyManagement == other.getFlightAutonomyManagement();
+                batteryManagement == other.getBatteryManagement();
     }
 }

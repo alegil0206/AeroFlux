@@ -1,9 +1,6 @@
-package com.brianzolilecchesi.simulator.dto;
+package com.brianzolilecchesi.drone.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class AdaptiveCapabilitiesDTO {
+public class AdaptiveCapabilities {
 
     private Boolean safeLanding;
     private Boolean collisionAvoidance;
@@ -11,15 +8,16 @@ public class AdaptiveCapabilitiesDTO {
     private Boolean autoAuthorization;
     private Boolean batteryManagement;
 
-    @JsonCreator
-    public AdaptiveCapabilitiesDTO(
-            @JsonProperty("safe_landing") Boolean safeLanding,
-            @JsonProperty("collision_avoidance") Boolean collisionAvoidance,
-            @JsonProperty("geo_awareness") Boolean geoAwareness,
-            @JsonProperty("auto_authorization") Boolean autoAuthorization,
-            @JsonProperty("battery_management") Boolean batteryManagement
+    public AdaptiveCapabilities() {
+    }
+
+    public AdaptiveCapabilities(
+            Boolean safeLanding,
+            Boolean collisionAvoidance,
+            Boolean geoAwareness,
+            Boolean autoAuthorization,
+            Boolean batteryManagement
             ) {
-        
         setSafeLanding(safeLanding);
         setCollisionAvoidance(collisionAvoidance);
         setGeoAwareness(geoAwareness);
@@ -78,14 +76,14 @@ public class AdaptiveCapabilitiesDTO {
                 );
     }
 
-    public boolean equals(AdaptiveCapabilitiesDTO obj) {
+    public boolean equals(AdaptiveCapabilities obj) {
         if (this == obj) {
             return true;
         }
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        AdaptiveCapabilitiesDTO other = (AdaptiveCapabilitiesDTO) obj;
+        AdaptiveCapabilities other = (AdaptiveCapabilities) obj;
         return 
                 safeLanding == other.getSafeLanding() &&
                 collisionAvoidance == other.getCollisionAvoidance() &&

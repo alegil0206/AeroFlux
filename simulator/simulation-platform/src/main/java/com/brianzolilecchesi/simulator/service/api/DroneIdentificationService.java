@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-import com.brianzolilecchesi.simulator.dto.DroneDTO;
+import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
 
 @Service
 public class DroneIdentificationService extends AbstractMicroservice {
@@ -34,11 +34,11 @@ public class DroneIdentificationService extends AbstractMicroservice {
         }
     }
 
-    public List<DroneDTO> getAllDrones() {
+    public List<DronePropertiesDTO> getAllDrones() {
         return restTemplate.exchange(serviceUrl + "/drone", 
                                      HttpMethod.GET, 
                                      null, 
-                                     new ParameterizedTypeReference<List<DroneDTO>>() {}).getBody();
+                                     new ParameterizedTypeReference<List<DronePropertiesDTO>>() {}).getBody();
     }
     
 }

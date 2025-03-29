@@ -15,17 +15,17 @@ public class AdaptiveCapabilities {
     @Field("auto_authorization")
     private Boolean autoAuthorization;
 
-    @Field("flight_autonomy_management")
-    private Boolean flightAutonomyManagement;
+    @Field("battery_management")
+    private Boolean batteryManagement;
 
     public AdaptiveCapabilities() {}
 
-    public AdaptiveCapabilities(Boolean safeLanding, Boolean collisionAvoidance, Boolean geoAwareness, Boolean autoAuthorization, Boolean flightAutonomyManagement) {
+    public AdaptiveCapabilities(Boolean safeLanding, Boolean collisionAvoidance, Boolean geoAwareness, Boolean autoAuthorization, Boolean batteryManagement) {
         this.safeLanding = safeLanding;
         this.collisionAvoidance = collisionAvoidance;
         this.geoAwareness = geoAwareness;
         this.autoAuthorization = autoAuthorization;
-        this.flightAutonomyManagement = flightAutonomyManagement;
+        this.batteryManagement = batteryManagement;
     }
 
     public Boolean getSafeLanding() {
@@ -60,12 +60,12 @@ public class AdaptiveCapabilities {
         this.autoAuthorization = autoAuthorization;
     }
 
-    public Boolean getFlightAutonomyManagement() {
-        return flightAutonomyManagement;
+    public Boolean getBatteryManagement() {
+        return batteryManagement;
     }
 
-    public void setFlightAutonomyManagement(Boolean flightAutonomyManagement) {
-        this.flightAutonomyManagement = flightAutonomyManagement;
+    public void setBatteryManagement(Boolean batteryManagement) {
+        this.batteryManagement = batteryManagement;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class AdaptiveCapabilities {
                 ", collisionAvoidance=" + collisionAvoidance +
                 ", geoAwareness=" + geoAwareness +
                 ", autoAuthorization=" + autoAuthorization +
-                ", flightAutonomyManagement=" + flightAutonomyManagement +
+                ", batteryManagement=" + batteryManagement +
                 '}';
     }
 }

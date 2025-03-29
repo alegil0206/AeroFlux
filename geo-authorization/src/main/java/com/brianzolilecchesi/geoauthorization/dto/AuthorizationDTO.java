@@ -44,7 +44,6 @@ public abstract class AuthorizationDTO {
 		setDurationType(durationType);
 		setDuration(duration);
 		setStartTime(startTime);
-		
 	}
 	
 	public Long getId() {

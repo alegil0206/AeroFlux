@@ -31,8 +31,8 @@ public class Drone {
 
 	@Field("adaptive_capabilities")
 	private AdaptiveCapabilities adaptiveCapabilities;
-	@Field("flight_autonomy")
-	private Integer flightAutonomy;
+	@Field("battery")
+	private double battery;
 	
 	@Field("source")
 	private GeoJsonPoint source;
@@ -46,7 +46,7 @@ public class Drone {
 			final String operationCategory, 
 			final LocalDateTime registrationTimestamp,
 			final AdaptiveCapabilities adaptiveCapabilities,
-			final Integer flightAutonomy,
+			final double battery,
 			final GeoJsonPoint source,
 			final GeoJsonPoint destination
 			) {
@@ -57,7 +57,7 @@ public class Drone {
 		setOperationCategory(operationCategory);
 		setPlanDefinitionTimestamp(registrationTimestamp);
 		setAdaptiveCapabilities(adaptiveCapabilities);
-		setFlightAutonomy(flightAutonomy);
+		setBattery(battery);
 		setSource(source);
 		setDestination(destination);
 	}
@@ -127,16 +127,16 @@ public class Drone {
 				adaptiveCapabilitiesDTO.getCollisionAvoidance(),
 				adaptiveCapabilitiesDTO.getGeoAwareness(),
 				adaptiveCapabilitiesDTO.getAutoAuthorization(),
-				adaptiveCapabilitiesDTO.getFlightAutonomyManagement()
+				adaptiveCapabilitiesDTO.getBatteryManagement()
 				);
 	}
 
-	public Integer getFlightAutonomy() {
-		return flightAutonomy;
+	public double getBattery() {
+		return battery;
 	}
 
-	void setFlightAutonomy(Integer flightAutonomy) {
-		this.flightAutonomy = flightAutonomy;
+	void setBattery(double battery) {
+		this.battery = battery;
 	}
 	
 	public GeoJsonPoint getSource() {
@@ -180,7 +180,7 @@ public class Drone {
 	@Override
 	public String toString() {
 		return String.format(
-				"Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, flightAutonomy=%s, source=%s, destination=%s]",
+				"Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, battery=%s, source=%s, destination=%s]",
 				id,
 				name,
 				model,
@@ -188,7 +188,7 @@ public class Drone {
 				operationCategory,
 				planDefinitionTimestamp,
 				adaptiveCapabilities,
-				flightAutonomy,
+				battery,
 				source,
 				destination
 				);

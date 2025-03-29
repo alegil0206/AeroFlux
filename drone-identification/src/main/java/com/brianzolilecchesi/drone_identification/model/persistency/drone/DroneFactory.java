@@ -26,9 +26,9 @@ public class DroneFactory {
 						droneDTO.getAdaptiveCapabilities().getCollisionAvoidance(),
 						droneDTO.getAdaptiveCapabilities().getGeoAwareness(),
 						droneDTO.getAdaptiveCapabilities().getAutoAuthorization(),
-						droneDTO.getAdaptiveCapabilities().getFlightAutonomyManagement()
+						droneDTO.getAdaptiveCapabilities().getBatteryManagement()
 						),
-				droneDTO.getFlightAutonomy(),
+				droneDTO.getBattery(),
                 new GeoJsonPoint(
                 		droneDTO.getSource().getLongitude(),
                 		droneDTO.getSource().getLatitude()
@@ -55,9 +55,9 @@ public class DroneFactory {
 					drone.getAdaptiveCapabilities().getCollisionAvoidance(),
 					drone.getAdaptiveCapabilities().getGeoAwareness(),
 					drone.getAdaptiveCapabilities().getAutoAuthorization(),
-					drone.getAdaptiveCapabilities().getFlightAutonomyManagement()
+					drone.getAdaptiveCapabilities().getBatteryManagement()
 						),
-				drone.getFlightAutonomy(),
+				drone.getBattery(),
 				new PositionDTO(
 						drone.getSource().getX(),
 						drone.getSource().getY() 

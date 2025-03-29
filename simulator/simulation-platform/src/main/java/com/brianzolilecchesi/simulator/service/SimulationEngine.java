@@ -2,6 +2,8 @@ package com.brianzolilecchesi.simulator.service;
 
 import com.brianzolilecchesi.drone.DroneSystem;
 import com.brianzolilecchesi.simulator.model.SimulationStatus;
+import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -22,6 +24,7 @@ public class SimulationEngine {
             if (!simulationStatus.isPaused()) {
                 for (DroneSystem drone : drones) {
                     drone.executeStep();
+                    ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);
                 }
                 try {
                     Thread.sleep(interval);

@@ -64,17 +64,17 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
       </FormControl>
 
       <Typography component="h3" variant="h6">Drone Characteristics</Typography>
-      <FormControl fullWidth margin="normal" error={!!errors.flight_autonomy}>
+      <FormControl fullWidth margin="normal" error={!!errors.battery}>
           <TextField
             fullWidth
             type="number"
             label="Flight Autonomy (minutes)"
-            name="flight_autonomy"
-            value={drone.flight_autonomy}
+            name="battery"
+            value={drone.battery}
             onChange={(e) => handleChange(e.target.name, parseFloat(e.target.value))}
             inputProps={{ min: 0, step: 1 }}
           />
-          <FormHelperText>{errors.flight_autonomy}</FormHelperText>
+          <FormHelperText>{errors.battery}</FormHelperText>
       </FormControl>
 
       <Grid container columns={12} >
@@ -83,7 +83,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
           { key: 'collision_avoidance', label: 'Collision Avoidance' },
           { key: 'geo_awareness', label: 'Geo Awareness' },
           { key: 'auto_authorization', label: 'Auto Authorization' },
-          { key: 'flight_autonomy_management', label: 'Flight Autonomy Management' },
+          { key: 'battery_management', label: 'Flight Autonomy Management' },
         ].map(({ key, label }) => (
           <Grid size={{ xs: 12, md: 6 }} key={key}>
             <FormControlLabel

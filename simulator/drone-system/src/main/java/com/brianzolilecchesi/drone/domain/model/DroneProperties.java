@@ -1,9 +1,6 @@
-package com.brianzolilecchesi.simulator.dto;
+package com.brianzolilecchesi.drone.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class DroneDTO {
+public class DroneProperties {
 	
 	private String id;
 	private String name;
@@ -11,26 +8,25 @@ public class DroneDTO {
 	private String owner;
 	private String operationCategory;
 	private String planDefinitionTimestamp;
-	private AdaptiveCapabilitiesDTO adaptiveCapabilities;
-	private Integer flightAutonomy;
-	private PositionDTO source;
-	private PositionDTO destination;
+	private AdaptiveCapabilities adaptiveCapabilities;
+	private double battery;
+	private Coordinates source;
+	private Coordinates destination;
 
-	public DroneDTO() {
+	public DroneProperties() {
 	}
 
-	@JsonCreator
-	public DroneDTO(
-			@JsonProperty("id") String id, 
-			@JsonProperty("name") String name, 
-			@JsonProperty("model") String model, 
-			@JsonProperty("owner") String owner,
-			@JsonProperty("operation_category") String operationCategory,
-			@JsonProperty("plan_definition_timestamp") String planDefinitionTimestamp,
-			@JsonProperty("adaptive_capabilities") AdaptiveCapabilitiesDTO adaptiveCapabilities,
-			@JsonProperty("flight_autonomy") Integer flightAutonomy,
-			@JsonProperty("source") PositionDTO source,
-			@JsonProperty("destination") PositionDTO destination
+	public DroneProperties( 
+			String id, 
+			String name, 
+			String model, 
+			String owner,
+			String operationCategory,
+			String planDefinitionTimestamp,
+			AdaptiveCapabilities adaptiveCapabilities,
+			double battery,
+			Coordinates source,
+			Coordinates destination
 			) {
 		
 		setId(id);
@@ -40,7 +36,7 @@ public class DroneDTO {
 		setOperationCategory(operationCategory);
 		setPlanDefinitionTimestamp(planDefinitionTimestamp);
 		setAdaptiveCapabilities(adaptiveCapabilities);
-		setFlightAutonomy(flightAutonomy);
+		setBattery(battery);
 		setSource(source);
 		setDestination(destination);
 	}
@@ -93,42 +89,42 @@ public class DroneDTO {
 		this.planDefinitionTimestamp = planDefinitionTimestamp;
 	}
 	
-	public PositionDTO getSource() {
+	public Coordinates getSource() {
 		return source;
 	}
 	
-	public void setSource(PositionDTO source) {
+	public void setSource(Coordinates source) {
 		this.source = source;
 	}
 	
-	public PositionDTO getDestination() {
+	public Coordinates getDestination() {
 		return destination;
 	}
 	
-	public void setDestination(PositionDTO destination) {
+	public void setDestination(Coordinates destination) {
 		this.destination = destination;
 	}
 
-	public AdaptiveCapabilitiesDTO getAdaptiveCapabilities() {
+	public AdaptiveCapabilities getAdaptiveCapabilities() {
 		return adaptiveCapabilities;
 	}
 
-	public void setAdaptiveCapabilities(AdaptiveCapabilitiesDTO adaptiveCapabilities) {
+	public void setAdaptiveCapabilities(AdaptiveCapabilities adaptiveCapabilities) {
 		this.adaptiveCapabilities = adaptiveCapabilities;
 	}
 
-	public Integer getFlightAutonomy() {
-		return flightAutonomy;
+	public double getBattery() {
+		return battery;
 	}
 
-	public void setFlightAutonomy(Integer flightAutonomy) {
-		this.flightAutonomy = flightAutonomy;
+	public void setBattery(double battery) {
+		this.battery = battery;
 	}
 	
 	@Override
 	public String toString() {
 		return String.format(
-                "Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, flightAutonomy=%s, source=%s, destination=%s]",
+                "Drone[id=%s, name=%s, model=%s, owner=%s, operationCategory=%s, planDefinitionTimestamp=%s, adaptiveCapabilities=%s, battery=%s, source=%s, destination=%s]",
                 id,
                 name,
                 model,
@@ -136,7 +132,7 @@ public class DroneDTO {
                 operationCategory,
                 planDefinitionTimestamp,
 				adaptiveCapabilities,
-				flightAutonomy,
+				battery,
                 source,
                 destination
                 );
@@ -150,7 +146,7 @@ public class DroneDTO {
 		if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-		DroneDTO other = (DroneDTO) obj;
+		DroneProperties other = (DroneProperties) obj;
 		return id != null && id.equals(other.id);
 	}
 }

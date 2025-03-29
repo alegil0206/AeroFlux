@@ -22,13 +22,13 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
     model: '',
     operation_category: 'SPECIFIC',
     owner: '',
-    flight_autonomy: 0,
+    battery: 0,
     adaptive_capabilities: {
       safe_landing: false,
       collision_avoidance: false,
       geo_awareness: false,
       auto_authorization: false,
-      flight_autonomy_management: false,
+      battery_management: false,
     },
     source: { latitude: initialViewState.latitude - 0.01, longitude: initialViewState.longitude - 0.01 },
     destination: { latitude: initialViewState.latitude + 0.01, longitude: initialViewState.longitude + 0.01 },
@@ -60,7 +60,7 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
     if (!drone.name) newErrors.name = 'Name is required.';
     if (!drone.model) newErrors.model = 'Model is required.';
     if (!drone.owner) newErrors.owner = 'Owner is required.';
-    if (drone.flight_autonomy <= 0) newErrors.flight_autonomy = 'Flight autonomy must be greater than 0.';
+    if (drone.battery <= 0) newErrors.battery = 'Flight autonomy must be greater than 0.';
     const validateCoordinates = (coord, type) => {
       if (coord.latitude < mapBounds[0][1] || coord.latitude > mapBounds[1][1]) {
         newErrors[`${type}_latitude`] = `Latitude must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
