@@ -21,7 +21,7 @@ const calculateInitialView = (coordinates) => {
     return {
         longitude: coordinates.longitude,
         latitude: coordinates.latitude,
-        zoom: 10,
+        zoom: 1,
     }
 }
 

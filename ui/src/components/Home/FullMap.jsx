@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Marker, Popup, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
 import DronePin from '../Pin/DronePin';
@@ -16,42 +16,65 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 
 function FullMap({ drones, geoZones, weather }) {
   const [popupInfo, setPopupInfo] = useState(null);
-  const { initialViewState, mapBounds } = useMapSettings();
 
+  const { initialViewState, mapBounds } = useMapSettings();
   const routeLineGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
-    features: drones.map((drone) => ({
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [drone.source.longitude, drone.source.latitude],
-          [drone.destination.longitude, drone.destination.latitude],
-        ],
-      },
-      properties: {
-        id: drone.id,
-      },
-    })),
+    features: drones.flatMap((drone) => {
+      const flightPlan = drone.status.flightPlan;
+      return flightPlan.slice(0, -1).map((point, index) => {
+        const nextPoint = flightPlan[index + 1];
+        const altitudeDifference = nextPoint.altitude - point.altitude;
+        const color = altitudeDifference > 0 ? 'green' : altitudeDifference < 0 ? 'red' : 'blue';
+  
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [point.longitude, point.latitude],
+              [nextPoint.longitude, nextPoint.latitude],
+            ],
+          },
+          properties: {
+            id: `${drone.id}-segment-${index}`,
+            color,
+          },
+        };
+      });
+    }),
   }), [drones]);
+  
 
   const actualPositionMarkers = useMemo(
     () => drones.map((drone) => (
       <Marker
         key={`marker-${drone.id}`}
-        longitude={drone.position.longitude}
-        latitude={drone.position.latitude}
+        longitude={drone.status.position.longitude}
+        latitude={drone.status.position.latitude}
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
           setPopupInfo({ type: 'drone', data: drone });
         }}
       >
-        <DronePin height={drone.position.height} size={30} />
+        <DronePin height={drone.status.position.altitude} size={30} />
       </Marker>
     )),
     [drones]
   );
+
+  useEffect(() => {
+    if (popupInfo && popupInfo.type === 'drone') {
+      const updatedDrone = drones.find(d => d.id === popupInfo.data.id);
+      if (updatedDrone) {
+        setPopupInfo({
+          type: 'drone',
+          data: updatedDrone,
+        });
+      }
+    }
+  }, [drones]);
 
   const sourcePositionMarkers = useMemo(
     () => drones.map((drone) => (
@@ -172,11 +195,12 @@ function FullMap({ drones, geoZones, weather }) {
             id="line-layer"
             type="line"
             paint={{
-              "line-color": "blue",
+              "line-color": ["get", "color"],
               "line-width": 3,
             }}
           />
         </Source>
+
 
         {sourcePositionMarkers}
         {destinationPositionMarkers}
@@ -186,7 +210,7 @@ function FullMap({ drones, geoZones, weather }) {
           <Popup
             longitude={
               popupInfo.type === 'drone'
-                ? popupInfo.data.position.longitude
+                ? popupInfo.data.status.position.longitude
                 : popupInfo.type === 'source'
                 ? popupInfo.data.source.longitude
                 : popupInfo.type === 'destination'
@@ -195,7 +219,7 @@ function FullMap({ drones, geoZones, weather }) {
             }
             latitude={
               popupInfo.type === 'drone'
-                ? popupInfo.data.position.latitude
+                ? popupInfo.data.status.position.latitude
                 : popupInfo.type === 'source'
                 ? popupInfo.data.source.latitude
                 : popupInfo.type === 'destination'

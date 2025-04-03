@@ -3,6 +3,8 @@ package com.brianzolilecchesi.simulator.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.brianzolilecchesi.drone.domain.model.Position;
+
 public class PositionDTO {
 	
 	private double longitude;
@@ -20,6 +22,10 @@ public class PositionDTO {
 		setLatitude(latitude);
 		setAltitude(altitude);
     }
+
+	public PositionDTO(Position position) {
+		this(position.getLongitude(), position.getLatitude(), position.getAltitude());
+	}
     
     public PositionDTO(double longitude, double latitude) {
 		this(longitude, latitude, 0.0);

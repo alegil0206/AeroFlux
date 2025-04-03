@@ -26,18 +26,18 @@ public class Position extends Coordinates {
 		return "Position [latitude=" + getLatitude() + ", longitude=" + getLongitude() + ", altitude=" + altitude + "]";
 	}
 
+	private static final double THRESHOLD = 1e-6;
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Position))
 			return false;
 		Position other = (Position) obj;
-		if (Double.doubleToLongBits(altitude) != Double.doubleToLongBits(other.altitude))
-			return false;
-		return true;
+		
+		return Math.abs(this.getLatitude() - other.getLatitude()) < THRESHOLD &&
+			   Math.abs(this.getLongitude() - other.getLongitude()) < THRESHOLD &&
+			   Math.abs(this.altitude - other.altitude) < THRESHOLD;
 	}
-
 }

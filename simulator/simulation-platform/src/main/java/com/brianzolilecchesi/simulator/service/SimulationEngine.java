@@ -1,8 +1,10 @@
 package com.brianzolilecchesi.simulator.service;
 
 import com.brianzolilecchesi.drone.DroneSystem;
+import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.simulator.model.SimulationStatus;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
+import com.brianzolilecchesi.simulator.dto.DroneStatusDTO;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -23,8 +25,19 @@ public class SimulationEngine {
         while (simulationStatus.isRunning()) {
             if (!simulationStatus.isPaused()) {
                 for (DroneSystem drone : drones) {
-                    drone.executeStep();
-                    ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);
+                    DroneStatus droneStatus = drone.executeStep();
+                    if (droneStatus != null) {
+                        DroneStatusDTO droneStatusDTO = new DroneStatusDTO(
+                            droneStatus.getDroneId(),
+                            droneStatus.getPosition(),
+                            droneStatus.getBatteryLevel(),
+                            droneStatus.getFlightPlan(),
+                            droneStatus.getLog()
+                        );
+                        logService.sendDroneStatus(droneStatusDTO);
+                        logService.sendLog(drone.getDroneProperties().getName(), droneStatus.getLog());
+                        ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);                        
+                    }
                 }
                 try {
                     Thread.sleep(interval);

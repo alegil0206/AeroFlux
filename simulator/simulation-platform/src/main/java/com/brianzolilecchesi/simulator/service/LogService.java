@@ -1,5 +1,6 @@
 package com.brianzolilecchesi.simulator.service;
 
+import com.brianzolilecchesi.simulator.dto.DroneStatusDTO;
 import com.brianzolilecchesi.simulator.dto.LogDTO;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -20,5 +21,9 @@ public class LogService {
         String timestamp = LocalDateTime.now().format(formatter);
         LogDTO log = new LogDTO(category, message, timestamp);
         messagingTemplate.convertAndSend("/topic/logs", log);
+    }
+
+    public void sendDroneStatus(DroneStatusDTO droneStatus) {
+        messagingTemplate.convertAndSend("/topic/drone-status", droneStatus);
     }
 }

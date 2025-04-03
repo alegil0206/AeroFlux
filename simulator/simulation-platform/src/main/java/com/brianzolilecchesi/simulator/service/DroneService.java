@@ -22,11 +22,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service
 class DroneService {
     private final List<DroneSystem> drones = new CopyOnWriteArrayList<>();
-    private final LogService logService;
     private final DroneIdentificationService droneIdentificationService;
 
-    public DroneService(LogService logService, DroneIdentificationService droneIdentificationService) {
-        this.logService = logService;
+    public DroneService(DroneIdentificationService droneIdentificationService) {
         this.droneIdentificationService = droneIdentificationService;
     }
 
@@ -66,12 +64,6 @@ class DroneService {
             );
 
             DroneSystem drone = new DroneSystem(droneProperties, battery, radio, camera, gps, altimeter, motor);
-
-            drone.addPropertyChangeListener(evt -> {
-                if ("message".equals(evt.getPropertyName())) {
-                    logService.sendLog("INFO", (String) evt.getNewValue());
-                }
-            });
             drones.add(drone);
         }
 

@@ -13,14 +13,17 @@ import { useDroneIdentification } from "../hooks/useDroneIdentification";
 import { useGeoAwareness } from "../hooks/useGeoAwareness";
 import { useWeather } from "../hooks/useWeather";
 import GeoZoneActivationCard from "../components/GeoZone/GeoZoneActivationCard";
+import { useWebSocket } from "../contexts/WebSocketContext";
+
 
 function HomeSection() {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
 
-  const [dronesPositions, setDronesPositions] = useState([]);
-
+  const { dronesStatus } = useWebSocket();
+  const [dronesWithStatus, setDronesWithStatus] = useState([]);
+  
   const { 
     geoZones,
     error: geoZonesError,
@@ -57,19 +60,26 @@ function HomeSection() {
   }
 
   useEffect(() => {
+    const dronesWithPosition = drones.map((drone) => ({
+      ...drone,
+      status: dronesStatus[drone.id] ? dronesStatus[drone.id] : { 
+        position: { latitude: drone.source.latitude, longitude: drone.source.longitude, altitude: drone.source.altitude },
+        batteryLevel: drone.battery,
+        flightPlan: [[drone.source.longitude, drone.source.latitude, drone.source.altitude], 
+          [drone.destination.longitude, drone.destination.latitude, drone.destination.altitude]],
+        },
+    }));
+    setDronesWithStatus(dronesWithPosition);
+    console.log("Drones with status updated:", dronesWithPosition);
+  }, [drones, dronesStatus]);
+
+  useEffect(() => {
     if (geoZonesError) showSnackbar("error", geoZonesError.message);
     if (authorizationError) showSnackbar("error", authorizationError.message);
     if (dronesError) showSnackbar("error", dronesError.message);
     if (weatherError) showSnackbar("error", weatherError.message);
   }, [geoZonesError, authorizationError, dronesError, weatherError]);
 
-  useEffect(() => {
-    const dronesWithPosition = drones.map((drone) => ({
-      ...drone,
-      position: { ...drone.source, height: 0 },
-    }));
-    setDronesPositions(dronesWithPosition);
-  }, [drones]);
 
   useEffect(() => {
     const loadAllData = async () => {
@@ -109,7 +119,7 @@ function HomeSection() {
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}
       >
         <Grid size={{ xs: 12, lg: 7 }}>
-          <FullMap drones={ dronesPositions } geoZones={geoZones} weather={weather}/>
+          <FullMap drones={ dronesWithStatus } geoZones={geoZones} weather={weather}/>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
@@ -128,7 +138,7 @@ function HomeSection() {
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             Drones Positions
           </Typography>
-          <DronesPositionsCard data={dronesPositions} />
+          <DronesPositionsCard data={dronesWithStatus} />
         </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
@@ -141,7 +151,7 @@ function HomeSection() {
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
         Authorization Requests
       </Typography>
-      <DronesAuthorizationDataGrid drones={dronesPositions} geoZones={geoZones} authorization={authorization} onRevoke={handleRevoke} />
+      <DronesAuthorizationDataGrid drones={drones} geoZones={geoZones} authorization={authorization} onRevoke={handleRevoke} />
 
       <Snackbar
         open={snackbarOpen}

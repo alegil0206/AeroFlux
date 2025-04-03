@@ -8,6 +8,7 @@ export const WebSocketProvider = ({ children }) => {
   const [client, setClient] = useState(null);
   const [logs, setLogs] = useState([]);
   const [executionState, setExecutionState] = useState("unknown");
+  const [dronesStatus, setDronesStatus] = useState({});
 
   const { mainService } = useSettings();
 
@@ -27,6 +28,14 @@ export const WebSocketProvider = ({ children }) => {
           setExecutionState(message.body);
         });
 
+        stompClient.subscribe("/topic/drone-status", (message) => {
+          const newStatus = JSON.parse(message.body);
+          setDronesStatus((prevStatus) => ({
+            ...prevStatus,
+            [newStatus.droneId]: newStatus,
+          }));
+        });
+
         stompClient.publish({ destination: "/app/status" });
 
         setClient(stompClient);
@@ -41,7 +50,7 @@ export const WebSocketProvider = ({ children }) => {
   }, [mainService]);
 
   return (
-    <WebSocketContext.Provider value={{ client, logs, executionState }}>
+    <WebSocketContext.Provider value={{ client, logs, executionState, dronesStatus }}>
       {children}
     </WebSocketContext.Provider>
   );

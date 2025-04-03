@@ -68,7 +68,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
           <TextField
             fullWidth
             type="number"
-            label="Flight Autonomy (minutes)"
+            label="Battery Capacity (mAh)"
             name="battery"
             value={drone.battery}
             onChange={(e) => handleChange(e.target.name, parseFloat(e.target.value))}

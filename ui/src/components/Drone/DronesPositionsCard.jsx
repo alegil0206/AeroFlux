@@ -46,21 +46,21 @@ export default function DronesPositionCard({ data }) {
       ),
     },
     {
-      field: 'height',
-      headerName: 'Flight Level',
+      field: 'altitude',
+      headerName: 'Altitude',
       flex: 1,
       renderCell: (params) => (
-        <Tooltip title={`Flight Level: ${params.value}`} arrow>
+        <Tooltip title={`Altitude: ${params.value}`} arrow>
           <span>{params.value}</span>
         </Tooltip>
       ),
     },
     {
-      field: 'status',
+      field: 'flightStatus',
       headerName: 'Status',
       flex: 2,
       renderCell: (params) => {
-        const isFlying = params.row.height > 0;
+        const isFlying = params.row.altitude > 0;
         const label = isFlying ? 'In Flight' : 'On Ground';
         return (
           <Tooltip title={label} arrow>
@@ -73,16 +73,26 @@ export default function DronesPositionCard({ data }) {
         );
       },
     },
+    {
+      field: 'battery',
+      headerName: 'Battery',
+      flex: 1,
+      renderCell: (params) => (
+        <Tooltip title={`Battery: ${params.value}%`} arrow>
+          <span>{`${params.value}%`}</span>
+        </Tooltip>
+      )
+    }
   ];
 
-  // Mappare i dati per separare la posizione in latitude, longitude e height
   const rows = data.map((item) => ({
     id: item.id,
     name: item.name,
-    latitude: item.position.latitude,
-    longitude: item.position.longitude,
-    height: item.position.height,
-    status: item.status,
+    latitude: item.status.position.latitude,
+    longitude: item.status.position.longitude,
+    altitude: item.status.position.altitude,
+    flightStatus: item.flightStatus,
+    battery: item.status.batteryLevel,
   }));
 
   return (
@@ -108,11 +118,13 @@ DronesPositionCard.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      position: PropTypes.shape({
-        latitude: PropTypes.number.isRequired,
-        longitude: PropTypes.number.isRequired,
-        height: PropTypes.number.isRequired,
-      }).isRequired,
+      status: PropTypes.shape({
+        position: PropTypes.shape({
+          latitude: PropTypes.number.isRequired,
+          longitude: PropTypes.number.isRequired,
+          altitude: PropTypes.number.isRequired,
+        }).isRequired
+      })
     })
   ).isRequired,
 };

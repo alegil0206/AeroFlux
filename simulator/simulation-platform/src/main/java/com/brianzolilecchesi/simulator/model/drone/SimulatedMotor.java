@@ -1,11 +1,12 @@
 package com.brianzolilecchesi.simulator.model.drone;
 
 import com.brianzolilecchesi.drone.domain.component.Motor;
+import com.brianzolilecchesi.drone.domain.model.Position;
 
 
 public class SimulatedMotor implements Motor {
     
-    private static final double EARTH_RADIUS = 6378137.0; 
+    // private static final double EARTH_RADIUS = 6378137.0; 
     private boolean motorOn;
     private SimulatedGPS gps;
     private SimulatedAltimeter altimeter;
@@ -32,6 +33,14 @@ public class SimulatedMotor implements Motor {
     }
 
     @Override
+    public void move(Position position) {
+        gps.setLatitude(position.getLatitude());
+        gps.setLongitude(position.getLongitude());
+        altimeter.setAltitude(position.getAltitude());
+    }
+
+    /*
+    @Override
     public void move(double distance, double bearing, double altitude) {
         if (motorOn) {
             double currentLatitude = gps.getLatitude();
@@ -51,5 +60,5 @@ public class SimulatedMotor implements Motor {
             altimeter.setAltitude(newAltitude);
         }
     }
-    
+    */
 }

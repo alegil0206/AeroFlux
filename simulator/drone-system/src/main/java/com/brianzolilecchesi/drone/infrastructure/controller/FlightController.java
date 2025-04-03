@@ -9,7 +9,7 @@ public class FlightController {
     private final Motor motor;
     private final GPS gps;
     private final Altimeter altimeter;
-    private static final double EARTH_RADIUS = 6378137.0; 
+    // private static final double EARTH_RADIUS = 6378137.0; 
 
     public FlightController(Motor motor, GPS gps, Altimeter altimeter) {
         this.gps = gps;
@@ -29,6 +29,11 @@ public class FlightController {
         return motor.isMotorOn();
     }
 
+    public void moveTo(Position position ){
+        motor.move(position);
+    }
+
+    /*
     public void moveTo(Position position){
         double targetLatitude = position.getLatitude();
         double targetLongitude = position.getLongitude();
@@ -65,5 +70,6 @@ public class FlightController {
         double y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
         return Math.atan2(x, y);
     }
+    */
 
 }

@@ -91,4 +91,9 @@ public class FlightNavigationService implements NavigationService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS * c;
     }
+
+    @Override
+    public List<Position> getFlightPlan() {
+        return flightPlan;
+    }
 }

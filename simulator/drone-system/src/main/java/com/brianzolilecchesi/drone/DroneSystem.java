@@ -1,8 +1,5 @@
 package com.brianzolilecchesi.drone;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.Battery;
 import com.brianzolilecchesi.drone.domain.component.Camera;
@@ -10,6 +7,7 @@ import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.component.Radio;
 import com.brianzolilecchesi.drone.domain.component.Motor;
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
+import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.service.battery.BatteryService;
 import com.brianzolilecchesi.drone.domain.service.communication.CommunicationService;
@@ -33,17 +31,8 @@ public class DroneSystem {
     private final NavigationService navigationService;
     private final FlightController flightController;
     
-    private String message;
-    private PropertyChangeSupport support;
+    private String log;
 	private int i = 0;
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
     
     public DroneSystem(
             DroneProperties droneProperties,
@@ -60,40 +49,51 @@ public class DroneSystem {
         this.landingService = new SafeLandingService(camera);
         this.navigationService = new FlightNavigationService(gps, altimeter);
         this.flightController = new FlightController(motor, gps, altimeter);
-        this.support = new PropertyChangeSupport(this);
 
         navigationService.calculateFlightPlan( new Position(droneProperties.getSource(), 0 ),
                 new Position(droneProperties.getDestination(), 0 ));
     }
 
-    public void executeStep() {
+    public DroneStatus executeStep() {
 
-        message = "Drone " + droneProperties.getId() + ". Executing step " + i++ + ". ";
-
+        log = "Drone " + droneProperties.getId() + ". Executing step " + i++ + ". ";
         if ( navigationService.hasReached(new Position(droneProperties.getDestination(), 0 ))) {
             if (flightController.isPoweredOn()) {
                 flightController.powerOff();
+            } else {
+                return null;
             }
-            message += "Drone has reached the destination.";
+            log += "Drone has reached the destination.";
         } else {
 
             if (!flightController.isPoweredOn()) {
                 flightController.powerOn();
-                message += "Drone is powered on. ";
+                log += "Drone is powered on. ";
             }
 
             double batteryLevel = batteryService.getBatteryLevel();
-            message = " Battery level: " + batteryLevel + ". ";
+            log += " Battery level: " + batteryLevel + ". ";
 
             communicationService.sendMessage("Drone position: " + navigationService.getCurrentPosition());
-            message += "Received message: " + communicationService.getMessages() + ". ";
+            log += "Received message: " + communicationService.getMessages() + ". ";
 
             Position nextPosition = navigationService.followFlightPlan();
 
             flightController.moveTo(nextPosition);
-            message += "Drone moved to position: " + nextPosition + ". ";
+            log += "Drone moved to position: " + nextPosition + ". ";
         }
-        support.firePropertyChange("message", null, message);
+
+        return getDroneStatus();
+    }
+
+    public DroneStatus getDroneStatus() {
+        return new DroneStatus(
+                droneProperties.getId(),
+                navigationService.getCurrentPosition(),
+                batteryService.getBatteryLevel(),
+                navigationService.getFlightPlan(),
+                log
+        );
     }
 
     public DroneProperties getDroneProperties() {
