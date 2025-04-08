@@ -35,7 +35,7 @@ public class SimulatedRadio implements Radio {
     }
 
     private boolean isWithinRange(DroneSystem sender, DroneSystem receiver) {
-        double distance = sender.getHardwareAbstractionLayer().getGps().getCoordinates().distanceTo(receiver.getHardwareAbstractionLayer().getGps().getCoordinates());
+        double distance = sender.getHardwareAbstractionLayer().getGps().getCoordinates().distance(receiver.getHardwareAbstractionLayer().getGps().getCoordinates());
         return distance <= MAX_TRANSMISSION_DISTANCE;
     }
 

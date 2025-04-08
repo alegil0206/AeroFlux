@@ -10,8 +10,8 @@ public class DroneProperties {
 	private String planDefinitionTimestamp;
 	private AdaptiveCapabilities adaptiveCapabilities;
 	private double battery;
-	private Coordinates source;
-	private Coordinates destination;
+	private Coordinate source;
+	private Coordinate destination;
 
 	public DroneProperties() {
 	}
@@ -25,8 +25,8 @@ public class DroneProperties {
 			String planDefinitionTimestamp,
 			AdaptiveCapabilities adaptiveCapabilities,
 			double battery,
-			Coordinates source,
-			Coordinates destination
+			Coordinate source,
+			Coordinate destination
 			) {
 		
 		setId(id);
@@ -89,19 +89,19 @@ public class DroneProperties {
 		this.planDefinitionTimestamp = planDefinitionTimestamp;
 	}
 	
-	public Coordinates getSource() {
+	public Coordinate getSource() {
 		return source;
 	}
 	
-	public void setSource(Coordinates source) {
+	public void setSource(Coordinate source) {
 		this.source = source;
 	}
 	
-	public Coordinates getDestination() {
+	public Coordinate getDestination() {
 		return destination;
 	}
 	
-	public void setDestination(Coordinates destination) {
+	public void setDestination(Coordinate destination) {
 		this.destination = destination;
 	}
 

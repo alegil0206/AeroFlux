@@ -24,7 +24,7 @@ function GeoZoneDrawMap({ geoZone, handleChange }) {
     geometry: {
       type: 'Polygon',
       coordinates: geoZone.type === 'CIRCULAR' && geoZone.latitude && geoZone.longitude && geoZone.radius
-      ? circle([geoZone.longitude, geoZone.latitude], geoZone.radius, { steps: 128, units: 'kilometers' }).geometry.coordinates
+      ? circle([geoZone.longitude, geoZone.latitude], geoZone.radius/1000, { steps: 128, units: 'kilometers' }).geometry.coordinates
       : geoZone.type === 'POLYGONAL' && geoZone.coordinates.length > 0
       ? [geoZone.coordinates]    
       : []    

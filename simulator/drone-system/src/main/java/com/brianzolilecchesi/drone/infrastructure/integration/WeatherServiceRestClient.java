@@ -1,17 +1,39 @@
 package com.brianzolilecchesi.drone.infrastructure.integration;
 
 import com.brianzolilecchesi.drone.domain.dto.RainCellDTO;
-import com.brianzolilecchesi.drone.domain.integration.WeatherService;
+import com.brianzolilecchesi.drone.domain.integration.WeatherClient;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 
-public class WeatherServiceRestClient implements WeatherService {
+
+
+    public class WeatherServiceRestClient implements WeatherClient {
+    private final RestTemplate restTemplate;
+    private final String weatherApiUrl = "http://api.uspace.local/weather/weather"; // Sostituisci con l'URL reale
+
+    public WeatherServiceRestClient() {
+        this.restTemplate = new RestTemplate();
+    }
+
+    public WeatherServiceRestClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
     @Override
     public List<RainCellDTO> getWeather() {
-        // Implementazione che utilizza un client HTTP per recuperare i dati meteo
-        System.out.println("Chiamata all'API meteo");
-        return new ArrayList<>();
+        System.out.println("Call to weather API");
+        ResponseEntity<RainCellDTO[]> response = restTemplate.exchange(
+            weatherApiUrl + "/rain-cell",
+            HttpMethod.GET,
+            null,
+            RainCellDTO[].class
+        );
+        return response.getBody() != null ? List.of(response.getBody()) : Collections.emptyList();
     }
 }
+

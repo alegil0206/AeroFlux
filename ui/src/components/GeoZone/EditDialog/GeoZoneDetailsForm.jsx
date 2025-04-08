@@ -76,7 +76,7 @@ export default function GeoZoneDetailsForm({ geoZone, errors, handleChange, hand
         </FormControl>
         <FormControl fullWidth margin="normal" error={!!errors.radius}>
           <TextField
-            label="Radius (km)"
+            label="Radius (m)"
             name="radius"
             type="number"
             fullWidth

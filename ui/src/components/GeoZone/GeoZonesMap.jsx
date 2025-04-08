@@ -19,7 +19,7 @@ function GeoZonesMap({ geoZones }) {
       geometry: {
         type: 'Polygon',
         coordinates: zone.type === 'CIRCULAR'
-          ? circle([zone.longitude, zone.latitude], zone.radius, { steps: 128, units: 'kilometers' }).geometry.coordinates
+          ? circle([zone.longitude, zone.latitude], zone.radius/1000, { steps: 128, units: 'kilometers' }).geometry.coordinates
           : [zone.coordinates],
       },
       properties: {

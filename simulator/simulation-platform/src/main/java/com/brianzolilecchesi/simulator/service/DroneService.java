@@ -10,7 +10,7 @@ import com.brianzolilecchesi.simulator.model.drone.SimulatedAltimeter;
 
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.brianzolilecchesi.drone.domain.model.AdaptiveCapabilities;
-import com.brianzolilecchesi.drone.domain.model.Coordinates;
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
 import com.brianzolilecchesi.simulator.service.api.DroneIdentificationService;
 
@@ -53,11 +53,11 @@ class DroneService {
                     droneDTO.getAdaptiveCapabilities().getBatteryManagement()
                 ),
                 droneDTO.getBattery(),
-                new Coordinates(
+                new Coordinate(
                     droneDTO.getSource().getLatitude(),
                     droneDTO.getSource().getLongitude()
                 ),
-                new Coordinates(
+                new Coordinate(
                     droneDTO.getDestination().getLatitude(),
                     droneDTO.getDestination().getLongitude()
                 )

@@ -1,7 +1,7 @@
 package com.brianzolilecchesi.simulator.model.drone;
 
 import com.brianzolilecchesi.drone.domain.component.GPS;
-import com.brianzolilecchesi.drone.domain.model.Coordinates;
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
 
 public class SimulatedGPS implements GPS {
     
@@ -35,7 +35,7 @@ public class SimulatedGPS implements GPS {
     }
 
     @Override
-    public Coordinates getCoordinates() {
-        return new Coordinates(latitude, longitude);
+    public Coordinate getCoordinates() {
+        return new Coordinate(latitude, longitude);
     }
 }

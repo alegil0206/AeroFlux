@@ -1,23 +1,24 @@
 package com.brianzolilecchesi.drone.infrastructure.integration;
-
-import com.brianzolilecchesi.drone.domain.dto.AuthorizationDTO;
+import com.brianzolilecchesi.drone.domain.dto.AuthorizationRequestDTO;
+import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
 import com.brianzolilecchesi.drone.domain.dto.GeoZoneDTO;
 import com.brianzolilecchesi.drone.domain.dto.RainCellDTO;
-import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessService;
-import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationService;
-import com.brianzolilecchesi.drone.domain.integration.WeatherService;
+import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
+import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessClient;
+import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationClient;
+import com.brianzolilecchesi.drone.domain.integration.WeatherClient;
 
 import java.util.List;
 
 public class RestApiGateway {
 
-    private final WeatherService weatherService;
-    private final GeoAwarenessService geoAwarenessService;
-    private final GeoAuthorizationService geoAuthorizationService;
+    private final WeatherClient weatherService;
+    private final GeoAwarenessClient geoAwarenessService;
+    private final GeoAuthorizationClient geoAuthorizationService;
 
-    public RestApiGateway(WeatherService weatherService,
-                          GeoAwarenessService geoAwarenessService,
-                          GeoAuthorizationService geoAuthorizationService) {
+    public RestApiGateway(WeatherClient weatherService,
+                          GeoAwarenessClient geoAwarenessService,
+                          GeoAuthorizationClient geoAuthorizationService) {
         this.weatherService = weatherService;
         this.geoAwarenessService = geoAwarenessService;
         this.geoAuthorizationService = geoAuthorizationService;
@@ -31,11 +32,11 @@ public class RestApiGateway {
         return geoAwarenessService.getGeoZones();
     }
 
-    public List<AuthorizationDTO> getAuthorizations(String droneId) {
+    public List<AuthorizationResponseDTO> getAuthorizations(String droneId) {
         return geoAuthorizationService.getAuthorizations(droneId);
     }
 
-    public AuthorizationDTO requestAuthorization(AuthorizationDTO authorizationDTO) {
+    public AuthorizationResponseDTO requestAuthorization(AuthorizationRequestDTO authorizationDTO) throws AuthorizationException {
         return geoAuthorizationService.requestAuthorization(authorizationDTO);
     }
 }

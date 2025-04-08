@@ -4,17 +4,21 @@ import com.brianzolilecchesi.drone.domain.component.Motor;
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.domain.service.log.LogService;
 
 public class FlightController {
+    private final LogService logService;
     private final Motor motor;
     private final GPS gps;
     private final Altimeter altimeter;
+    
     // private static final double EARTH_RADIUS = 6378137.0; 
 
-    public FlightController(Motor motor, GPS gps, Altimeter altimeter) {
+    public FlightController(Motor motor, GPS gps, Altimeter altimeter, LogService logService) {
         this.gps = gps;
         this.altimeter = altimeter;
         this.motor = motor;
+        this.logService = logService;
     }
 
     public void powerOn() {

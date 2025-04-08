@@ -70,7 +70,6 @@ function HomeSection() {
         },
     }));
     setDronesWithStatus(dronesWithPosition);
-    console.log("Drones with status updated:", dronesWithPosition);
   }, [drones, dronesStatus]);
 
   useEffect(() => {

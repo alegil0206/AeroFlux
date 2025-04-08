@@ -79,7 +79,7 @@ export default function DronesPositionCard({ data }) {
       flex: 1,
       renderCell: (params) => (
         <Tooltip title={`Battery: ${params.value}%`} arrow>
-          <span>{`${params.value}%`}</span>
+          <span>{`${params.value}`}</span>
         </Tooltip>
       )
     }
@@ -123,7 +123,8 @@ DronesPositionCard.propTypes = {
           latitude: PropTypes.number.isRequired,
           longitude: PropTypes.number.isRequired,
           altitude: PropTypes.number.isRequired,
-        }).isRequired
+        }).isRequired,
+        batteryLevel: PropTypes.number.isRequired,
       })
     })
   ).isRequired,

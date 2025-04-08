@@ -20,7 +20,7 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
   const defaultGeoZoneArea = {
     latitude: initialViewState.latitude,
     longitude: initialViewState.longitude,
-    radius: 5,
+    radius: 5000,
     coordinates: [
       [initialViewState.longitude, initialViewState.latitude],
       [initialViewState.longitude + 0.1, initialViewState.latitude + 0.1],

@@ -36,7 +36,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
 
   const renderShapeDescription = (row) => {
     if (row.type === 'CIRCULAR') {
-      return `The geo-zone has center (${row.latitude}, ${row.longitude}) and radius ${row.radius} km`;
+      return `The geo-zone has center (${row.latitude}, ${row.longitude}) and radius ${row.radius} m`;
     }
     if (row.coordinates) {
       return `The geo-zone is bounded by the following coordinates: ${row.coordinates.map(coord => `(${coord[0]}, ${coord[1]})`).join(', ')}`;
