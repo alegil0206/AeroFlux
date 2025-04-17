@@ -8,7 +8,7 @@ import { useMapSettings } from '../../../hooks/useMapSettings';
 
 export default function DroneDrawMap({ drone, handleChange }) {
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   return (
     <Card
@@ -18,6 +18,8 @@ export default function DroneDrawMap({ drone, handleChange }) {
       <Map
         initialViewState={ initialViewState }
         maxBounds={ mapBounds }
+        maxPitch={ maxPitch }
+        sky={ sky }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: '40vh' }}
       >

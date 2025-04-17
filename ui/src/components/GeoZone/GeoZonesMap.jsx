@@ -10,7 +10,7 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 
 function GeoZonesMap({ geoZones }) {
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const geoJsonData = {
     type: 'FeatureCollection',
@@ -25,6 +25,8 @@ function GeoZonesMap({ geoZones }) {
       properties: {
         id: zone.id,
         color: getGeoZoneColor(zone),
+        base_altitude: zone.altitude,
+        height: 120,
       },
     })),
   };
@@ -39,26 +41,23 @@ function GeoZonesMap({ geoZones }) {
         initialViewState={ initialViewState }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         maxBounds={ mapBounds }
+        maxPitch={ maxPitch }
+        sky={ sky }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" visualizePitch={true} />
+
         <ScaleControl />
         <Source id="geoZones" type="geojson" data={geoJsonData}>
-          <Layer 
-            id="geoZones-layer-lines"
-            type="line"
-            paint={{
-              'line-color': ['get', 'color'],
-              'line-width': 2,
-            }}
-          />
           <Layer
-            id="geoZones-layer-fill"
-            type="fill"
+            id="geoZones-layer-extrusion"
+            type="fill-extrusion"
             paint={{
-              'fill-color': ['get', 'color'],
-              'fill-opacity': 0.5,
+              'fill-extrusion-color': ['get', 'color'],
+              'fill-extrusion-opacity': 0.5,
+              'fill-extrusion-height': ['get', 'height'],
+              'fill-extrusion-base': ['get', 'base_altitude'],
             }}
           />
         </Source>
@@ -74,6 +73,7 @@ GeoZonesMap.propTypes = {
       type: PropTypes.oneOf(['CIRCULAR', 'POLYGONAL']).isRequired,
       status: PropTypes.string.isRequired,
       category: PropTypes.string.isRequired,
+      altitude: PropTypes.number,
       longitude: PropTypes.number,
       latitude: PropTypes.number,
       radius: PropTypes.number,

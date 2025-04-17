@@ -1,10 +1,8 @@
 import { useState, useMemo } from 'react';
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Marker, Popup, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
-import DronePin from '../Pin/DronePin';
 import SourcePin from '../Pin/SourcePin';
 import DestinationPin from '../Pin/DestinationPin';
-import DronePopup from '../MapPopup/DronePopup';
 import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
 import { getGeoZoneColor } from '../../utils/utils';
@@ -16,7 +14,7 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 
 function AuthorizationMap({ drones, geoZones }) {
   const [popupInfo, setPopupInfo] = useState(null);
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const routeLineGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
@@ -84,6 +82,8 @@ function AuthorizationMap({ drones, geoZones }) {
       properties: {
         id: zone.id,
         color: getGeoZoneColor(zone),
+        base_altitude: zone.altitude,
+        height: 120,
       },
     })),
   };
@@ -97,30 +97,27 @@ function AuthorizationMap({ drones, geoZones }) {
         initialViewState={ initialViewState } 
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         maxBounds={ mapBounds }
+        maxPitch={ maxPitch }
+        sky={ sky }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" visualizePitch={true} />
+
         <ScaleControl />
 
         <Source id="geoZones" type="geojson" data={geoZoneGeoJsonData}>
-          <Layer 
-            id="geoZones-layer-lines"
-            type="line"
-            paint={{
-              'line-color': ['get', 'color'],
-              'line-width': 2,
-            }}
-          />
           <Layer
-            id="geoZones-layer-fill"
-            type="fill"
+            id="geoZones-layer-extrusion"
+            type="fill-extrusion"
             paint={{
-              'fill-color': ['get', 'color'],
-              'fill-opacity': 0.5,
+              'fill-extrusion-color': ['get', 'color'],
+              'fill-extrusion-opacity': 0.5,
+              'fill-extrusion-height': ['get', 'height'],
+              'fill-extrusion-base': ['get', 'base_altitude'],
             }}
           />
-        </Source>    
+        </Source>
 
         {/* Renderizza le rotte GeoJSON */}
         <Source id="lines" type="geojson" data={routeLineGeoJSON}>

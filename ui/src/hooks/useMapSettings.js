@@ -21,6 +21,7 @@ const calculateInitialView = (coordinates) => {
     return {
         longitude: coordinates.longitude,
         latitude: coordinates.latitude,
+        pitch: 35,
         zoom: 1,
     }
 }
@@ -29,11 +30,21 @@ export const useMapSettings = () => {
     const { coordinates } = useSettings();
     const [initialViewState, setInitialViewState] = useState(calculateInitialView(coordinates));
     const [mapBounds, setMapBounds] = useState(calculateMapBounds(coordinates));
+    const maxPitch = 85;
+    const sky = {
+        'sky-color': '#80ccff',
+        'sky-horizon-blend': 0.5,
+        'horizon-color': '#ccddff',
+        'horizon-fog-blend': 0.5,
+        'fog-color': '#fcf0dd',
+        'fog-ground-blend': 0.2
+      };
+
 
     useEffect(() => {
         setMapBounds(calculateMapBounds(coordinates));
         setInitialViewState(calculateInitialView(coordinates));
     }, [coordinates]);
 
-    return { initialViewState, mapBounds };
+    return { initialViewState, mapBounds, maxPitch, sky };
 };

@@ -33,7 +33,7 @@ export default function SettingMap({ coordinates, onCoordinatesChange }) {
         style={{ width: '100%', height: 'calc(50vh)' }}
       >
         <FullscreenControl position="top-right" />
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" visualizePitch={true} />
         <ScaleControl />
         <GeocoderControl position="top-left"
           coordinates={coordinates}

@@ -14,7 +14,7 @@ import { useMapSettings } from '../../../hooks/useMapSettings';
 
 export default function DroneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const getDefaultDrone = () => ({
     id: '',

@@ -12,7 +12,7 @@ import { useMapSettings } from '../../../hooks/useMapSettings';
 
 function GeoZoneDrawMap({ geoZone, handleChange }) {
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const onMarkerDrag = useCallback((event) => {
     handleChange('latitude', event.lngLat.lat);

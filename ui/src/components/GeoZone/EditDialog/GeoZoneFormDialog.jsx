@@ -15,7 +15,7 @@ import { useMapSettings } from '../../../hooks/useMapSettings';
 
 export default function GeoZoneFormDialog({ onClose, onSave, initialData = null, open }) {
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const defaultGeoZoneArea = {
     latitude: initialViewState.latitude,

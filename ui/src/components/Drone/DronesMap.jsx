@@ -11,7 +11,7 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 
 function DronesMap({ drones }) {
   const [popupInfo, setPopupInfo] = useState(null);
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const lineGeoJSON = useMemo(() => {
     return {
@@ -77,10 +77,13 @@ function DronesMap({ drones }) {
         initialViewState= { initialViewState }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         maxBounds={ mapBounds }
+        maxPitch={ maxPitch }
+        sky={ sky }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
       >
         <FullscreenControl position="top-right" />
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" visualizePitch={true} />
+
         <ScaleControl />
 
         {sourcePositionMarkers}

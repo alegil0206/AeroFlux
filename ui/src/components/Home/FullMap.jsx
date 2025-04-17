@@ -9,6 +9,7 @@ import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
 import { getGeoZoneColor } from '../../utils/utils';
 import { circle } from '@turf/circle';
+import { lineOffset } from '@turf/turf';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card } from '@mui/material';
 
@@ -17,7 +18,53 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 function FullMap({ drones, geoZones, weather }) {
   const [popupInfo, setPopupInfo] = useState(null);
 
-  const { initialViewState, mapBounds } = useMapSettings();
+  const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
+  const routePolygonGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: drones.flatMap((drone) => {
+      const flightPlan = drone.status.flightPlan;
+      return flightPlan.slice(0, -1).map((point, index) => {
+        const nextPoint = flightPlan[index + 1];
+        const altitudeDifference = nextPoint.altitude - point.altitude;
+        const color = altitudeDifference > 0 ? 'green' : altitudeDifference < 0 ? 'red' : 'blue';
+  
+        const line = {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [point.longitude, point.latitude],
+              [nextPoint.longitude, nextPoint.latitude],
+            ],
+          },
+        };
+  
+        const offsetLineLeft = lineOffset(line, 10, { units: 'meters' });
+        const offsetLineRight = lineOffset(line, -10, { units: 'meters' });
+  
+        const coordinates = [
+          ...offsetLineLeft.geometry.coordinates,
+          ...offsetLineRight.geometry.coordinates.reverse(),
+          offsetLineLeft.geometry.coordinates[0],
+        ];
+
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [coordinates],
+          },
+          properties: {
+            id: `${drone.id}-segment-${index}`,
+            color: color,
+            base_altitude: 0,
+            height: point.altitude,
+          },
+        };
+      });
+    }),
+  }), [drones]);
+
   const routeLineGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
     features: drones.flatMap((drone) => {
@@ -139,6 +186,8 @@ function FullMap({ drones, geoZones, weather }) {
       properties: {
         id: zone.id,
         color: getGeoZoneColor(zone),
+        base_altitude: zone.altitude,
+        height: 120,
       },
     })),
   };
@@ -152,27 +201,24 @@ function FullMap({ drones, geoZones, weather }) {
         initialViewState={ initialViewState } 
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         maxBounds={ mapBounds }
+        maxPitch={ maxPitch }
+        sky={ sky }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
+        canvasContextAttributes={{antialias: true}}
       >
         <FullscreenControl position="top-right" />
-        <NavigationControl position="top-right" />
+        <NavigationControl position="top-right" visualizePitch={true} />
         <ScaleControl />
 
         <Source id="geoZones" type="geojson" data={geoZoneGeoJsonData}>
-          <Layer 
-            id="geoZones-layer-lines"
-            type="line"
-            paint={{
-              'line-color': ['get', 'color'],
-              'line-width': 2,
-            }}
-          />
           <Layer
-            id="geoZones-layer-fill"
-            type="fill"
+            id="geoZones-layer-extrusion"
+            type="fill-extrusion"
             paint={{
-              'fill-color': ['get', 'color'],
-              'fill-opacity': 0.5,
+              'fill-extrusion-color': ['get', 'color'],
+              'fill-extrusion-opacity': 0.5,
+              'fill-extrusion-height': ['get', 'height'],
+              'fill-extrusion-base': ['get', 'base_altitude'],
             }}
           />
         </Source>
@@ -180,23 +226,38 @@ function FullMap({ drones, geoZones, weather }) {
 
         <Source id="rain-cells" type="geojson" data={weatherGeoJsonData}>
           <Layer
-            id="rain-layer"
-            type="fill"
+            id="rain-layer-extrusion"
+            type="fill-extrusion"
             paint={{
-              'fill-color': '#007AFF',
-              'fill-opacity': 0.5
+              'fill-extrusion-color': '#007AFF',
+              'fill-extrusion-opacity': 0.5,
+              'fill-extrusion-height': 130,
+              'fill-extrusion-base': 0,
             }}
           />
         </Source>        
 
         {/* Renderizza le rotte GeoJSON */}
-        <Source id="lines" type="geojson" data={routeLineGeoJSON}>
+        <Source id="routes" type="geojson" data={routePolygonGeoJSON}>
           <Layer
-            id="line-layer"
+            id="routes-layer-extrusion"
+            type="fill-extrusion"
+            paint={{
+              'fill-extrusion-color': ['get', 'color'],
+              'fill-extrusion-opacity': 0.6,
+              'fill-extrusion-height': ['get', 'height'],
+              'fill-extrusion-base': ['get', 'base_altitude']
+            }}
+          />
+        </Source>
+
+        <Source id="flightplan-lines" type="geojson" data={routeLineGeoJSON}>
+          <Layer
+            id="flightplan-lines-layer"
             type="line"
             paint={{
-              "line-color": ["get", "color"],
-              "line-width": 3,
+              'line-color': ['get', 'color'],
+              'line-width': 2,
             }}
           />
         </Source>
