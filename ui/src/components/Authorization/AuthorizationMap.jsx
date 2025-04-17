@@ -82,8 +82,8 @@ function AuthorizationMap({ drones, geoZones }) {
       properties: {
         id: zone.id,
         color: getGeoZoneColor(zone),
-        base_altitude: zone.altitude,
-        height: 120,
+        base_altitude: zone.altitude_limit_inferior,
+        height: zone.altitude_limit_superior,
       },
     })),
   };

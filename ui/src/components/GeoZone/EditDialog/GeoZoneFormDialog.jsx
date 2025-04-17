@@ -36,7 +36,8 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
     category: '',
     type: 'CIRCULAR',
     ...defaultGeoZoneArea,
-    altitude_level: '',
+    altitude_limit_inferior: '',
+    altitude_limit_superior: '',
   });
 
   const [geoZone, setGeoZone] = useState(getDefaultGeoZone());
@@ -73,7 +74,13 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
     if (!geoZone.name) newErrors.name = 'Name is required.';
     if (!geoZone.category) newErrors.category = 'Category is required.';
     if (!geoZone.type) newErrors.type = 'Type is required.';
-    if (!geoZone.altitude_level) newErrors.altitude_level = 'Altitude level is required.';
+    if (!geoZone.altitude_limit_inferior) newErrors.altitude_limit_inferior = 'Altitude Limit Inferior is required.';
+    if (!geoZone.altitude_limit_superior) newErrors.altitude_limit_superior = 'Altitude Limit Superior is required.';
+
+    if (parseFloat(geoZone.altitude_limit_inferior) >= parseFloat(geoZone.altitude_limit_superior)) {
+      newErrors.altitude_limit_inferior = 'Altitude Limit Inferior must be less than Altitude Limit Superior.';
+      newErrors.altitude_limit_superior = 'Altitude Limit Superior must be greater than Altitude Limit Inferior.';
+    }
 
     if (geoZone.type === 'CIRCULAR') {
       if (geoZone.radius <= 0) newErrors.radius = 'Radius must be greater than 0.';
@@ -87,7 +94,7 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
       if (geoZone.coordinates.length < 3) newErrors.coordinates = 'Polygon must have at least 3 coordinates.';
       geoZone.coordinates.forEach((coord, idx) => {
         if (coord[1] < mapBounds[0][1] || coord[1] > mapBounds[1][1]) {
-          newErrors.coordinate = `Latitude ${idx+1} must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
+          newErrors.coordinates = `Latitude ${idx+1} must be between ${mapBounds[0][1]} and ${mapBounds[1][1]}.`;
         }
         if (coord[0] < mapBounds[0][0] || coord[0] > mapBounds[1][0]) {
           newErrors.coordinates =  `Longitude ${idx+1} must be between ${mapBounds[0][0]} and ${mapBounds[1][0]}.`;
@@ -105,7 +112,8 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
         status: geoZone.status,
         category: geoZone.category,
         type: geoZone.type,
-        altitude_level: geoZone.altitude_level,
+        altitude_limit_inferior: parseFloat(geoZone.altitude_limit_inferior),
+        altitude_limit_superior: parseFloat(geoZone.altitude_limit_superior),
         ...(geoZone.type === 'CIRCULAR'
           ? { latitude: geoZone.latitude, longitude: geoZone.longitude, radius: geoZone.radius }
           : { coordinates: geoZone.coordinates })

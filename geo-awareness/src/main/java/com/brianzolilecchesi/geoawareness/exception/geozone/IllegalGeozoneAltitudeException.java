@@ -20,6 +20,14 @@ public class IllegalGeozoneAltitudeException extends IllegalGeozoneException {
 				heightLevel
 				));
 	}
+
+	public IllegalGeozoneAltitudeException(final double altitudeLimitInferior, final double altitudeLimitSuperior) {
+		super(String.format(
+				"Illegal geozone: altitude limit inferior %f must be greater than altitude limit superior %f",
+				altitudeLimitInferior,
+				altitudeLimitSuperior
+				));
+	}
 	
 	public IllegalGeozoneAltitudeException() {
 		super("Illegal geozone: altitude not provided");

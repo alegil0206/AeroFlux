@@ -97,21 +97,21 @@ public abstract class GeozoneValidator {
 	private void validateAltitude(final GeozoneDTO geozone) throws IllegalGeozoneAltitudeException {
 		assert geozone != null;
 		
-		if (geozone.getAltitudeLevel() == null && geozone.getAltitude() == null) {
+		if (geozone.getAltitudeLevelLimitInferior() == null && geozone.getAltitudeLimitInferior() == null) {
 			throw new IllegalGeozoneAltitudeException();
 		}
 		
 		RegistryMap<Integer> registry = RegistryFacadeSingleton.getInstance().getAltitudeRegistry();
 		
-		if (geozone.getAltitudeLevel() != null) {
-			String altitudeLevel = geozone.getAltitudeLevel().toUpperCase();
+		if (geozone.getAltitudeLevelLimitInferior() != null) {
+			String altitudeLevel = geozone.getAltitudeLevelLimitInferior().toUpperCase();
 			if (!registry.contains(altitudeLevel)) {
 				throw new IllegalGeozoneAltitudeException(altitudeLevel);
 			}
-			geozone.setAltitudeLevel(altitudeLevel);
-			geozone.setAltitude(registry.get(altitudeLevel).doubleValue());
+			geozone.setAltitudeLevelLimitInferior(altitudeLevel);
+			geozone.setAltitudeLimitInferior(registry.get(altitudeLevel).doubleValue());
 		} else {
-			double altitude = geozone.getAltitude();
+			double altitude = geozone.getAltitudeLimitInferior();
 			if (!altitudeRange.isWithinRange(altitude))
 				throw new IllegalGeozoneAltitudeException(altitude);
 			
@@ -121,9 +121,42 @@ public abstract class GeozoneValidator {
 			while (i < altitudeValues.size() && altitudeValues.get(i) < altitude) {
 				++i;
 			}
-			geozone.setAltitudeLevel(registry.getKey(altitudeValues.get(i)));
-			geozone.setAltitude(registry.get(geozone.getAltitudeLevel()).doubleValue());
-		}		
+			geozone.setAltitudeLevelLimitInferior(registry.getKey(altitudeValues.get(i)));
+			geozone.setAltitudeLimitInferior(registry.get(geozone.getAltitudeLevelLimitInferior()).doubleValue());
+		}	
+		
+		if (geozone.getAltitudeLevelLimitSuperior() == null && geozone.getAltitudeLimitSuperior() == null) {
+			throw new IllegalGeozoneAltitudeException();
+		}
+
+		if (geozone.getAltitudeLevelLimitSuperior() != null) {
+			String altitudeLevel = geozone.getAltitudeLevelLimitSuperior().toUpperCase();
+			if (!registry.contains(altitudeLevel)) {
+				throw new IllegalGeozoneAltitudeException(altitudeLevel);
+			}
+			geozone.setAltitudeLevelLimitSuperior(altitudeLevel);
+			geozone.setAltitudeLimitSuperior(registry.get(altitudeLevel).doubleValue());
+		} else {
+			double altitude = geozone.getAltitudeLimitSuperior();
+			if (!altitudeRange.isWithinRange(altitude))
+				throw new IllegalGeozoneAltitudeException(altitude);
+			
+			List<Integer> altitudeValues = registry.getValues();
+			altitudeValues.sort(Comparator.naturalOrder());
+			int i = 0;
+			while (i < altitudeValues.size() && altitudeValues.get(i) < altitude) {
+				++i;
+			}
+			geozone.setAltitudeLevelLimitSuperior(registry.getKey(altitudeValues.get(i)));
+			geozone.setAltitudeLimitSuperior(registry.get(geozone.getAltitudeLevelLimitSuperior()).doubleValue());
+		}
+
+		if (geozone.getAltitudeLimitInferior() >= geozone.getAltitudeLimitSuperior()) {
+			throw new IllegalGeozoneAltitudeException(
+					geozone.getAltitudeLimitInferior(), 
+					geozone.getAltitudeLimitSuperior()
+					);
+		}
 	}
 	
 	@Override

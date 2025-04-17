@@ -24,11 +24,12 @@ public class PolygonalGeozone extends Geozone {
 			String type, 
 			String category, 
 			String status, 
-			final Altitude altitude,
+			final Altitude altitudeLimitInferior,
+			final Altitude altitudeLimitSuperior,
 			final List<GeoJsonPoint> coordinates
 			) {
 
-		super(name, type, category, status, altitude);
+		super(name, type, category, status, altitudeLimitInferior, altitudeLimitSuperior);
 		setCoordinates(coordinates);
 	}
 	

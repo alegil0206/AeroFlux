@@ -15,11 +15,13 @@ public class PolygonalGeozoneDTO extends GeozoneDTO {
 			@JsonProperty("name") String name, 
 			@JsonProperty("category") String category,
 			@JsonProperty("status") String status,
-			@JsonProperty("altitude_level") String altitudeLevel,
-			@JsonProperty("altitude") Double altitude,		
+			@JsonProperty("altitude_level_limit_inferior") String altitudeLevelLimitInferior,
+			@JsonProperty("altitude_limit_inferior") Double altitudeLimitInferior,
+			@JsonProperty("altitude_level_limit_superior") String altitudeLevelLimitSuperior,
+			@JsonProperty("altitude_limit_superior") Double altitudeLimitSuperior,
 			@JsonProperty("coordinates") List<double[]> coordinates
 			) {
-		super(id, name, category, status, altitudeLevel, altitude);
+		super(id, name, category, status, altitudeLevelLimitInferior, altitudeLimitInferior, altitudeLevelLimitSuperior, altitudeLimitSuperior);
 		setCoordinates(coordinates);
 	}
 	

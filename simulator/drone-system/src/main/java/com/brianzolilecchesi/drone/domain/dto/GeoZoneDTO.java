@@ -9,8 +9,6 @@ public class GeoZoneDTO {
     private String status;
     private String altitude_level;
     private double altitude;
-
-    
     private Double latitude;
     private Double longitude;
     private Double radius;

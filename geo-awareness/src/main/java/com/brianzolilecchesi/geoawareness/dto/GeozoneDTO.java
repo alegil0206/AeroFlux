@@ -21,8 +21,10 @@ public abstract class GeozoneDTO {
     private String name;
     private String category;
     private String status;
-    private String altitudeLevel;
-    private Double altitude;
+    private String altitudeLevelLimitInferior;
+    private Double altitudeLimitInferior;
+	private String altitudeLevelLimitSuperior;
+	private Double altitudeLimitSuperior;
 
     @JsonCreator
     public GeozoneDTO(
@@ -30,16 +32,20 @@ public abstract class GeozoneDTO {
             @JsonProperty("name") String name,
             @JsonProperty("category") String category,
             @JsonProperty("status") String status,
-            @JsonProperty("altitude_level") String altitudeLevel,
-            @JsonProperty("altitude") Double altitude
+            @JsonProperty("altitude_level_limit_inferior") String altitudeLevelLimitInferior,
+            @JsonProperty("altitude_limit_inferior") Double altitudeLimitInferior,
+			@JsonProperty("altitude_level_limit_superior") String altitudeLevelLimitSuperior,
+			@JsonProperty("altitude_limit_superior") Double altitudeLimitSuperior
             ) {
     	
         setId(id);
         setName(name);
         setCategory(category);
 		setStatus(status);
-		setAltitudeLevel(altitudeLevel);
-		setAltitude(altitude);
+		setAltitudeLevelLimitInferior(altitudeLevelLimitInferior);
+		setAltitudeLimitInferior(altitudeLimitInferior);
+		setAltitudeLevelLimitSuperior(altitudeLevelLimitSuperior);
+		setAltitudeLimitSuperior(altitudeLimitSuperior);
 	}
 
 	public GeozoneDTO() {
@@ -77,20 +83,36 @@ public abstract class GeozoneDTO {
 		this.status = status;
 	}
 	
-	public String getAltitudeLevel() {
-		return altitudeLevel;
+	public String getAltitudeLevelLimitInferior() {
+		return altitudeLevelLimitInferior;
 	}
 	
-	public void setAltitudeLevel(String altitudeLevel) {
-		this.altitudeLevel = altitudeLevel;
+	public void setAltitudeLevelLimitInferior(String altitudeLevel) {
+		this.altitudeLevelLimitInferior = altitudeLevel;
 	}
 	
-	public Double getAltitude() {
-		return altitude;
+	public Double getAltitudeLimitInferior() {
+		return altitudeLimitInferior;
 	}
 	
-	public void setAltitude(Double altitude) {
-		this.altitude = altitude;
+	public void setAltitudeLimitInferior(Double altitude) {
+		this.altitudeLimitInferior = altitude;
+	}
+
+	public String getAltitudeLevelLimitSuperior() {
+		return altitudeLevelLimitSuperior;
+	}
+
+	public void setAltitudeLevelLimitSuperior(String altitudeLevel) {
+		this.altitudeLevelLimitSuperior = altitudeLevel;
+	}
+
+	public Double getAltitudeLimitSuperior() {
+		return altitudeLimitSuperior;
+	}
+
+	public void setAltitudeLimitSuperior(Double altitude) {
+		this.altitudeLimitSuperior = altitude;
 	}
 		
     @Override
@@ -108,13 +130,15 @@ public abstract class GeozoneDTO {
     @Override
 	public String toString() {
     	return String.format(
-				"GeozoneDTO[id=%s, name=%s, category=%s, status=%s, altitudeLevel=%s, altitude=%f]",
+				"GeozoneDTO[id=%s, name=%s, category=%s, status=%s, altitudeLevelLimitInferior=%s, altitudeLimitInferior=%f, altitudeLevelLimitSuperior=%s, altitudeLimitSuperior=%f]",
 				id, 
 				name,
 				category,
 				status,
-				altitudeLevel,
-				altitude
+				altitudeLevelLimitInferior,
+				altitudeLimitInferior,
+				altitudeLevelLimitSuperior,
+				altitudeLimitSuperior
 				);
 	}
 }

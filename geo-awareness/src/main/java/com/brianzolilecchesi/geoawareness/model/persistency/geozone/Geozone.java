@@ -22,18 +22,22 @@ public abstract class Geozone {
     @Field("status")
     private String status;
     
-    @Field("altitude")
-    private Altitude altitude;
+    @Field("altitude_limit_inferior")
+    private Altitude altitudeLimitInferior;
+
+	@Field("altitude_limit_superior")
+	private Altitude altitudeLimitSuperior;
     
     @Field("type")
     private String type;
   
-    Geozone(String name, String type, String category, String status, final Altitude altitude) {
+    Geozone(String name, String type, String category, String status, final Altitude altitudeLimitInferior, final Altitude altitudeLimitSuperior) {
         setName(name);
         setType(type);
         setCategory(category);
         setStatus(status);
-        setAltitude(altitude);
+        setAltitudeLimitInferior(altitudeLimitInferior);
+		setAltitudeLimitSuperior(altitudeLimitSuperior);
     }
         
 	Geozone() {
@@ -79,12 +83,20 @@ public abstract class Geozone {
 		this.status = status;
 	}
 	
-	public Altitude getAltitude() {
-		return altitude;
+	public Altitude getAltitudeLimitInferior() {
+		return altitudeLimitInferior;
 	}
 	
-	public void setAltitude(final Altitude height) {
-		this.altitude = height;
+	public void setAltitudeLimitInferior(final Altitude height) {
+		this.altitudeLimitInferior = height;
+	}
+
+	public Altitude getAltitudeLimitSuperior() {
+		return altitudeLimitSuperior;
+	}
+
+	public void setAltitudeLimitSuperior(final Altitude height) {
+		this.altitudeLimitSuperior = height;
 	}
 	
 	protected void update(final GeozoneDTO geozoneDTO) {
@@ -93,8 +105,10 @@ public abstract class Geozone {
 		setName(geozoneDTO.getName());
 		setCategory(geozoneDTO.getCategory());
 		setStatus(geozoneDTO.getStatus());
-		getAltitude().setName(geozoneDTO.getAltitudeLevel());
-		getAltitude().setValue(geozoneDTO.getAltitude().intValue());
+		getAltitudeLimitInferior().setName(geozoneDTO.getAltitudeLevelLimitInferior());
+		getAltitudeLimitInferior().setValue(geozoneDTO.getAltitudeLimitInferior().intValue());
+		getAltitudeLimitSuperior().setName(geozoneDTO.getAltitudeLevelLimitSuperior());
+		getAltitudeLimitSuperior().setValue(geozoneDTO.getAltitudeLimitSuperior().intValue());
 	}
     
     @Override
@@ -112,12 +126,13 @@ public abstract class Geozone {
     @Override
 	public String toString() {
     	return String.format(
-				"Geozone[id=%s, name=%s, status=%s, category=%s, altitude=%s, type=%s]",
+				"Geozone[id=%s, name=%s, status=%s, category=%s, altitude limit inferior=%s, altitude limit superior=%, type=%s]",
 				id, 
 				name,
 				status,
 				category,
-				altitude.toString(),
+				altitudeLimitInferior.toString(),
+				altitudeLimitSuperior.toString(),
 				type
 				);
 	}

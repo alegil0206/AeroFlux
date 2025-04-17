@@ -89,12 +89,22 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       renderCell: (params) => renderAuthorizationCategory(params.value),
     },
     {
-      field: 'altitude_level',
-      headerName: 'Altitude Level',
+      field: 'altitude_level_limit_inferior',
+      headerName: 'Altitude Level Limit Inferior',
       flex: 1,
       renderCell: (params) => (
-        <Tooltip title={`Altitude Level: ${params.row.altitude_level} - Altitude: ${params.row.altitude} m`} arrow>
-          <span>{`${params.row.altitude_level} - ${params.row.altitude} m`}</span>
+        <Tooltip title={`Altitude Level: ${params.row.altitude_level_limit_inferior} - Altitude: ${params.row.altitude_limit_inferior} m`} arrow>
+          <span>{`${params.row.altitude_level_limit_inferior} - ${params.row.altitude_limit_inferior} m`}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: 'altitude_level_limit_superior',
+      headerName: 'Altitude Level Limit Superior',
+      flex: 1,
+      renderCell: (params) => (
+        <Tooltip title={`Altitude Level: ${params.row.altitude_level_limit_superior} - Altitude: ${params.row.altitude_limit_superior} m`} arrow>
+          <span>{`${params.row.altitude_level_limit_superior} - ${params.row.altitude_limit_superior} m`}</span>
         </Tooltip>
       ),
     },

@@ -34,9 +34,13 @@ public class GeozoneFactory {
 				circularGeozoneDTO.getCategory(),
 				circularGeozoneDTO.getStatus(), 
 				new Altitude(
-						circularGeozoneDTO.getAltitudeLevel(),
-						circularGeozoneDTO.getAltitude()
+						circularGeozoneDTO.getAltitudeLevelLimitInferior(),
+						circularGeozoneDTO.getAltitudeLimitInferior()
 						),
+				new Altitude(
+						circularGeozoneDTO.getAltitudeLevelLimitSuperior(),
+						circularGeozoneDTO.getAltitudeLimitSuperior()
+						),			
 				new GeoJsonPoint(
 						circularGeozoneDTO.getLongitude(), 
 						circularGeozoneDTO.getLatitude()
@@ -64,8 +68,12 @@ public class GeozoneFactory {
 				polygonalGeozoneDTO.getCategory(),
 				polygonalGeozoneDTO.getStatus(), 
 				new Altitude(
-						polygonalGeozoneDTO.getAltitudeLevel(),
-						polygonalGeozoneDTO.getAltitude()
+						polygonalGeozoneDTO.getAltitudeLevelLimitInferior(),
+						polygonalGeozoneDTO.getAltitudeLimitInferior()
+						),
+				new Altitude(
+						polygonalGeozoneDTO.getAltitudeLevelLimitSuperior(),
+						polygonalGeozoneDTO.getAltitudeLimitSuperior()
 						),
                 coordinates
 				);
@@ -86,7 +94,7 @@ public class GeozoneFactory {
 		
 	private CircularGeozoneDTO createGeozoneDTO(final CircularGeozone circularGeozone) {
 		assert circularGeozone != null;
-		assert circularGeozone.getAltitude() != null;
+		assert circularGeozone.getAltitudeLimitInferior() != null;
 		assert circularGeozone.getCenter() != null;
 		
         return new CircularGeozoneDTO(
@@ -94,8 +102,10 @@ public class GeozoneFactory {
 				circularGeozone.getName(), 
 				circularGeozone.getCategory(), 
 				circularGeozone.getStatus(),
-				circularGeozone.getAltitude().getName(), 
-				circularGeozone.getAltitude().getValue().doubleValue(),
+				circularGeozone.getAltitudeLimitInferior().getName(), 
+				circularGeozone.getAltitudeLimitInferior().getValue().doubleValue(),
+				circularGeozone.getAltitudeLimitSuperior().getName(),
+				circularGeozone.getAltitudeLimitSuperior().getValue().doubleValue(),
 				circularGeozone.getCenter().getX(), 
 				circularGeozone.getCenter().getY(),
 				circularGeozone.getRadius()
@@ -104,7 +114,7 @@ public class GeozoneFactory {
 	
 	private PolygonalGeozoneDTO createGeozoneDTO(final PolygonalGeozone polygonalGeozone) {
 		assert polygonalGeozone != null;
-		assert polygonalGeozone.getAltitude() != null;
+		assert polygonalGeozone.getAltitudeLimitInferior() != null;
 		
 		List<double[]> coordinates = new ArrayList<>(polygonalGeozone.getCoordinates().size());
 		for (GeoJsonPoint coord : polygonalGeozone.getCoordinates()) {
@@ -116,8 +126,10 @@ public class GeozoneFactory {
 				polygonalGeozone.getName(),
 				polygonalGeozone.getCategory(), 
 				polygonalGeozone.getStatus(), 
-				polygonalGeozone.getAltitude().getName(),
-				polygonalGeozone.getAltitude().getValue().doubleValue(), 
+				polygonalGeozone.getAltitudeLimitInferior().getName(),
+				polygonalGeozone.getAltitudeLimitInferior().getValue().doubleValue(), 
+				polygonalGeozone.getAltitudeLimitSuperior().getName(),
+				polygonalGeozone.getAltitudeLimitSuperior().getValue().doubleValue(),
 				coordinates
 				);
 	}
@@ -148,6 +160,8 @@ public class GeozoneFactory {
 					"ACTIVE", 
 					"L3", 
 					60.0,
+					"L4",
+					120.0,
 					45.52365, 
 					9.21949, 
 					100.0
@@ -161,6 +175,8 @@ public class GeozoneFactory {
 					"ACTIVE", 
 					"L3", 
 					60.0,
+					"L4",
+					120.0,
 					Arrays.asList(
 						    new double[]{45.52394, 9.21892},
 						    new double[]{45.52347, 9.22014},

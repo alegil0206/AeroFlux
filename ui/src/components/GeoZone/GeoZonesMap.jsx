@@ -25,8 +25,8 @@ function GeoZonesMap({ geoZones }) {
       properties: {
         id: zone.id,
         color: getGeoZoneColor(zone),
-        base_altitude: zone.altitude,
-        height: 120,
+        base_altitude: zone.altitude_limit_inferior,
+        height: zone.altitude_limit_superior,
       },
     })),
   };
@@ -73,7 +73,8 @@ GeoZonesMap.propTypes = {
       type: PropTypes.oneOf(['CIRCULAR', 'POLYGONAL']).isRequired,
       status: PropTypes.string.isRequired,
       category: PropTypes.string.isRequired,
-      altitude: PropTypes.number,
+      altitude_limit_inferior: PropTypes.number,
+      altitude_limit_superior: PropTypes.number,
       longitude: PropTypes.number,
       latitude: PropTypes.number,
       radius: PropTypes.number,

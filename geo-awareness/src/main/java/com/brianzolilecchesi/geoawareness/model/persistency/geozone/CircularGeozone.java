@@ -24,15 +24,17 @@ public class CircularGeozone extends Geozone {
 			String type,
 			String category,
 			String status,
-			final Altitude altitude,
+			final Altitude altitudeLimitInferior,
+			final Altitude altitudeLimitSuperior,
 			final GeoJsonPoint center,
 			Double radius
 			) {
 		
-		super(name, type, category, status, altitude);
+		super(name, type, category, status, altitudeLimitInferior, altitudeLimitSuperior);
 		setCenter(center);
 		setRadius(radius);
-		setAltitude(altitude);
+		setAltitudeLimitInferior(altitudeLimitInferior);
+		setAltitudeLimitSuperior(altitudeLimitSuperior);
 	}
 		
 	CircularGeozone() {
