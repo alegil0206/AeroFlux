@@ -14,6 +14,7 @@ public class Constants {
 	public static final String ALTITUDE_COLLECTION_NAME = "altitude";
 	public static final String STATUS_COLLECTION_NAME = "status";
 	public static final String GEOZONE_COLLECTION_NAME = "geozone";
+	public static final String SUPPORT_POINT_COLLECTION_NAME = "support_point";
 	
 	public static final Range ALTITUDE_RANGE = new Range(0, 120);
 	public static final Range LONGITUDE_RANGE = new Range(-180.0, 180.0);

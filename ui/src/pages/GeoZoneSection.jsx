@@ -6,13 +6,17 @@ import GeoZoneDataGrid from "../components/GeoZone/GeoZoneDataGrid";
 import GeoZoneActivationCard from "../components/GeoZone/GeoZoneActivationCard";
 import GeoZoneFormDialog from '../components/GeoZone/EditDialog/GeoZoneFormDialog';
 import GeoZonesMap from '../components/GeoZone/GeoZonesMap';
+import SupportPointDataGrid from '../components/SupportPoint/SupportPointDataGrid';
+import SupportPointFormDialog from '../components/SupportPoint/EditDialog/SupportPointFormDialog';
 
 import { useGeoAwareness } from '../hooks/useGeoAwareness';
 
 function GeoZoneSection() {
 
-  const [isDialogOpen, setIsFormOpen] = useState(false);
+  const [isGeoZoneFormDialogOpen, setIsGeoZoneFormDialogOpen] = useState(false);
+  const [isSupportPointFormDialogOpen, setIsSupportPointFormDialogOpen] = useState(false);
   const [editingGeoZone, setEditingGeoZone] = useState(null);
+  const [editingSupportPoint, setEditingSupportPoint] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
 
@@ -23,6 +27,11 @@ function GeoZoneSection() {
   addGeoZone,
   updateGeoZone,
   deleteGeoZone,
+  supportPoints,
+  fetchSupportPoints,
+  addSupportPoint,
+  updateSupportPoint,
+  deleteSupportPoint,
   } = useGeoAwareness();
 
   const showSnackbar = (type, message) => {
@@ -41,11 +50,15 @@ function GeoZoneSection() {
 
   useEffect(() => {
     fetchGeoZones();
-    const interval = setInterval(fetchGeoZones, 10000);
+    fetchSupportPoints();
+    const interval = setInterval(() => {
+      fetchGeoZones();
+      fetchSupportPoints();
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleAddOrEdit = async (geoZone) => {
+  const handleAddOrEditGeoZone = async (geoZone) => {
     if (editingGeoZone) {
       const id = await updateGeoZone(geoZone);
       if (id)
@@ -55,12 +68,12 @@ function GeoZoneSection() {
       if (id)
         showSnackbar("success", `GeoZone ${id} created successfully.`);
       }
-      setIsFormOpen(false);
+      setIsGeoZoneFormDialogOpen(false);
       setEditingGeoZone(null);
       fetchGeoZones();
     };
   
-  const handleDelete = async (id) => {
+  const handleDeleteGeoZone = async (id) => {
     const idDeleted = await deleteGeoZone(id);
     if (idDeleted)
       showSnackbar("success", `GeoZone ${id} deleted successfully.`);
@@ -77,20 +90,56 @@ function GeoZoneSection() {
     fetchGeoZones();
   };
 
+  const handleAddOrEditSupportPoint = async (supportPoint) => {
+    if (editingSupportPoint) {
+      const id = await updateSupportPoint(supportPoint);
+      if (id)
+        showSnackbar("success", `Support Point ${id} updated successfully.`);
+    } else {
+      const id = await addSupportPoint(supportPoint);
+      if (id)
+        showSnackbar("success", `Support Point ${id} created successfully.`);
+    }
+    setIsSupportPointFormDialogOpen(false);
+    setEditingSupportPoint(null);
+    fetchSupportPoints();
+  }
+
+  const handleDeleteSupportPoint = async (id) => {
+    const idDeleted = await deleteSupportPoint(id);
+    if (idDeleted)
+      showSnackbar("success", `Support Point ${id} deleted successfully.`);
+    fetchSupportPoints();
+  }
+
   return (
     <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
       {/* Cards */}
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
         <Grid size={{ xs: 12, lg: 8 }}>
-          <GeoZonesMap geoZones={ geoZones }/>
+          <GeoZonesMap geoZones={ geoZones } supportPoints={ supportPoints }/>
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-            <Button variant="contained" fullWidth onClick={() => setIsFormOpen(true)}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', gap: 1}}>
+            <Button variant="contained" fullWidth onClick={() => setIsGeoZoneFormDialogOpen(true)}>
               Add New GeoZone
             </Button>
+            <Button variant="contained" fullWidth onClick={() => setIsSupportPointFormDialogOpen(true)}>
+              Add New Support Point
+            </Button>
           </Box>
+          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+            GeoZone Activation
+          </Typography>            
           <GeoZoneActivationCard data={geoZones} onToggleStatus={handleToggleStatus} />
+          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+            Support Points
+          </Typography>  
+          <SupportPointDataGrid data={supportPoints} openEditDialog={ (supportPoint) => {
+            setEditingSupportPoint(supportPoint);
+            setIsSupportPointFormDialogOpen(true);
+          }
+          } onDelete={handleDeleteSupportPoint} />
         </Grid>
       </Grid>
 
@@ -100,17 +149,26 @@ function GeoZoneSection() {
       </Typography>
       <GeoZoneDataGrid data={geoZones} openEditDialog={ (geoZone) => {
           setEditingGeoZone(geoZone);
-          setIsFormOpen(true);
+          setIsGeoZoneFormDialogOpen(true);
         }}
-        onDelete={handleDelete} />
+        onDelete={handleDeleteGeoZone} />
       <GeoZoneFormDialog
-          open={isDialogOpen}
+          open={isGeoZoneFormDialogOpen}
           onClose={() => {
-            setIsFormOpen(false);
+            setIsGeoZoneFormDialogOpen(false);
             setEditingGeoZone(null);
           }}
-          onSave={handleAddOrEdit}
+          onSave={handleAddOrEditGeoZone}
           initialData={editingGeoZone}
+      />
+      <SupportPointFormDialog
+        open={isSupportPointFormDialogOpen}
+        onClose={() => {
+          setIsSupportPointFormDialogOpen(false);
+          setEditingSupportPoint(null);
+        }}
+        onSave={handleAddOrEditSupportPoint}
+        initialData={editingSupportPoint}
       />
       <Snackbar
         open={snackbarOpen}

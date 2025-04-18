@@ -19,7 +19,7 @@ function SettingsSection() {
     const [alertMessage, setAlertMessage] = useState(null);
 
     const { deleteAllDrones, error: errorDrones } = useDroneIdentification();
-    const { deleteAllGeoZones, error: errorGeoZones } = useGeoAwareness();
+    const { deleteAllGeoZones, deleteAllSupportPoints, error: errorGeoZones } = useGeoAwareness();
     const { deleteAllAuthorizations, error: errorAuthorizations } = useGeoAuthorization();
 
     useEffect(() => {
@@ -74,7 +74,7 @@ function SettingsSection() {
 
     const data = [
         { element: "Drone Identification", key: "drone_identification", dropFunction: deleteAllDrones },
-        { element: "Geo Awareness", key: "geo_awareness", dropFunction: deleteAllGeoZones },
+        { element: "Geo Awareness", key: "geo_awareness", dropFunction: () => { deleteAllGeoZones(); deleteAllSupportPoints(); } },
         { element: "Geo Authorization", key: "geo_authorization", dropFunction: deleteAllAuthorizations },
         { element: "Weather", key: "weather", dropFunction: null }
     ];

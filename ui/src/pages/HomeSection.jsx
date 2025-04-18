@@ -28,7 +28,9 @@ function HomeSection() {
     geoZones,
     error: geoZonesError,
     fetchGeoZones,
-    updateGeoZone
+    updateGeoZone,
+    supportPoints,
+    fetchSupportPoints
   } = useGeoAwareness();
 
   const {
@@ -85,6 +87,7 @@ function HomeSection() {
       await Promise.all([
         fetchDrones(),
         fetchGeoZones(),
+        fetchSupportPoints(),
         fetchAuthorizations(),
         fetchWeather()
       ]);
@@ -118,7 +121,7 @@ function HomeSection() {
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}
       >
         <Grid size={{ xs: 12, lg: 7 }}>
-          <FullMap drones={ dronesWithStatus } geoZones={geoZones} weather={weather}/>
+          <FullMap drones={ dronesWithStatus } geoZones={geoZones} weather={weather} supportPoints={supportPoints}/>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
@@ -133,13 +136,13 @@ function HomeSection() {
       </Grid>
 
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
-        <Grid size={{ xs: 12, md: 6}}>
+        <Grid size={{ xs: 12, lg: 6}}>
       <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             Drones Positions
           </Typography>
           <DronesPositionsCard data={dronesWithStatus} />
         </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             GeoZones Activation
           </Typography>

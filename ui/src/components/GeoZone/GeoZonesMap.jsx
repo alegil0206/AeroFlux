@@ -1,15 +1,19 @@
-import Map, { NavigationControl, FullscreenControl, ScaleControl, Source, Layer } from '@vis.gl/react-maplibre';
+import Map, { NavigationControl, FullscreenControl, ScaleControl, Marker, Popup, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
 import { getGeoZoneColor } from '../../utils/utils';
 import { circle } from '@turf/circle';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card } from '@mui/material';
+import { useState, useMemo } from 'react';
+import SupportPointPin from '../Pin/SupportPointPin';
+import SupportPointPopup from '../MapPopup/SupportPointPopup';
 
 import { useMapSettings } from '../../hooks/useMapSettings';
 
 
-function GeoZonesMap({ geoZones }) {
+function GeoZonesMap({ geoZones, supportPoints }) {
 
+  const [popupInfo, setPopupInfo] = useState(null);
   const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
 
   const geoJsonData = {
@@ -30,7 +34,24 @@ function GeoZonesMap({ geoZones }) {
       },
     })),
   };
-  
+
+  const supportPointMarkers = useMemo(
+    () => supportPoints.map((point) => (
+      <Marker
+        key={`marker-${point.id}`}
+        longitude={point.longitude}
+        latitude={point.latitude}
+        anchor="center"
+        onClick={(e) => {
+          e.originalEvent.stopPropagation();
+          setPopupInfo({ type: 'support', data: point });
+        }
+        }
+      >
+        <SupportPointPin size={30} />
+      </Marker>
+    )), [supportPoints]
+  );
 
   return (
     <Card
@@ -61,6 +82,17 @@ function GeoZonesMap({ geoZones }) {
             }}
           />
         </Source>
+        {supportPointMarkers}
+        {popupInfo && (
+          <Popup
+            longitude={popupInfo.data.longitude}
+            latitude={popupInfo.data.latitude}
+            anchor="top"
+            onClose={() => setPopupInfo(null)}
+          >
+            {popupInfo.type === 'support' && <SupportPointPopup {...popupInfo.data} />}
+          </Popup>
+        )}
     </Map>
   </Card>
   );
@@ -79,6 +111,14 @@ GeoZonesMap.propTypes = {
       latitude: PropTypes.number,
       radius: PropTypes.number,
       coordinates: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
+    })
+  ).isRequired,
+  supportPoints: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      longitude: PropTypes.number.isRequired,
+      latitude: PropTypes.number.isRequired,
     })
   ).isRequired,
 };

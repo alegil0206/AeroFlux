@@ -7,6 +7,8 @@ import DestinationPin from '../Pin/DestinationPin';
 import DronePopup from '../MapPopup/DronePopup';
 import SourcePopup from '../MapPopup/SourcePopup';
 import DestinationPopup from '../MapPopup/DestinationPopup';
+import SupportPointPin from '../Pin/SupportPointPin';
+import SupportPointPopup from '../MapPopup/SupportPointPopup';
 import { getGeoZoneColor } from '../../utils/utils';
 import { circle } from '@turf/circle';
 import { lineOffset } from '@turf/turf';
@@ -15,7 +17,7 @@ import { Card } from '@mui/material';
 
 import { useMapSettings } from '../../hooks/useMapSettings';
 
-function FullMap({ drones, geoZones, weather }) {
+function FullMap({ drones, geoZones, weather, supportPoints }) {
   const [popupInfo, setPopupInfo] = useState(null);
 
   const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
@@ -159,6 +161,24 @@ function FullMap({ drones, geoZones, weather }) {
     [drones]
   );
 
+  const supportPointMarkers = useMemo(
+    () => supportPoints.map((point) => (
+      <Marker
+        key={`marker-${point.id}`}
+        longitude={point.longitude}
+        latitude={point.latitude}
+        anchor="center"
+        onClick={(e) => {
+          e.originalEvent.stopPropagation();
+          setPopupInfo({ type: 'support', data: point });
+        }
+        }
+      >
+        <SupportPointPin size={30} />
+      </Marker>
+    )), [supportPoints]
+  );
+
   const weatherGeoJsonData = {
     type: "FeatureCollection",
     features: weather.map((cell, index) => ({
@@ -266,6 +286,7 @@ function FullMap({ drones, geoZones, weather }) {
         {sourcePositionMarkers}
         {destinationPositionMarkers}
         {actualPositionMarkers}
+        {supportPointMarkers}
 
         {popupInfo && (
           <Popup
@@ -292,6 +313,7 @@ function FullMap({ drones, geoZones, weather }) {
             {popupInfo.type === 'drone' && <DronePopup drone={popupInfo.data} />}
             {popupInfo.type === 'source' && <SourcePopup source={popupInfo.data.source} droneName={popupInfo.data.name} />}
             {popupInfo.type === 'destination' && <DestinationPopup destination={popupInfo.data.destination} droneName={popupInfo.data.name} />}
+            {popupInfo.type === 'support' && <SupportPointPopup {...popupInfo.data} />}
           </Popup>
         )}
       </Map>
