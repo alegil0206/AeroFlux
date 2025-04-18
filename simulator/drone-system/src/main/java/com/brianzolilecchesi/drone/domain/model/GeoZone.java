@@ -10,8 +10,10 @@ public class GeoZone {
     private String type;
     private String category;
     private String status;
-    private String altitudeLevel;
-    private Double altitude;
+    private String altitudeLevelLimitInferior;
+    private Double altitudeLimitInferior;
+    private String altitudeLevelLimitSuperior;
+    private Double altitudeLimitSuperior;
 
     // Attributi per geozone circolari
     private Double latitude;
@@ -23,15 +25,19 @@ public class GeoZone {
 
 
     public GeoZone(String id, String name, String type, String category, String status,
-                   String altitudeLevel, Double altitude, Double latitude, Double longitude,
-                   Double radius, List<Coordinate> coordinates) {
+            String altitude_level_limit_inferior, Double altitude_limit_inferior,
+            String altitude_level_limit_superior, Double altitude_limit_superior, 
+            Double latitude, Double longitude, Double radius, 
+            List<Coordinate> coordinates) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.category = category;
         this.status = status;
-        this.altitudeLevel = altitudeLevel;
-        this.altitude = altitude;
+        this.altitudeLevelLimitInferior = altitude_level_limit_inferior;
+        this.altitudeLimitInferior = altitude_limit_inferior;
+        this.altitudeLevelLimitSuperior = altitude_level_limit_superior;
+        this.altitudeLimitSuperior = altitude_limit_superior;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
@@ -44,8 +50,10 @@ public class GeoZone {
         this.type = dto.getType();
         this.category = dto.getCategory();
         this.status = dto.getStatus();
-        this.altitudeLevel = dto.getAltitude_level();
-        this.altitude = dto.getAltitude();
+        this.altitudeLevelLimitInferior = dto.getAltitude_level_limit_inferior();
+        this.altitudeLimitInferior = dto.getAltitude_limit_inferior();
+        this.altitudeLevelLimitSuperior = dto.getAltitude_level_limit_superior();
+        this.altitudeLimitSuperior = dto.getAltitude_limit_superior();
         this.latitude = dto.getLatitude();
         this.longitude = dto.getLongitude();
         this.radius = dto.getRadius();
@@ -79,11 +87,17 @@ public class GeoZone {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getAltitudeLevel() { return altitudeLevel; }
-    public void setAltitudeLevel(String altitudeLevel) { this.altitudeLevel = altitudeLevel; }
+    public String getAltitudeLevelLimitInferior() { return altitudeLevelLimitInferior; }
+    public void setAltitudeLevelLimitInferior(String altitude_level_limit_inferior) { this.altitudeLevelLimitInferior = altitude_level_limit_inferior; }
 
-    public Double getAltitude() { return altitude; }
-    public void setAltitude(Double altitude) { this.altitude = altitude; }
+    public Double getAltitudeLimitInferior() { return altitudeLimitInferior; }
+    public void setAltitudeLimitInferior(Double altitude_limit_inferior) { this.altitudeLimitInferior = altitude_limit_inferior; }
+
+    public String getAltitudeLevelLimitSuperior() { return altitudeLevelLimitSuperior; }
+    public void setAltitudeLevelLimitSuperior(String altitude_level_limit_superior) { this.altitudeLevelLimitSuperior = altitude_level_limit_superior; }
+
+    public Double getAltitudeLimitSuperior() { return altitudeLimitSuperior; }
+    public void setAltitudeLimitSuperior(Double altitude_limit_superior) { this.altitudeLimitSuperior = altitude_limit_superior; }
 
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
@@ -103,10 +117,13 @@ public class GeoZone {
 public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Geozone ID: ").append(id)
-      .append("\nName: ").append(name)
-      .append("\nType: ").append(type)
-      .append("\nStatus: ").append(status)
-      .append("\nAltitude: ").append(altitude);
+            .append("\nName: ").append(name)
+            .append("\nType: ").append(type)
+            .append("\nStatus: ").append(status)
+            .append("\nAltitude Level Limit Inferior: ").append(altitudeLevelLimitInferior)
+            .append("\nAltitude Limit Inferior: ").append(altitudeLimitInferior)
+            .append("\nAltitude Level Limit Superior: ").append(altitudeLevelLimitSuperior)
+            .append("\nAltitude Limit Superior: ").append(altitudeLimitSuperior);
 
     if ("CIRCULAR".equalsIgnoreCase(type)) {
         sb.append("\nLatitude: ").append(latitude)

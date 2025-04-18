@@ -7,8 +7,10 @@ public class GeoZoneDTO {
     private String type;
     private String category;
     private String status;
-    private String altitude_level;
-    private double altitude;
+    private String altitude_level_limit_inferior;
+    private Double altitude_limit_inferior;
+    private String altitude_level_limit_superior;
+    private Double altitude_limit_superior;
     private Double latitude;
     private Double longitude;
     private Double radius;
@@ -17,15 +19,17 @@ public class GeoZoneDTO {
     
     public GeoZoneDTO(){}
 
-    public GeoZoneDTO(String id, String name, String type, String category, String status, String altitude_level, double altitude,
-                      Double latitude, Double longitude, Double radius, List<List<Double>> coordinates) {
+    public GeoZoneDTO(String id, String name, String type, String category, String status, String altitude_level_limit_inferior, Double altitude_limit_inferior,
+            String altitude_level_limit_superior, Double altitude_limit_superior, Double latitude, Double longitude, Double radius, List<List<Double>> coordinates) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.category = category;
         this.status = status;
-        this.altitude_level = altitude_level;
-        this.altitude = altitude;
+        this.altitude_level_limit_inferior = altitude_level_limit_inferior;
+        this.altitude_limit_inferior = altitude_limit_inferior;
+        this.altitude_level_limit_superior = altitude_level_limit_superior;
+        this.altitude_limit_superior = altitude_limit_superior;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
@@ -47,11 +51,17 @@ public class GeoZoneDTO {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getAltitude_level() { return altitude_level; }
-    public void setAltitude_level(String altitude_level) { this.altitude_level = altitude_level; }
+    public String getAltitude_level_limit_inferior() { return altitude_level_limit_inferior; }
+    public void setAltitude_level_limit_inferior(String altitude_level) { this.altitude_level_limit_inferior = altitude_level; }
 
-    public double getAltitude() { return altitude; }
-    public void setAltitude(double altitude) { this.altitude = altitude; }
+    public Double getAltitude_limit_inferior() { return altitude_limit_inferior; }
+    public void setAltitude_limit_inferior(Double altitude) { this.altitude_limit_inferior = altitude; }
+
+    public String getAltitude_level_limit_superior() { return altitude_level_limit_superior; }
+    public void setAltitude_level_limit_superior(String altitude_level) { this.altitude_level_limit_superior = altitude_level; }
+
+    public Double getAltitude_limit_superior() { return altitude_limit_superior; }
+    public void setAltitude_limit_superior(Double altitude) { this.altitude_limit_superior = altitude; }
 
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }

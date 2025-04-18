@@ -3,7 +3,6 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.Position;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.ThreeDBoundingBox;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDBounds;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDCircularBounds;
@@ -14,20 +13,8 @@ public class GeozoneAdapter {
 	
 	private static final String CIRCULAR = "CIRCULAR";
 	private static final String POLYGONAL = "POLYGONAL";
-	
-	private final double maxAltitude;
-	
-	public GeozoneAdapter(double maxAltitude) {
-		assert maxAltitude > 0;
-		this.maxAltitude = maxAltitude;
-	}
-	
+		
 	public GeozoneAdapter() {
-		this(GeozoneNavigationService.MAX_ALTITUDE);
-	}
-	
-	public double getMaxAltitude() {
-		return maxAltitude;
 	}
 	
 	public Geozone adapt(GeoZone geoZone) {
@@ -46,13 +33,14 @@ public class GeozoneAdapter {
 	
 	private Geozone adaptCircular(GeoZone geoZone) {
 		assert geoZone.getId() != null;
-		assert geoZone.getAltitude() != null;
+		assert geoZone.getAltitudeLimitInferior() != null;
+		assert geoZone.getAltitudeLimitSuperior() != null;
 		assert geoZone.getRadius() != null;
 		assert geoZone.getLatitude() != null;
 		assert geoZone.getLongitude() != null;
 		
-		double centerAltitude = (maxAltitude + geoZone.getAltitude()) / 2;
-		double geozoneHeight = (maxAltitude - centerAltitude) * 2;
+		double centerAltitude = (geoZone.getAltitudeLimitSuperior() + geoZone.getAltitudeLimitInferior()) / 2;
+		double geozoneHeight = (geoZone.getAltitudeLimitSuperior() - centerAltitude) * 2;
 				
 		ThreeDBounds bounds = new ThreeDCircularBounds(
 				new Position(geoZone.getLatitude(), geoZone.getLongitude(), centerAltitude),
@@ -67,10 +55,11 @@ public class GeozoneAdapter {
 		assert geoZone.getId() != null;
 		assert geoZone.getCoordinates() != null;
 		assert geoZone.getCoordinates().size() > 2;
-		assert geoZone.getAltitude() != null;
+		assert geoZone.getAltitudeLimitInferior() != null;
+		assert geoZone.getAltitudeLimitSuperior() != null;
 		
-		double lowest = geoZone.getAltitude(),
-			   uppest = maxAltitude;
+		double lowest = geoZone.getAltitudeLimitInferior(),
+			   uppest = geoZone.getAltitudeLimitSuperior();
 			   
 		double northest = -Double.MAX_VALUE,
 			   southest = Double.MAX_VALUE,
@@ -104,10 +93,5 @@ public class GeozoneAdapter {
 				);
 		
 		return new Geozone(geoZone.getId(), bounds);
-	}
-	
-	@Override
-	public String toString() {
-		return "GeozoneAdapter[maxAltitude=%s]".formatted(maxAltitude);
 	}
 }

@@ -164,7 +164,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
   const supportPointMarkers = useMemo(
     () => supportPoints.map((point) => (
       <Marker
-        key={`marker-${point.id}`}
+        key={`marker-${point.id}-support`}
         longitude={point.longitude}
         latitude={point.latitude}
         anchor="center"
@@ -297,6 +297,8 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
                 ? popupInfo.data.source.longitude
                 : popupInfo.type === 'destination'
                 ? popupInfo.data.destination.longitude
+                : popupInfo.type === 'support'
+                ? popupInfo.data.longitude
                 : 0
             }
             latitude={
@@ -306,7 +308,9 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
                 ? popupInfo.data.source.latitude
                 : popupInfo.type === 'destination'
                 ? popupInfo.data.destination.latitude
-                : popupInfo.data.latitude
+                : popupInfo.type === 'support'
+                ? popupInfo.data.latitude
+                : 0
             }
             onClose={() => setPopupInfo(null)}
           >
