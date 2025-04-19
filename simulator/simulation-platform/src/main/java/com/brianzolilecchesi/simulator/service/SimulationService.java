@@ -12,7 +12,7 @@ public class SimulationService {
     private final LogService logService;
     private final SimulationEngine simulationTaskService;
     private final DroneService droneService;
-    private long interval = 3000; // Valore predefinito
+    private long interval = 1000; // Valore predefinito
 
     public SimulationService(SimulationStatus simulationStatus, LogService logService, 
             SimulationEngine simulationTaskService , DroneService droneService) {

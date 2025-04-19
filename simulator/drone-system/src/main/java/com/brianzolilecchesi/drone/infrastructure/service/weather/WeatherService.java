@@ -1,43 +1,39 @@
 package com.brianzolilecchesi.drone.infrastructure.service.weather;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import com.brianzolilecchesi.drone.domain.dto.RainCellDTO;
-import com.brianzolilecchesi.drone.domain.model.WeatherData;
-
-import com.brianzolilecchesi.drone.infrastructure.integration.RestApiGateway;
+import com.brianzolilecchesi.drone.domain.integration.WeatherGateway;
+import com.brianzolilecchesi.drone.domain.model.RainCell;
 
 public class WeatherService {
 
-    private final RestApiGateway restApiGateway;
+    private final WeatherGateway restApiGateway;
+    private List<RainCell> rainCells;
 
-    public WeatherService(RestApiGateway restApiGateway) {
+    public WeatherService(WeatherGateway restApiGateway) {
         this.restApiGateway = restApiGateway;
+        this.rainCells = new ArrayList<>();
     }
 
-    
-    public List<WeatherData> getWeatherData() {
+    public void fetchRainCells() {
         try {
-            List<RainCellDTO> rainCellDTOList = restApiGateway.getWeatherData();
-            List<WeatherData> weatherDataList = new ArrayList<>();
-            
-            for (RainCellDTO rainCellDTO : rainCellDTOList) {
-                weatherDataList.add(new WeatherData(rainCellDTO.getCoordinates()));
-            }
-            
-            return weatherDataList;
-            
+            List<RainCellDTO> rainCellDTOList = restApiGateway.getWeather();
+            rainCells = rainCellDTOList.stream()
+                    .map(rainCellDTO -> new RainCell(rainCellDTO.getCoordinates()))
+                    .toList();
         } catch (HttpClientErrorException.NotFound e) {
             System.err.println("Error 404: weather data not found - " + e.getMessage());
-            return Collections.emptyList();
         } catch (RestClientException e) {
             System.err.println("Error in communication with the weather service: " + e.getMessage());
-            return Collections.emptyList();
         }
+    }
+
+    public List<RainCell> getRainCells() {
+        return rainCells;
     }
 }

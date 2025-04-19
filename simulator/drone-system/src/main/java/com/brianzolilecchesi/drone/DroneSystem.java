@@ -1,6 +1,7 @@
 package com.brianzolilecchesi.drone;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.Battery;
@@ -26,11 +27,11 @@ import com.brianzolilecchesi.drone.infrastructure.service.landing.SafeLandingSer
 import com.brianzolilecchesi.drone.infrastructure.service.log.StepLogService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.FlightNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAuthorizationRestClient;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
-import com.brianzolilecchesi.drone.infrastructure.integration.RestApiGateway;
 import com.brianzolilecchesi.drone.infrastructure.integration.WeatherServiceRestClient;
 
 
@@ -48,7 +49,7 @@ public class DroneSystem {
     private final GeozoneNavigationService geozoneNavigationService;
     private final WeatherService weatherService;
     private final AuthorizationService authorizationService;
-    private final RestApiGateway restApiGateway;
+    private final SupportPointService supportPointService;
     private final WeatherServiceRestClient weatherServiceRestClient;
     private final GeoAwarenessRestClient geoAwarenessServiceRestClient;
     private final GeoAuthorizationRestClient geoAuthorizationRestClient;
@@ -76,15 +77,28 @@ public class DroneSystem {
         this.weatherServiceRestClient = new WeatherServiceRestClient();
         this.geoAwarenessServiceRestClient = new GeoAwarenessRestClient();
         this.geoAuthorizationRestClient= new GeoAuthorizationRestClient() ;
-        this.restApiGateway = new RestApiGateway(weatherServiceRestClient, geoAwarenessServiceRestClient, geoAuthorizationRestClient);
-        this.geoZoneService = new GeoZoneService(restApiGateway);
-        this.weatherService = new WeatherService(restApiGateway);
-        this.authorizationService= new AuthorizationService(restApiGateway);
+        this.geoZoneService = new GeoZoneService(geoAwarenessServiceRestClient);
+        this.weatherService = new WeatherService(weatherServiceRestClient);
+        this.authorizationService= new AuthorizationService(geoAuthorizationRestClient);
+        this.supportPointService = new SupportPointService(geoAwarenessServiceRestClient);
     }
 
     public DroneStatus executeStep() {
 
         log = "Drone " + droneProperties.getId() + ". Executing step " + i++ + ". ";
+
+        if (i == 1){
+            CompletableFuture.runAsync(() -> {
+                System.out.println("richiesta a ciclo " + i);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("concluso a ciclo " + i);
+            });
+        }
+
         
         if ( navigationService.hasReached(new Position(droneProperties.getDestination(), 0 ))) {
             if (flightController.isPoweredOn()) {
@@ -105,6 +119,7 @@ public class DroneSystem {
                 flightController.powerOn();
                 log += "Drone is powered on. ";
                 
+                geoZoneService.fetchGeoZones();
                 List<GeoZone> geoZones = geoZoneService.getGeoZones();
                 geozoneNavigationService.addGeoZones(geoZones);
                 navigationService.calculateFlightPlan( 

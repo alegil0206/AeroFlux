@@ -1,8 +1,11 @@
 package com.brianzolilecchesi.drone.domain.integration;
 
 import com.brianzolilecchesi.drone.domain.dto.GeoZoneDTO;
+import com.brianzolilecchesi.drone.domain.dto.SupportPointDTO;
+
 import java.util.List;
 
-public interface GeoAwarenessClient {
+public interface GeoAwarenessGateway {
         List<GeoZoneDTO> getGeoZones();
+        List<SupportPointDTO> getSupportPoints();
 }

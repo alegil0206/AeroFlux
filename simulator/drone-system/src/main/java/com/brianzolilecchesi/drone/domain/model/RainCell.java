@@ -2,10 +2,10 @@ package com.brianzolilecchesi.drone.domain.model;
 
 import java.util.List;
 
-public class WeatherData {
+public class RainCell {
     private List<double[]> coordinates;
 
-    public WeatherData(List<double[]> coordinates) {
+    public RainCell(List<double[]> coordinates) {
         this.coordinates = coordinates;
     }
 

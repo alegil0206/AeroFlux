@@ -1,5 +1,5 @@
 package com.brianzolilecchesi.drone.infrastructure.service.authorization;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.client.HttpClientErrorException;
@@ -8,18 +8,20 @@ import org.springframework.web.client.RestClientException;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationRequestDTO;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
 import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
+import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
 import com.brianzolilecchesi.drone.domain.model.Authorization;
-import com.brianzolilecchesi.drone.infrastructure.integration.RestApiGateway;
 
 public class AuthorizationService {
-    private final RestApiGateway restApiGateway;
 
+    private final GeoAuthorizationGateway restApiGateway;
+    private List<Authorization> authorizations;
 
-    public AuthorizationService(RestApiGateway restApiGateway) {
+    public AuthorizationService(GeoAuthorizationGateway restApiGateway) {
         this.restApiGateway = restApiGateway;
+        this.authorizations = new ArrayList<>();
     }
 
-    public Authorization getResponseAuthorization(AuthorizationRequestDTO authorizationRequestDTO) {
+    public Authorization requestNewAuthorization(AuthorizationRequestDTO authorizationRequestDTO) {
         try {
             AuthorizationResponseDTO authorizationDTO = restApiGateway.requestAuthorization(authorizationRequestDTO);
             return new Authorization(authorizationDTO); 
@@ -29,19 +31,20 @@ public class AuthorizationService {
         }
     }
     
-
-    public List<Authorization> getAuthorizations(String droneId) {
+    public void fetchAuthorizations(String droneId) {
         try {
             List<AuthorizationResponseDTO> authorizationDTOs = restApiGateway.getAuthorizations(droneId);
-            return authorizationDTOs.stream()
+            authorizations = authorizationDTOs.stream()
                     .map(Authorization::new)
                     .toList();
         } catch (HttpClientErrorException.NotFound e) {
             System.err.println("Error 404: No authorization found for the drone - " + e.getMessage());
-            return Collections.emptyList();
         } catch (RestClientException e) {
             System.err.println("Error communicating with authorization service: " + e.getMessage());
-            return Collections.emptyList();
         }
+    }
+
+    public List<Authorization> getAuthorizations() {
+        return authorizations;
     }
 }

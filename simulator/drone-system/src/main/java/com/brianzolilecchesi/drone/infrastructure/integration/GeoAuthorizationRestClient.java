@@ -1,6 +1,6 @@
 package com.brianzolilecchesi.drone.infrastructure.integration;
 
-import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationClient;
+import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationRequestDTO;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
 import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 
-public class GeoAuthorizationRestClient implements GeoAuthorizationClient {
+public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
     private static final String authorizationApiUrl = "http://api.uspace.local/geo-authorization";
     private final RestTemplate restTemplate;
 

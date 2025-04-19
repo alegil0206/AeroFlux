@@ -5,7 +5,7 @@ import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
 
 import java.util.List;
 
-public interface GeoAuthorizationClient {
+public interface GeoAuthorizationGateway {
     AuthorizationResponseDTO requestAuthorization(AuthorizationRequestDTO authorizationDTO) throws AuthorizationException ;
     List<AuthorizationResponseDTO> getAuthorizations(String droneId);
 }

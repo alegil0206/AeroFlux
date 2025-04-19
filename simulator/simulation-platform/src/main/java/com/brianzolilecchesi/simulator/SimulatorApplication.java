@@ -19,11 +19,10 @@ public class SimulatorApplication {
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);  // Numero minimo di thread
-        executor.setMaxPoolSize(2);  // Numero massimo di thread
-        executor.setQueueCapacity(25); // Coda di attesa
+        executor.setMaxPoolSize(20);  // Numero massimo di thread
+        executor.setQueueCapacity(50); // Coda di attesa
         executor.setThreadNamePrefix("AsyncThread-");
         executor.initialize();
         return executor;
     }
-
 }

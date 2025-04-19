@@ -13,7 +13,6 @@ import com.brianzolilecchesi.drone.domain.model.AdaptiveCapabilities;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
 import com.brianzolilecchesi.simulator.service.api.DroneIdentificationService;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
