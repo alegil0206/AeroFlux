@@ -8,7 +8,7 @@ public class LogConstants {
         public static final String COMMUNICATION_SERVICE = "CommunicationService";
         public static final String LANDING_SERVICE = "LandingService";
         public static final String FLIGHT_CONTROLLER = "FlightController";
-        public static final String SYSTEM = "DroneSystem";
+        public static final String DRONE_SYSTEM = "DroneSystem";
     }
 
     public static class Event {

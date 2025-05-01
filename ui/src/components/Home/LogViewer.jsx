@@ -1,6 +1,6 @@
 import React from "react";
 import { useWebSocket } from "../../contexts/WebSocketContext";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import Tooltip from "@mui/material/Tooltip";
 
 const LogViewer = () => {
@@ -10,7 +10,8 @@ const LogViewer = () => {
     {
       field: "timestamp",
       headerName: "Timestamp",
-      flex: 2,
+      flex: 1,
+      hideable: false,
       renderCell: (params) => (
         <Tooltip title={`Logged at: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -18,11 +19,43 @@ const LogViewer = () => {
       ),
     },
     {
-      field: "category",
-      headerName: "Category",
+      field: "system",
+      headerName: "System",
+      flex: 1,
+      hideable: false,
+      renderCell: (params) => (
+        <Tooltip title={`System: ${params.value}`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: "level",
+      headerName: "Level",
       flex: 1,
       renderCell: (params) => (
-        <Tooltip title={`Category: ${params.value}`} arrow>
+        <Tooltip title={`Level: ${params.value}`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: "component",
+      headerName: "Component",
+      flex: 1,
+      renderCell: (params) => (
+        <Tooltip title={`Component: ${params.value}`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: "event",
+      headerName: "Event",
+      flex: 1,
+      hideable: false,
+      renderCell: (params) => (
+        <Tooltip title={`Event: ${params.value}`} arrow>
           <span>{params.value}</span>
         </Tooltip>
       ),
@@ -42,7 +75,10 @@ const LogViewer = () => {
   const rows = logs.map((log, index) => ({
     id: index,
     timestamp: log.timestamp,
-    category: log.category,
+    system: log.systemId,
+    level: log.level,
+    component: log.component,
+    event: log.event,
     message: log.message,
   }));
 
@@ -52,13 +88,25 @@ const LogViewer = () => {
 
       <DataGrid
         getRowHeight={() => 'auto'}
+        slots={{ toolbar: GridToolbar }}
         rows={rows} 
         columns={columns}
         getRowClassName={(params) =>
           params.indexRelativeToCurrentPage % 2 === 0 ? "even" : "odd"
         }
         initialState={{
-          pagination: { paginationModel: { pageSize: 10 } },
+          pagination: { paginationModel: { pageSize: 20 } },
+          columns: {
+            columnVisibilityModel: {
+              id: false,
+              timestamp: true,
+              system: true,
+              level: false,
+              component: false,
+              event: true,
+              message: false,
+            },
+          },
         }}
         pageSizeOptions={[10, 20, 50]}
         disableColumnResize

@@ -7,14 +7,14 @@ public class DroneStatus {
     private Position position;
     private double batteryLevel;
     private List<Position> flightPlan;
-    private String log;
+    private List<LogEntry> logs;
 
-    public DroneStatus(String droneId, Position position, double batteryLevel, List<Position> flightPlan, String log) {
+    public DroneStatus(String droneId, Position position, double batteryLevel, List<Position> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = position;
         this.batteryLevel = batteryLevel;
         this.flightPlan = flightPlan;
-        this.log = log;
+        this.logs = logs;
     }
 
     public String getDroneId() {
@@ -49,11 +49,11 @@ public class DroneStatus {
         this.flightPlan = flightPlan;
     }
 
-    public String getLog() {
-        return log;
+    public List<LogEntry> getLogs() {
+        return logs;
     }
 
-    public void setLog(String log) {
-        this.log = log;
+    public void setLogs(List<LogEntry> logs) {
+        this.logs = logs;
     }
 }

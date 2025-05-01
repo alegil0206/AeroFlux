@@ -5,17 +5,18 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.brianzolilecchesi.drone.domain.component.Radio;
+import com.brianzolilecchesi.drone.domain.dto.RadioMessageDTO;
 import com.brianzolilecchesi.drone.DroneSystem;
 
 public class SimulatedRadio implements Radio {
 
     private static final double MAX_TRANSMISSION_DISTANCE = 500.0; // Distanza massima di trasmissione in metri
     private final List<DroneSystem> drones = new CopyOnWriteArrayList<>();
-    private final List<String> messageQueue = new ArrayList<>();
+    private final List<RadioMessageDTO> messageQueue = new ArrayList<>();
     private DroneSystem sender;
 
     @Override
-    public void sendMessage(String message) {
+    public void sendMessage(RadioMessageDTO message) {
         for (DroneSystem receiver : drones) {
             if (!receiver.getDroneProperties().getId().equals(sender.getDroneProperties().getId()) && isWithinRange(sender, receiver)) {
                 ((SimulatedRadio) receiver.getHardwareAbstractionLayer().getRadio()).receiveMessage(message);
@@ -24,13 +25,13 @@ public class SimulatedRadio implements Radio {
     }
 
     @Override
-    public List<String> getReceivedMessages() {
-        List<String> receivedMessage = new ArrayList<>(messageQueue);
+    public List<RadioMessageDTO> getReceivedMessages() {
+        List<RadioMessageDTO> receivedMessage = new ArrayList<>(messageQueue);
         messageQueue.clear(); 
         return receivedMessage;
     }
 
-    public void receiveMessage(String message) {
+    public void receiveMessage(RadioMessageDTO message) {
         messageQueue.add(message);
     }
 

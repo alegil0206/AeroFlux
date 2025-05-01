@@ -1,32 +1,24 @@
 package com.brianzolilecchesi.drone.domain.model;
 
-import java.time.Instant;
-
 public class LogEntry {
-    private final Instant timestamp;
-    private final String droneId;
+    private final String systemId;
     private final String level;
     private final String component;
     private final String event;
     private final String message;
-    private final String dateTime;
+    private final String timestamp;
 
-    public LogEntry(String droneId, String level, String component, String event, String message, String dateTime) {
-        this.timestamp = Instant.now();
-        this.droneId = droneId;
+    public LogEntry(String systemId, String level, String component, String event, String message, String timestamp) {
+        this.systemId = systemId;
         this.level = level;
         this.component = component;
         this.event = event;
         this.message = message;
-        this.dateTime = dateTime;
+        this.timestamp = timestamp;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public String getDroneId() {
-        return droneId;
+    public String getSystemId() {
+        return systemId;
     }
 
     public String getLevel() {
@@ -45,15 +37,15 @@ public class LogEntry {
         return message;
     }
 
-    public String getDateTime() {
-        return dateTime;
+    public String getTimestamp() {
+        return timestamp;
     }
 
     @Override
     public String toString() {
         return String.format(
             "%s [%s] [%s] [%s] %s - %s | %s",
-            timestamp, level, droneId, component, event, message, dateTime != null ? dateTime : ""
+            timestamp, level, systemId, component, event, message, timestamp != null ? timestamp : ""
         );
     }
 }

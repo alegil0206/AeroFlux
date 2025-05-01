@@ -39,6 +39,12 @@ public class SimulatedMotor implements Motor {
         altimeter.setAltitude(position.getAltitude());
     }
 
+    @Override
+    public void hover() {
+        // Simulate hovering by doing nothing
+        // In a real drone, this would involve maintaining position and altitude
+    }
+
     /*
     @Override
     public void move(double distance, double bearing, double altitude) {

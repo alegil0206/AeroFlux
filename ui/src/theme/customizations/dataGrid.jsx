@@ -14,6 +14,7 @@ import { gray } from '../../theme/themePrimitives';
 export const dataGridCustomizations = {
   MuiDataGrid: {
     styleOverrides: {
+
       root: ({ theme }) => ({
         '--DataGrid-overlayHeight': '300px',
         overflow: 'clip',

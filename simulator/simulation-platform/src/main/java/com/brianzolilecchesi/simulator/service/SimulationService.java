@@ -1,6 +1,7 @@
 package com.brianzolilecchesi.simulator.service;
 
 import com.brianzolilecchesi.drone.DroneSystem;
+import com.brianzolilecchesi.simulator.model.Constants;
 import com.brianzolilecchesi.simulator.model.SimulationStatus;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,7 @@ public class SimulationService {
         simulationStatus.setPaused(false);
 
         List<DroneSystem> drones = droneService.createDrones();
-        logService.sendLog("INFO", "Execution started with interval " + interval + "ms");
+        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started with interval " + interval + " ms");
 
         // Starts the simulation in a separate thread
         simulationTaskService.runSimulationLoop(drones, interval);
@@ -42,14 +43,14 @@ public class SimulationService {
         simulationStatus.setRunning(false);
         simulationStatus.setPaused(false);
         droneService.clearDrones();
-        logService.sendLog("INFO", "Execution stopped");
+        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_STOP, "Simulation stopped");
         return simulationStatus.getStatus();
     }
 
     public String pause() {
         if (simulationStatus.isRunning() && !simulationStatus.isPaused()) {
             simulationStatus.setPaused(true);
-            logService.sendLog("INFO", "Execution paused");
+            logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_PAUSE, "Execution paused");
         }
         return simulationStatus.getStatus();
     }
@@ -57,7 +58,7 @@ public class SimulationService {
     public String resume() {
         if (simulationStatus.isRunning() && simulationStatus.isPaused()) {
             simulationStatus.setPaused(false);
-            logService.sendLog("INFO", "Execution resumed");
+            logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_RESUME, "Execution resumed");
         }
         return simulationStatus.getStatus();
     }

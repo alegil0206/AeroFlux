@@ -51,7 +51,7 @@ public class HardwareAbstractionLayer {
         return altimeter;
     }
 
-    public Motor geMotor() {
+    public Motor getMotor() {
         return motor;
     }
 }

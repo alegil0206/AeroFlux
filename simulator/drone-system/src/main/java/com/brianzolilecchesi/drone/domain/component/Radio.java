@@ -2,7 +2,9 @@ package com.brianzolilecchesi.drone.domain.component;
 
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.dto.RadioMessageDTO;
+
 public interface Radio {
-    void sendMessage(String message);
-    List<String> getReceivedMessages();
+    void sendMessage(RadioMessageDTO message);
+    List<RadioMessageDTO> getReceivedMessages();
 }

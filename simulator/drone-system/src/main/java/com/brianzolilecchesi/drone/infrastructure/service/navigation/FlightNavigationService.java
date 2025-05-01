@@ -3,6 +3,8 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.dto.FlightPlanDTO;
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
+import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import java.util.List;
 
@@ -42,6 +44,8 @@ public class FlightNavigationService implements NavigationService {
     private FlightPlan flightPlan;
     private List<Position> positions;
     private int nextPositionIndex;
+
+	private volatile DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
     public FlightNavigationService(GPS gps, Altimeter altimeter, LogService logService) {
         this(gps, altimeter, logService, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
@@ -122,6 +126,12 @@ public class FlightNavigationService implements NavigationService {
     
     @Override
     public void calculateFlightPlan(final Position start, final Position destination) {
+
+		if (flightPlanStatus == DataStatus.LOADING) {
+			return;
+		}
+		flightPlanStatus = DataStatus.LOADING;
+
         GridZone grid = null;
         
         int i = 0, maxIter = 7;
@@ -142,6 +152,7 @@ public class FlightNavigationService implements NavigationService {
         } while (i < maxIter && !flightPlan.hasPath());
         
 		if (!flightPlan.hasPath()) {
+			flightPlanStatus = DataStatus.FAILED;
 			throw new IllegalStateException("Flight plan not found");
 		}
 		
@@ -150,6 +161,7 @@ public class FlightNavigationService implements NavigationService {
 				.refine(flightPlan.getPathPositions(), STEP_SIZE);
 
 		nextPositionIndex = 1;
+		flightPlanStatus = DataStatus.AVAILABLE;
     }
 
     @Override
@@ -176,4 +188,49 @@ public class FlightNavigationService implements NavigationService {
 		
 		return nextPositionIndex >= positions.size();
     }
+
+	@Override
+	public boolean hasReached(Coordinate coordinate) {
+		if (!flightPlan.hasPath()) {
+			return false;
+		}
+		
+		return nextPositionIndex >= positions.size();
+	}
+
+	@Override
+	public boolean isOnGround() {
+		return altimeter.getAltitude() < 0.1;
+	}
+
+	@Override
+	public void configureVerticalLanding() {
+		Position onGroundPosition = new Position(
+			getCurrentPosition().getLatitude(),
+			getCurrentPosition().getLongitude(),
+			0
+		);
+		calculateFlightPlan(
+			getCurrentPosition(),
+			onGroundPosition
+		);
+	}
+
+	@Override
+	public Position getNextPosition() {
+		if (!flightPlan.hasPath()) {
+			return null;
+		}
+		
+		if (nextPositionIndex >= positions.size()) {
+			return null;
+		}
+		
+		return positions.get(nextPositionIndex);
+	}
+
+	@Override
+	public DataStatus getFlightPlanStatus() {
+		return flightPlanStatus;
+	}
 }

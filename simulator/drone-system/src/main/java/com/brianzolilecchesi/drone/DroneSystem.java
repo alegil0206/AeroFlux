@@ -1,21 +1,24 @@
 package com.brianzolilecchesi.drone;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.Battery;
 import com.brianzolilecchesi.drone.domain.component.Camera;
 import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.component.Radio;
 import com.brianzolilecchesi.drone.domain.component.Motor;
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
+import com.brianzolilecchesi.drone.domain.model.DataStatus;
+import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.service.battery.BatteryService;
 import com.brianzolilecchesi.drone.domain.service.communication.CommunicationService;
 import com.brianzolilecchesi.drone.domain.service.landing.LandingService;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.service.navigation.NavigationService;
 import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionLayer;
@@ -50,104 +53,106 @@ public class DroneSystem {
     private final WeatherService weatherService;
     private final AuthorizationService authorizationService;
     private final SupportPointService supportPointService;
-    private final WeatherServiceRestClient weatherServiceRestClient;
-    private final GeoAwarenessRestClient geoAwarenessServiceRestClient;
-    private final GeoAuthorizationRestClient geoAuthorizationRestClient;
     
-    private String log;
 	private int i = 0;
+    private boolean isEmergency = false;
     
     public DroneSystem(
             DroneProperties droneProperties,
-            Battery battery,
-            Radio radio,
-            Camera camera,
-            GPS gps,
-            Altimeter altimeter, 
-            Motor motor ) {
+            HardwareAbstractionLayer hardwareAbstractionLayer
+            ) {
         this.droneProperties = droneProperties;
-        this.hardwareAbstractionLayer = new HardwareAbstractionLayer(battery, radio, camera, gps, altimeter, motor);
+        this.hardwareAbstractionLayer = hardwareAbstractionLayer;
         this.logService = new StepLogService(droneProperties.getId());
-        this.batteryService = new BatteryMonitor(battery, logService);
-        this.communicationService = new RadioService(radio, logService);
-        this.landingService = new SafeLandingService(camera, logService);
-        this.navigationService = new FlightNavigationService(gps, altimeter, logService);
+        this.batteryService = new BatteryMonitor(hardwareAbstractionLayer.getBattery(), logService);
+        this.communicationService = new RadioService(hardwareAbstractionLayer.getRadio(), logService);
+        this.landingService = new SafeLandingService(hardwareAbstractionLayer.getCamera(), logService);
+        this.navigationService = new FlightNavigationService(hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
         this.geozoneNavigationService = new GeozoneNavigationService();
-        this.flightController = new FlightController(motor, gps, altimeter, logService);
-        this.weatherServiceRestClient = new WeatherServiceRestClient();
-        this.geoAwarenessServiceRestClient = new GeoAwarenessRestClient();
-        this.geoAuthorizationRestClient= new GeoAuthorizationRestClient() ;
-        this.geoZoneService = new GeoZoneService(geoAwarenessServiceRestClient);
-        this.weatherService = new WeatherService(weatherServiceRestClient);
-        this.authorizationService= new AuthorizationService(geoAuthorizationRestClient);
-        this.supportPointService = new SupportPointService(geoAwarenessServiceRestClient);
+        this.flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
+
+        this.geoZoneService = new GeoZoneService();
+        this.weatherService = new WeatherService();
+        this.authorizationService= new AuthorizationService();
+        this.supportPointService = new SupportPointService();
     }
 
     public DroneStatus executeStep() {
 
-        log = "Drone " + droneProperties.getId() + ". Executing step " + i++ + ". ";
+        if (flightController.isPoweredOn()) {
 
-        if (i == 1){
-            CompletableFuture.runAsync(() -> {
-                System.out.println("richiesta a ciclo " + i);
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            logService.info(LogConstants.Service.DRONE_SYSTEM, "Step", "Executing step " + i++);
+
+            if ( navigationService.hasReached(droneProperties.getDestination()) && navigationService.isOnGround()) {
+                flightController.powerOff();
+            } else if(batteryService.isBatteryCritical() && navigationService.isOnGround()) {
+                logService.info(LogConstants.Service.DRONE_SYSTEM, "Landed", "Drone is on the ground and battery is critical.");
+                flightController.powerOff();
+            } else if (navigationService.isOnGround() && navigationService.getFlightPlanStatus() != DataStatus.AVAILABLE) {
+
+                if(navigationService.getFlightPlanStatus() == DataStatus.NOT_REQUESTED || navigationService.getFlightPlanStatus() == DataStatus.FAILED || navigationService.getFlightPlanStatus() == DataStatus.EXPIRED) {
+                    DataStatus geoZoneDataStatus = geoZoneService.getGeoZonesStatus();
+                    if (geoZoneDataStatus == DataStatus.NOT_REQUESTED || geoZoneDataStatus == DataStatus.EXPIRED) {
+                        geoZoneService.fetchGeoZones();
+                    } else if (geoZoneDataStatus == DataStatus.FAILED) {
+                        geoZoneService.fetchGeoZones();
+                    } else if (geoZoneDataStatus == DataStatus.AVAILABLE) {
+                        List<GeoZone> geoZones = geoZoneService.getGeoZones();
+                        geozoneNavigationService.addGeoZones(geoZones);
+                        navigationService.calculateFlightPlan( 
+                                new Position(droneProperties.getSource(), 0),
+                                new Position(droneProperties.getDestination(), 0)
+                                );
+                    }          
                 }
-                System.out.println("concluso a ciclo " + i);
-            });
-        }
-
-        
-        if ( navigationService.hasReached(new Position(droneProperties.getDestination(), 0 ))) {
-            if (flightController.isPoweredOn()) {
-                log += "Drone has reached the destination.";
-                flightController.powerOff();
             } else {
-                return null;
+
+                double batteryLevel = batteryService.getBatteryLevel();
+                logService.info(LogConstants.Service.BATTERY_SERVICE, "Battery", "Battery level: " + batteryLevel);
+
+                if (batteryService.isBatteryCritical()) {
+                    logService.info(LogConstants.Service.BATTERY_SERVICE, "Battery", "Battery level is critical: " + batteryLevel);
+                    Position currentPosition = navigationService.getCurrentPosition();
+                    Boolean isSafe = landingService.evaluateLandingZone(new Coordinate(currentPosition.getLatitude(), currentPosition.getLongitude()));
+                    if (isSafe) {
+                        logService.info(LogConstants.Service.DRONE_SYSTEM, "Landing", "Configuring landing at position: " + currentPosition);
+                    } else {
+                        logService.info(LogConstants.Service.DRONE_SYSTEM, "Emergency Landing", "Configuring emergency landing at position: " + currentPosition);
+                        isEmergency = true;
+                    }
+                    navigationService.configureVerticalLanding();
+                }
+
+                Position nextPosition = navigationService.getNextPosition();
+
+                List<NearbyDroneStatus> nearbyDrones = communicationService.getNearbyDroneStatus();
+                boolean droneProximityWarning = false;
+                for (NearbyDroneStatus nearbyDrone : nearbyDrones) {
+                    if(nearbyDrone.getNextPosition().distance(nextPosition) < 20.0) {
+                        // check precedenze                        
+                        droneProximityWarning = true;
+                        break;
+                    }
+                }
+
+                if (droneProximityWarning) {
+                    logService.info(LogConstants.Service.DRONE_SYSTEM, "Drone Proximity", "Drone is too close to another drone.");
+                    flightController.hover();
+
+                } else {
+                    if (navigationService.getFlightPlanStatus() == DataStatus.AVAILABLE) {
+                        flightController.moveTo(navigationService.followFlightPlan());               
+                    } else {
+                        logService.info(LogConstants.Service.DRONE_SYSTEM, "Flight Plan", "Flight plan is not available.");
+                        flightController.hover();
+                    }
+                }
             }
-        } else if(batteryService.isBatteryCritical() && navigationService.getCurrentPosition().getAltitude() < 0.1){
-            if (flightController.isPoweredOn()) {
-                log += "Battery is critical and drone is on the ground.";
-                flightController.powerOff();
-            } else {
-                return null;
-            }
-        } else {
-            if (!flightController.isPoweredOn()) {
-                flightController.powerOn();
-                log += "Drone is powered on. ";
-                
-                geoZoneService.fetchGeoZones();
-                List<GeoZone> geoZones = geoZoneService.getGeoZones();
-                geozoneNavigationService.addGeoZones(geoZones);
-                navigationService.calculateFlightPlan( 
-                		new Position(droneProperties.getSource(), 0),
-                        new Position(droneProperties.getDestination(), 0)
-                        );
-            }
 
-            double batteryLevel = batteryService.getBatteryLevel();
-            log += " Battery level: " + batteryLevel + ". ";
-
-            if (batteryService.isBatteryCritical()) {
-                log += "Battery is critical. ";
-                Position currentPosition = navigationService.getCurrentPosition();
-                Position placeToLand = new Position(currentPosition.getLatitude(), currentPosition.getLongitude(), 0);
-                navigationService.calculateFlightPlan(currentPosition, placeToLand);
-            }
-
-            communicationService.sendMessage("Drone position: " + navigationService.getCurrentPosition());
-            log += "Received message: " + communicationService.getMessages() + ". ";
-
-            Position nextPosition = navigationService.followFlightPlan();
-
-            flightController.moveTo(nextPosition);
-            log += "Drone moved to position: " + nextPosition + ". ";
+            communicationService.sendDroneStatus(new NearbyDroneStatus(droneProperties.getId(), false, navigationService.getCurrentPosition(), navigationService.getNextPosition()));
+            return getDroneStatus();
         }
-
-        return getDroneStatus();
+        return null;
     }
 
     public DroneStatus getDroneStatus() {
@@ -155,8 +160,8 @@ public class DroneSystem {
                 droneProperties.getId(),
                 navigationService.getCurrentPosition(),
                 batteryService.getBatteryLevel(),
-                navigationService.getFlightPlan().getPositions(),
-                log
+                navigationService.getFlightPlan() != null ? navigationService.getFlightPlan().getPositions() : Collections.emptyList(),
+                logService.extractLogEntries()
         );
     }
 
@@ -168,4 +173,13 @@ public class DroneSystem {
         return hardwareAbstractionLayer;
     }
     
-} 
+    public void powerOn() {
+        flightController.powerOn();
+    }
+
+    public void powerOff() {
+        flightController.powerOff();
+    }
+
+}
+

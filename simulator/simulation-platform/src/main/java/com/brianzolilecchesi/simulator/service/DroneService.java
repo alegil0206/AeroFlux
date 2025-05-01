@@ -9,6 +9,7 @@ import com.brianzolilecchesi.simulator.model.drone.SimulatedMotor;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedAltimeter;
 
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
+import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionLayer;
 import com.brianzolilecchesi.drone.domain.model.AdaptiveCapabilities;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
@@ -61,8 +62,17 @@ class DroneService {
                     droneDTO.getDestination().getLongitude()
                 )
             );
+            HardwareAbstractionLayer hardwareAbstractionLayer = new HardwareAbstractionLayer(
+                battery,
+                radio,
+                camera,
+                gps,
+                altimeter,
+                motor
+            );
 
-            DroneSystem drone = new DroneSystem(droneProperties, battery, radio, camera, gps, altimeter, motor);
+            DroneSystem drone = new DroneSystem(droneProperties, hardwareAbstractionLayer);
+            drone.powerOn();
             drones.add(drone);
         }
 

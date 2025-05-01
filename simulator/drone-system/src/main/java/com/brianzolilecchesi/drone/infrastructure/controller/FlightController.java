@@ -4,6 +4,7 @@ import com.brianzolilecchesi.drone.domain.component.Motor;
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
 
 public class FlightController {
@@ -23,10 +24,12 @@ public class FlightController {
 
     public void powerOn() {
         motor.start();
+        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Startup", "Powering on the drone");
     }
 
     public void powerOff() {
         motor.stop();
+        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Shutdown", "Powering off the drone");
     }
 
     public boolean isPoweredOn() {
@@ -35,6 +38,12 @@ public class FlightController {
 
     public void moveTo(Position position ){
         motor.move(position);
+        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Move", "Moving to position: " + position);
+    }
+
+    public void hover() {
+        motor.hover();
+        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Hover", "Hovering in place");
     }
 
     /*

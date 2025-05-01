@@ -2,6 +2,7 @@ package com.brianzolilecchesi.simulator.service;
 
 import com.brianzolilecchesi.drone.DroneSystem;
 import com.brianzolilecchesi.drone.domain.model.DroneStatus;
+import com.brianzolilecchesi.simulator.model.Constants;
 import com.brianzolilecchesi.simulator.model.SimulationStatus;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
 import com.brianzolilecchesi.simulator.dto.DroneStatusDTO;
@@ -32,10 +33,10 @@ public class SimulationEngine {
                             droneStatus.getPosition(),
                             droneStatus.getBatteryLevel(),
                             droneStatus.getFlightPlan(),
-                            droneStatus.getLog()
+                            droneStatus.getLogs()
                         );
                         logService.sendDroneStatus(droneStatusDTO);
-                        logService.sendLog(drone.getDroneProperties().getName(), droneStatus.getLog());
+                        logService.registerLogEntries(droneStatus.getLogs());
                         ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);                        
                     }
                 }
@@ -47,6 +48,6 @@ public class SimulationEngine {
                 }
             }
         }
-        logService.sendLog("INFO", "Simulation task completed.");
+        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_COMPLETED, "Simulation completed");
     }
 }

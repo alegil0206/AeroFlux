@@ -10,4 +10,5 @@ public interface Motor {
     void stop();
     // void move(double distance, double bearing, double altitude);
     void move(Position position);
+    void hover();
 }

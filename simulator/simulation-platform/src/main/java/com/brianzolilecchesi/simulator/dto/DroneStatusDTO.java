@@ -2,6 +2,7 @@ package com.brianzolilecchesi.simulator.dto;
 
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.model.LogEntry;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
 public class DroneStatusDTO {
@@ -9,24 +10,24 @@ public class DroneStatusDTO {
     private PositionDTO position;
     private double batteryLevel;
     private List<PositionDTO> flightPlan;
-    private String log;
+    private List<LogEntry> logs;
 
-    public DroneStatusDTO(String droneId, PositionDTO position, double batteryLevel, List<PositionDTO> flightPlan, String log) {
+    public DroneStatusDTO(String droneId, PositionDTO position, double batteryLevel, List<PositionDTO> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = position;
         this.batteryLevel = batteryLevel;
         this.flightPlan = flightPlan;
-        this.log = log;
+        this.logs = logs;
     }
 
-    public DroneStatusDTO(String droneId, Position position, double batteryLevel, List<Position> flightPlan, String log) {
+    public DroneStatusDTO(String droneId, Position position, double batteryLevel, List<Position> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = new PositionDTO(position);
         this.batteryLevel = batteryLevel;
         this.flightPlan = flightPlan.stream()
                 .map(PositionDTO::new)
                 .toList();
-        this.log = log; 
+        this.logs = logs; 
     }
 
     public String getDroneId() {
@@ -61,11 +62,11 @@ public class DroneStatusDTO {
         this.flightPlan = flightPlan;
     }
 
-    public String getLog() {
-        return log;
+    public List<LogEntry> getLogs() {
+        return logs;
     }
 
-    public void setLog(String log) {
-        this.log = log;
+    public void setLogs(List<LogEntry> logs) {
+        this.logs = logs;
     }
 }

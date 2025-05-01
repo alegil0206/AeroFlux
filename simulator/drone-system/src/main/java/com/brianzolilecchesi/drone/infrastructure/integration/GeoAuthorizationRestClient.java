@@ -4,6 +4,7 @@ import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationRequestDTO;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
 import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
+import com.brianzolilecchesi.drone.domain.exception.ExternalServiceException;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,7 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
         this.restTemplate = restTemplate;
     }
 
-    public AuthorizationResponseDTO requestAuthorization(AuthorizationRequestDTO authorizationRequestDTO) throws AuthorizationException {
+    public AuthorizationResponseDTO requestAuthorization(AuthorizationRequestDTO authorizationRequestDTO) throws AuthorizationException, ExternalServiceException {
         try {
             ResponseEntity<AuthorizationResponseDTO> responseEntity = restTemplate.postForEntity(
                 authorizationApiUrl + "/authorization",
@@ -37,22 +38,16 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
                 AuthorizationResponseDTO.class
             );
             return responseEntity.getBody();
-        } catch (HttpClientErrorException.Forbidden e) {
-            System.out.println(e.getMessage());
-            throw new AuthorizationException(e.getMessage());
         } catch (HttpClientErrorException e) {
-            System.out.println(e.getMessage());
             throw new AuthorizationException(e.getMessage());
         } catch (RestClientException e) {
-            System.out.println(e.getMessage());
-            throw new AuthorizationException(e.getMessage());
+            throw new ExternalServiceException(e.getMessage());
         }
     }
 
     @Override
-    public List<AuthorizationResponseDTO> getAuthorizations(String droneId) {
+    public List<AuthorizationResponseDTO> getAuthorizations(String droneId) throws AuthorizationException, ExternalServiceException {
         System.out.println("Call to geo-authorization API for the drone: " + droneId);
-
         try {
             ResponseEntity<List<AuthorizationResponseDTO>> response = restTemplate.exchange(
                 authorizationApiUrl + "/authorization/drone/" + droneId,
@@ -60,16 +55,11 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
                 null,
                 new ParameterizedTypeReference<List<AuthorizationResponseDTO>>() {}
             );
-
             return response.getBody() != null ? response.getBody() : Collections.emptyList();
-
-        } catch (HttpClientErrorException.NotFound e) {
-            System.err.println("Drone not found: " + e.getMessage());
-            return Collections.emptyList();
-
+        } catch (HttpClientErrorException e) {
+            throw new AuthorizationException("Drone not found: " + e.getMessage());
         } catch (RestClientException e) {
-            System.err.println("Error during comunication with authorization service: " + e.getMessage());
-            return Collections.emptyList();
+            throw new ExternalServiceException("Error during comunication with authorization service: " + e.getMessage());
         }
     }
 }
