@@ -5,5 +5,6 @@ public enum DataStatus {
     LOADING,
     AVAILABLE,
     FAILED,
-    EXPIRED
+    EXPIRED,
+    UPDATING
 }

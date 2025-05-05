@@ -46,6 +46,17 @@ public class FlightController {
         logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Hover", "Hovering in place");
     }
 
+    public Position getCurrentPosition() {
+        double latitude = gps.getLatitude();
+        double longitude = gps.getLongitude();
+        double altitude = altimeter.getAltitude();
+        return new Position(latitude, longitude, altitude);
+    }
+
+    public boolean isOnGround() {
+        return altimeter.getAltitude() <= 0.1;
+    }
+
     /*
     public void moveTo(Position position){
         double targetLatitude = position.getLatitude();

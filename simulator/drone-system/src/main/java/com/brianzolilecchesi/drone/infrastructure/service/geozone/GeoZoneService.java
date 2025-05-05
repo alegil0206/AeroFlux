@@ -24,9 +24,7 @@ public class GeoZoneService {
 
     public void fetchGeoZones() {
 
-        if (geoZonesStatus == DataStatus.LOADING) {
-            return;
-        }
+        if (geoZonesStatus == DataStatus.LOADING) return;
 
         geoZonesStatus = DataStatus.LOADING;
 

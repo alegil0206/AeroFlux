@@ -1,7 +1,5 @@
 package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 
-import com.brianzolilecchesi.drone.domain.component.Altimeter;
-import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.dto.FlightPlanDTO;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
@@ -32,36 +30,31 @@ public class FlightNavigationService implements NavigationService {
 	public static final int MAX_TIME = 60;
 	
 	public static final double STEP_SIZE = 20.0;
-	
-    private final GPS gps;
-    private final Altimeter altimeter;
+
+	public static final int AVARAGE_CALCULATION_STEPS = 20;
+
 	private final LogService logService;
     
     private double initialCellWidth;
     private double startingSensitivity;
     private List<Double> altitudeLevels;
     
-    private FlightPlan flightPlan;
     private List<Position> positions;
     private int nextPositionIndex;
 
 	private volatile DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
-    public FlightNavigationService(GPS gps, Altimeter altimeter, LogService logService) {
-        this(gps, altimeter, logService, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
+    public FlightNavigationService(LogService logService) {
+        this(logService, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
     }
     
     public FlightNavigationService(
-    		GPS gps, 
-    		Altimeter altimeter,
 			LogService logService,
     		double initialCellWidth,
     		List<Double> altitudeLevels
     		) {
     	
         this(
-        		gps, 
-        		altimeter,
 				logService,
         		initialCellWidth,
         		altitudeLevels,
@@ -74,8 +67,6 @@ public class FlightNavigationService implements NavigationService {
     }
     
     public FlightNavigationService(
-    		GPS gps, 
-    		Altimeter altimeter,
 			LogService logService,
     		double initialCellWidth,
     		List<Double> altitudeLevels,
@@ -86,15 +77,12 @@ public class FlightNavigationService implements NavigationService {
     		int maxTime
     		) {
     	
-        this.gps = gps;
-        this.altimeter = altimeter;
 		this.logService = logService;
         
         setInitialCellWidth(initialCellWidth);
         setStartingSensitivity(startingSensitivity);
         setAltitudeLevels(altitudeLevels);
         
-        this.flightPlan = new FlightPlan();
         this.positions = new ArrayList<>();
         this.nextPositionIndex = 1;
         
@@ -111,29 +99,70 @@ public class FlightNavigationService implements NavigationService {
 	public void setAltitudeLevels(final List<Double> altitudeLevels) {this.altitudeLevels = altitudeLevels;}
 
 	public FlightPlanDTO getFlightPlan() {
-		if (!flightPlan.hasPath()) {
+		if (positions == null || positions.isEmpty()) {
 			return null;
 		}
-		return new FlightPlanDTO(flightPlan);
+		return new FlightPlanDTO(positions);
 	}
-    
-	FlightPlan getFlightPlanTest() {return flightPlan;}
-	
+    	
     @Override
-    public Position getCurrentPosition() {
-        return new Position(gps.getLatitude(), gps.getLongitude(), altimeter.getAltitude());
-    }
-    
-    @Override
-    public void calculateFlightPlan(final Position start, final Position destination) {
-
+    public void generateFlightPlan(final Position start, final Position destination) {
 		if (flightPlanStatus == DataStatus.LOADING) {
 			return;
 		}
 		flightPlanStatus = DataStatus.LOADING;
 
-        GridZone grid = null;
+        FlightPlan generatedFlightPlan = calculateFlightPlan(start, destination);
         
+		if (!generatedFlightPlan.hasPath()) {
+			flightPlanStatus = DataStatus.FAILED;
+			throw new IllegalStateException("Flight plan not found");
+		}
+
+		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
+				.getInstance()
+				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+
+		positions.subList(nextPositionIndex, positions.size()).clear();
+		positions.addAll(newFlightPlanPositions);
+	}
+
+	@Override
+	public void optimizeFlightPlan() {
+		if (flightPlanStatus != DataStatus.AVAILABLE ) {
+			return;
+		}
+
+		int remainingPositions = positions.size() - nextPositionIndex;
+		if (remainingPositions > AVARAGE_CALCULATION_STEPS) {
+			return;
+		}
+
+		int calculateFrom = nextPositionIndex + AVARAGE_CALCULATION_STEPS;
+		FlightPlan generatedFlightPlan = calculateFlightPlan(positions.get(calculateFrom), positions.getLast());
+		
+		if (!generatedFlightPlan.hasPath()) {
+			return;
+		}
+
+		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
+				.getInstance()
+				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+		
+
+		if (remainingPositions < newFlightPlanPositions.size()) {
+			return;
+		}
+
+		positions.subList(calculateFrom, positions.size()).clear();
+		positions.addAll(newFlightPlanPositions);
+	}
+
+	private FlightPlan calculateFlightPlan(final Position start, final Position destination) {
+
+        GridZone grid = null;
+		FlightPlan generatedFlightPlan = null;
+    
         int i = 0, maxIter = 7;
         do {
         	grid = ZoneAdapterFacade.getInstance().getGridAdapter().build(
@@ -141,7 +170,7 @@ public class FlightNavigationService implements NavigationService {
         			destination, 
         			GRID_EXPANSION_METERS * Math.pow(2, i++)
         			);
-	    	flightPlan = FlightPlanCalculatorSingleton.getInstance().computeFlightPlan(
+	    	generatedFlightPlan = FlightPlanCalculatorSingleton.getInstance().computeFlightPlan(
 	        		grid,
 	        		getAltitudeLevels(), 
 	        		getInitialCellWidth(), 
@@ -149,24 +178,14 @@ public class FlightNavigationService implements NavigationService {
 	        		destination
 	        		);
 	    	
-        } while (i < maxIter && !flightPlan.hasPath());
+        } while (i < maxIter && !generatedFlightPlan.hasPath());
         
-		if (!flightPlan.hasPath()) {
-			flightPlanStatus = DataStatus.FAILED;
-			throw new IllegalStateException("Flight plan not found");
-		}
-		
-		positions = FlightPlanRefinerSingleton
-				.getInstance()
-				.refine(flightPlan.getPathPositions(), STEP_SIZE);
-
-		nextPositionIndex = 1;
-		flightPlanStatus = DataStatus.AVAILABLE;
+		return generatedFlightPlan;
     }
 
     @Override
     public Position followFlightPlan() {
-		if (!flightPlan.hasPath()) {
+		if (positions == null || positions.isEmpty()) {
 			return null;
 		}
 		
@@ -182,7 +201,7 @@ public class FlightNavigationService implements NavigationService {
 
     @Override
     public boolean hasReached(Position position) {
-		if (!flightPlan.hasPath()) {
+		if (positions == null || positions.isEmpty()) {
 			return false;
 		}
 		
@@ -191,7 +210,7 @@ public class FlightNavigationService implements NavigationService {
 
 	@Override
 	public boolean hasReached(Coordinate coordinate) {
-		if (!flightPlan.hasPath()) {
+		if (positions == null || positions.isEmpty()) {
 			return false;
 		}
 		
@@ -199,26 +218,34 @@ public class FlightNavigationService implements NavigationService {
 	}
 
 	@Override
-	public boolean isOnGround() {
-		return altimeter.getAltitude() < 0.1;
-	}
-
-	@Override
-	public void configureVerticalLanding() {
+	public void configureVerticalLanding(Position currentPosition) {
 		Position onGroundPosition = new Position(
-			getCurrentPosition().getLatitude(),
-			getCurrentPosition().getLongitude(),
+			currentPosition.getLatitude(),
+			currentPosition.getLongitude(),
 			0
 		);
-		calculateFlightPlan(
-			getCurrentPosition(),
+
+		FlightPlan generatedFlightPlan = calculateFlightPlan(
+			currentPosition,
 			onGroundPosition
 		);
+		
+		if (!generatedFlightPlan.hasPath()) {
+			return;
+		}
+
+		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
+				.getInstance()
+				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+		
+		positions.subList(nextPositionIndex, positions.size()).clear();
+		positions.addAll(newFlightPlanPositions);
+		
 	}
 
 	@Override
 	public Position getNextPosition() {
-		if (!flightPlan.hasPath()) {
+		if (positions == null || positions.isEmpty()) {
 			return null;
 		}
 		
