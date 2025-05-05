@@ -2,13 +2,13 @@ package com.brianzolilecchesi.drone.domain.model;
 
 public class NearbyDroneStatus {
     private String droneId;
-    private boolean isEmergency;
+    private DroneFlightMode flightMode;
     private Position position;
     private Position nextPosition;
 
-    public NearbyDroneStatus(String droneId, boolean isEmergency, Position position, Position nextPosition) {
+    public NearbyDroneStatus(String droneId, DroneFlightMode flightMode, Position position, Position nextPosition) {
         this.droneId = droneId;
-        this.isEmergency = isEmergency;
+        this.flightMode = flightMode;
         this.position = position;
         this.nextPosition = nextPosition;
     }
@@ -21,12 +21,12 @@ public class NearbyDroneStatus {
         this.droneId = droneId;
     }
 
-    public boolean isEmergency() {
-        return isEmergency;
+    public DroneFlightMode isEmergency() {
+        return flightMode;
     }
 
-    public void setEmergency(boolean emergency) {
-        isEmergency = emergency;
+    public void setEmergency(DroneFlightMode flightMode) {
+        this.flightMode = flightMode;
     }
 
     public Position getPosition() {
@@ -49,7 +49,7 @@ public class NearbyDroneStatus {
     public String toString() {
         return "RadioMessage{" +
                 "droneId='" + droneId + '\'' +
-                ", isEmergency=" + isEmergency +
+                ", flightMode=" + flightMode +
                 ", position=" + position +
                 ", nextPosition=" + nextPosition +
                 '}';

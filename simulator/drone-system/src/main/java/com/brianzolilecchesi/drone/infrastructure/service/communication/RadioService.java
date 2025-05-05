@@ -36,12 +36,12 @@ public class RadioService implements CommunicationService {
         List<NearbyDroneStatus> nearbyDroneStatuses = messages.stream()
                 .map(message -> new NearbyDroneStatus(
                         message.getDroneId(),
-                        message.isEmergency(),
+                        message.getFlightMode(),
                         message.getPosition(),
                         message.getNexPosition()))
                 .toList();
         for (NearbyDroneStatus status : nearbyDroneStatuses) {
-            logService.info(LogConstants.Service.COMMUNICATION_SERVICE, "Communication Received", status.toString());
+            logService.info(LogConstants.Component.COMMUNICATION_SERVICE, LogConstants.Event.MESSAGE_RECEIVED, status.toString());
         }
         return nearbyDroneStatuses;
     }

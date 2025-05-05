@@ -8,7 +8,7 @@ public class Constants extends LogConstants {
         public static final String SIMULATOR = "Simulator";
     }
 
-    public static class Service extends LogConstants.Service {
+    public static class Service extends LogConstants.Component {
         public static final String SIMULATOR_SERVICE = "SimulatorService";
     }
 

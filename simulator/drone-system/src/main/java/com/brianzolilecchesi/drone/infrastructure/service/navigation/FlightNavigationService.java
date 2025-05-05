@@ -3,9 +3,10 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 import com.brianzolilecchesi.drone.domain.dto.FlightPlanDTO;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import java.util.List;
-
+import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
@@ -42,7 +43,7 @@ public class FlightNavigationService implements NavigationService {
     private List<Position> positions;
     private int nextPositionIndex;
 
-	private volatile DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
+	private DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
     public FlightNavigationService(LogService logService) {
         this(logService, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
@@ -97,71 +98,91 @@ public class FlightNavigationService implements NavigationService {
 	
 	public List<Double> getAltitudeLevels() {return altitudeLevels;}
 	public void setAltitudeLevels(final List<Double> altitudeLevels) {this.altitudeLevels = altitudeLevels;}
-
-	public FlightPlanDTO getFlightPlan() {
-		if (positions == null || positions.isEmpty()) {
-			return null;
-		}
-		return new FlightPlanDTO(positions);
-	}
     	
     @Override
     public void generateFlightPlan(final Position start, final Position destination) {
-		if (flightPlanStatus == DataStatus.LOADING) {
+		if (getFlightPlanStatus() == DataStatus.LOADING) {
 			return;
 		}
-		flightPlanStatus = DataStatus.LOADING;
 
-        FlightPlan generatedFlightPlan = calculateFlightPlan(start, destination);
-        
-		if (!generatedFlightPlan.hasPath()) {
-			flightPlanStatus = DataStatus.FAILED;
-			throw new IllegalStateException("Flight plan not found");
-		}
+		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.GENERATING_FLIGHT_PLAN, "Generating flight plan");
 
-		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-				.getInstance()
-				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+		setFlightPlanStatus(DataStatus.LOADING);
 
-		positions.subList(nextPositionIndex, positions.size()).clear();
-		positions.addAll(newFlightPlanPositions);
+		CompletableFuture.supplyAsync(() -> calculateFlightPlan(start, destination))
+		.thenApply(generatedFlightPlan -> {
+			if (!generatedFlightPlan.hasPath()) {
+				throw new IllegalStateException("Flight plan not found");
+			}
+			return generatedFlightPlan;
+		})
+		.thenAccept(generatedFlightPlan -> {
+
+			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
+					.getInstance()
+					.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+
+			newFlightPlanPositions.addAll(0, getPositions().subList(0, getNextPositionIndex() - 1));
+			setPositions(newFlightPlanPositions);
+			setFlightPlanStatus(DataStatus.AVAILABLE);
+			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_GENERATED, "Flight plan generated: " + generatedFlightPlan.getReport());
+		})
+		.exceptionally(ex -> {
+			setFlightPlanStatus(DataStatus.FAILED);
+			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan generation failed: " + ex.getMessage());
+			return null;
+		});
 	}
 
 	@Override
 	public void optimizeFlightPlan() {
-		if (flightPlanStatus != DataStatus.AVAILABLE ) {
+		if (getFlightPlanStatus() != DataStatus.AVAILABLE ) {
 			return;
 		}
+
+		int nextPositionIndex = getNextPositionIndex();
+		List<Position> positions = getPositions();
 
 		int remainingPositions = positions.size() - nextPositionIndex;
-		if (remainingPositions > AVARAGE_CALCULATION_STEPS) {
+		if (remainingPositions < AVARAGE_CALCULATION_STEPS) {
 			return;
 		}
+
+		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.OPTIMIZING_FLIGHT_PLAN, "Optimizing flight plan");
 
 		int calculateFrom = nextPositionIndex + AVARAGE_CALCULATION_STEPS;
-		FlightPlan generatedFlightPlan = calculateFlightPlan(positions.get(calculateFrom), positions.getLast());
-		
-		if (!generatedFlightPlan.hasPath()) {
-			return;
-		}
 
-		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-				.getInstance()
-				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
-		
+		CompletableFuture.supplyAsync(() -> calculateFlightPlan(positions.get(calculateFrom), positions.getLast()))
+		.thenApply(generatedFlightPlan -> {
+			if (!generatedFlightPlan.hasPath()) {
+				throw new IllegalStateException("Flight plan not found");
+			}
+			return generatedFlightPlan;
+		})
+		.thenAccept(generatedFlightPlan -> {
+			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
+					.getInstance()
+					.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
 
-		if (remainingPositions < newFlightPlanPositions.size()) {
-			return;
-		}
+			newFlightPlanPositions.addAll(0, positions.subList(0, calculateFrom));
 
-		positions.subList(calculateFrom, positions.size()).clear();
-		positions.addAll(newFlightPlanPositions);
+			setPositions(newFlightPlanPositions);
+			setFlightPlanStatus(DataStatus.AVAILABLE);
+			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_OPTIMIZED, "Flight plan optimized: " + generatedFlightPlan.getReport());
+		}).exceptionally(
+			ex -> {
+				setFlightPlanStatus(DataStatus.FAILED);
+				logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan optimization failed: " + ex.getMessage());
+				return null;
+			}
+		);
+
 	}
 
 	private FlightPlan calculateFlightPlan(final Position start, final Position destination) {
 
         GridZone grid = null;
-		FlightPlan generatedFlightPlan = null;
+		FlightPlan generatedFlightPlan = new FlightPlan();
     
         int i = 0, maxIter = 7;
         do {
@@ -185,6 +206,7 @@ public class FlightNavigationService implements NavigationService {
 
     @Override
     public Position followFlightPlan() {
+		List<Position> positions = getPositions();
 		if (positions == null || positions.isEmpty()) {
 			return null;
 		}
@@ -193,9 +215,10 @@ public class FlightNavigationService implements NavigationService {
 		if (hasReached(destination)) {
 			return null;
 		}
-		assert nextPositionIndex < positions.size();
+		assert getNextPositionIndex() < positions.size();
         
-		Position nextPosition = positions.get(nextPositionIndex++);
+		Position nextPosition = getNextPosition();
+		incrementNextPositionIndex();
         return nextPosition;
     }
 
@@ -205,16 +228,16 @@ public class FlightNavigationService implements NavigationService {
 			return false;
 		}
 		
-		return nextPositionIndex >= positions.size();
+		return getNextPositionIndex() >= positions.size();
     }
 
 	@Override
-	public boolean hasReached(Coordinate coordinate) {
+	public synchronized boolean hasReached(Coordinate coordinate) {
 		if (positions == null || positions.isEmpty()) {
 			return false;
 		}
 		
-		return nextPositionIndex >= positions.size();
+		return getNextPositionIndex() >= positions.size();
 	}
 
 	@Override
@@ -238,17 +261,20 @@ public class FlightNavigationService implements NavigationService {
 				.getInstance()
 				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
 		
-		positions.subList(nextPositionIndex, positions.size()).clear();
-		positions.addAll(newFlightPlanPositions);
+		newFlightPlanPositions.addAll(0, positions.subList(0, getNextPositionIndex() - 1));
+		setPositions(newFlightPlanPositions);
+
+		setFlightPlanStatus(DataStatus.AVAILABLE);
 		
 	}
 
 	@Override
 	public Position getNextPosition() {
+		List<Position> positions = getPositions();
 		if (positions == null || positions.isEmpty()) {
 			return null;
 		}
-		
+		int nextPositionIndex = getNextPositionIndex();
 		if (nextPositionIndex >= positions.size()) {
 			return null;
 		}
@@ -256,8 +282,37 @@ public class FlightNavigationService implements NavigationService {
 		return positions.get(nextPositionIndex);
 	}
 
+	public synchronized FlightPlanDTO getFlightPlan() {
+		if (positions == null || positions.isEmpty()) {
+			return null;
+		}
+		return new FlightPlanDTO(positions);
+	}
+
 	@Override
-	public DataStatus getFlightPlanStatus() {
+	public synchronized DataStatus getFlightPlanStatus() {
 		return flightPlanStatus;
+	}
+
+	private synchronized void setFlightPlanStatus(DataStatus status) {
+		this.flightPlanStatus = status;
+	}
+
+	private synchronized void setPositions(List<Position> newPositions) {
+		this.positions = newPositions;
+	}
+	
+	private synchronized List<Position> getPositions() {
+		return positions;
+	}
+	
+	private synchronized int getNextPositionIndex() {
+		return nextPositionIndex;
+	}
+
+	private synchronized void incrementNextPositionIndex() {
+		if (nextPositionIndex < positions.size()) {
+			nextPositionIndex++;
+		}
 	}
 }

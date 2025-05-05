@@ -28,10 +28,10 @@ import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPo
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.handler.FlightPlanningHandler;
-import com.brianzolilecchesi.drone.infrastructure.handler.ShutdownHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.BatteryEmergencyHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.CollisionAvoidanceHandler;
-import com.brianzolilecchesi.drone.infrastructure.handler.FlightMoveHandler;
+import com.brianzolilecchesi.drone.infrastructure.handler.DataAcquisitionHandler;
+import com.brianzolilecchesi.drone.infrastructure.handler.FlightControlHandler;
 
 public class DroneSystem {
 
@@ -51,7 +51,7 @@ public class DroneSystem {
         FlightController flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
         PrecedenceService precedenceService = new DronePrecedenceService();
 
-        GeoZoneService geoZoneService = new GeoZoneService();
+        GeoZoneService geoZoneService = new GeoZoneService(logService);
         WeatherService weatherService = new WeatherService();
         AuthorizationService authorizationService= new AuthorizationService();
         SupportPointService supportPointService = new SupportPointService();
@@ -71,11 +71,11 @@ public class DroneSystem {
         );
 
         this.stepHandlers = List.of(
-                new ShutdownHandler(),
+                new DataAcquisitionHandler(),               
                 new FlightPlanningHandler(),
                 new BatteryEmergencyHandler(),
                 new CollisionAvoidanceHandler(),
-                new FlightMoveHandler()
+                new FlightControlHandler()
         );
     
     }
@@ -84,7 +84,7 @@ public class DroneSystem {
 
         if (!context.flightController.isPoweredOn()) return null;
         
-        context.logService.info(LogConstants.Service.DRONE_SYSTEM, "Step", "Executing step " + context.nextStep());
+        context.logService.info(LogConstants.Component.DRONE_SYSTEM, "Step", "Executing step " + context.nextStep());
 
         for (StepHandler handler : stepHandlers) {
             if (handler.handle(context)) break;
@@ -93,7 +93,7 @@ public class DroneSystem {
         context.communicationService.sendDroneStatus(
             new NearbyDroneStatus(
                 context.props.getId(),
-                context.isEmergency(),
+                context.getFlightMode(),
                 context.flightController.getCurrentPosition(),
                 context.navigationService.getNextPosition()));
     

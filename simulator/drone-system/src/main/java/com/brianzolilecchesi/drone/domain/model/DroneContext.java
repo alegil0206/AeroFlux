@@ -24,7 +24,7 @@ public class DroneContext {
     public final GeozoneNavigationService geozoneNavService;
     public final CommunicationService communicationService;
     public final PrecedenceService precedenceService;
-    private boolean emergency;
+    public DroneFlightMode flightMode = DroneFlightMode.NORMAL;
     private int stepCounter = 0;
 
     public DroneContext(DroneProperties props,
@@ -55,11 +55,11 @@ public class DroneContext {
         return stepCounter++;
     }
 
-    public boolean isEmergency() {
-        return emergency;
+    public DroneFlightMode getFlightMode() {
+        return flightMode;
     }
 
-    public void setEmergency(boolean emergency) {
-        this.emergency = emergency;
+    public void setFlightMode(DroneFlightMode flightMode) {
+        this.flightMode = flightMode;
     }
 }

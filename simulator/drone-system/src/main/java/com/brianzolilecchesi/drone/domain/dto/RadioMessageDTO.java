@@ -1,16 +1,17 @@
 package com.brianzolilecchesi.drone.domain.dto;
 
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
 public class RadioMessageDTO {
     private String droneId;
-    private boolean isEmergency;
+    private DroneFlightMode flightMode;
     private Position position;
     private Position nexPosition;
 
-    public RadioMessageDTO(String droneId, boolean isEmergency, Position position, Position nexPosition) {
+    public RadioMessageDTO(String droneId, DroneFlightMode flightMode, Position position, Position nexPosition) {
         this.droneId = droneId;
-        this.isEmergency = isEmergency;
+        this.flightMode = flightMode;
         this.position = position;
         this.nexPosition = nexPosition;
     }
@@ -23,12 +24,12 @@ public class RadioMessageDTO {
         this.droneId = droneId;
     }
 
-    public boolean isEmergency() {
-        return isEmergency;
+    public DroneFlightMode getFlightMode() {
+        return flightMode;
     }
 
-    public void setEmergency(boolean emergency) {
-        isEmergency = emergency;
+    public void setFlightMode(DroneFlightMode flightMode) {
+        this.flightMode = flightMode;
     }
 
     public Position getPosition() {
@@ -51,7 +52,7 @@ public class RadioMessageDTO {
     public String toString() {
         return "RadioMessage{" +
                 "droneId='" + droneId + '\'' +
-                ", isEmergency=" + isEmergency +
+                ", flightMode=" + flightMode +
                 ", position=" + position +
                 ", nexPosition=" + nexPosition +
                 '}';

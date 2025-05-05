@@ -3,14 +3,20 @@ package com.brianzolilecchesi.drone.infrastructure.handler;
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 
 public class DataAcquisitionHandler implements StepHandler {
 
-    private int stepCounter = 0;
-    private static final int REFRESH_EVERY_N_STEPS = 100;
-    
+    private static final int REFRESH_EVERY_N_STEPS = 25;
+    private int stepCounter = REFRESH_EVERY_N_STEPS;
+
     @Override
     public boolean handle(DroneContext ctx) {
+
+        if (ctx.getFlightMode() == DroneFlightMode.LANDING_CONFIGURED ||
+            ctx.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
+            return false;
+        }
 
         stepCounter++;
 
@@ -22,7 +28,6 @@ public class DataAcquisitionHandler implements StepHandler {
                 (geoZonesStatus == DataStatus.AVAILABLE && stepCounter >= REFRESH_EVERY_N_STEPS);
 
         if (shouldRefresh) {
-            ctx.logService.info("GEOZONE_HANDLER", "GeoZoneRefresh", "Refreshing geozone data...");
             ctx.geoZoneService.fetchGeoZones();
             stepCounter = 0;
         }

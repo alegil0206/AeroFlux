@@ -13,8 +13,6 @@ public class FlightController {
     private final GPS gps;
     private final Altimeter altimeter;
     
-    // private static final double EARTH_RADIUS = 6378137.0; 
-
     public FlightController(Motor motor, GPS gps, Altimeter altimeter, LogService logService) {
         this.gps = gps;
         this.altimeter = altimeter;
@@ -24,12 +22,12 @@ public class FlightController {
 
     public void powerOn() {
         motor.start();
-        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Startup", "Powering on the drone");
+        logService.info(LogConstants.Component.FLIGHT_CONTROLLER, LogConstants.Event.POWER_ON, "Powering on the drone");
     }
 
     public void powerOff() {
         motor.stop();
-        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Shutdown", "Powering off the drone");
+        logService.info(LogConstants.Component.FLIGHT_CONTROLLER, LogConstants.Event.SHUTDOWN, "Powering off the drone");
     }
 
     public boolean isPoweredOn() {
@@ -38,12 +36,12 @@ public class FlightController {
 
     public void moveTo(Position position ){
         motor.move(position);
-        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Move", "Moving to position: " + position);
+        logService.info(LogConstants.Component.FLIGHT_CONTROLLER, LogConstants.Event.MOVING, "Moving to position: " + position);
     }
 
     public void hover() {
         motor.hover();
-        logService.info(LogConstants.Service.FLIGHT_CONTROLLER, "Hover", "Hovering in place");
+        logService.info(LogConstants.Component.FLIGHT_CONTROLLER, LogConstants.Event.HOVERING, "Hovering in place");
     }
 
     public Position getCurrentPosition() {
@@ -56,44 +54,5 @@ public class FlightController {
     public boolean isOnGround() {
         return altimeter.getAltitude() <= 0.1;
     }
-
-    /*
-    public void moveTo(Position position){
-        double targetLatitude = position.getLatitude();
-        double targetLongitude = position.getLongitude();
-        double targetAltitude = position.getAltitude();
-        double currentLatitude = gps.getLatitude();
-        double currentLongitude = gps.getLongitude();
-        double currentAltitude = altimeter.getAltitude();
-
-        double distance = calculateDistance(currentLatitude, currentLongitude, targetLatitude, targetLongitude);
-        double bearing = calculateBearing(currentLatitude, currentLongitude, targetLatitude, targetLongitude);
-        double deltaAltitude = targetAltitude - currentAltitude;
-
-        motor.move(distance, bearing, deltaAltitude);
-
-    }
-
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS * c;
-    }
-
-    private double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
-        double dLon = Math.toRadians(lon2 - lon1);
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
-        double x = Math.sin(dLon) * Math.cos(lat2);
-        double y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-        return Math.atan2(x, y);
-    }
-    */
 
 }

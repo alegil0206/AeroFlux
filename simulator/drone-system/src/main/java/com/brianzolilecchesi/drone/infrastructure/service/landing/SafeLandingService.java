@@ -21,10 +21,10 @@ public class SafeLandingService implements LandingService{
     public Boolean evaluateLandingZone(Coordinate coordinates) {
         String image = camera.takePicture(coordinates);
         if (image.contains("water")) {
-            logService.info(LogConstants.Service.LANDING_SERVICE, "Landing Zone evaluation", "Landing zone is not safe: water detected");
+            logService.info(LogConstants.Component.LANDING_SERVICE, "Landing Zone evaluation", "Landing zone is not safe: water detected");
             return false;
         }
-        logService.info(LogConstants.Service.LANDING_SERVICE, "Landing Zone evaluation", "Landing zone is safe");
+        logService.info(LogConstants.Component.LANDING_SERVICE, "Landing Zone evaluation", "Landing zone is safe");
         return true;
     }
     
