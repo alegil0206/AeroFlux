@@ -22,8 +22,13 @@ public class GeoZone {
 
     // Attributi per geozone poligonali
     private List<Coordinate> coordinates;
-
-
+	
+	public static final String GEOZONE_ACTIVE_STATUS = "ACTIVE";
+	public static final String GEOZONE_INACTIVE_STATUS = "INACTIVE";
+	
+	public static final String GEOZONE_EXCLUDED_CATEGORY = "EXCLUDED";
+	public static final String GEOZONE_RESTRICTED_CATEGORY = "RESTRICTED";
+	
     public GeoZone(String id, String name, String type, String category, String status,
             String altitude_level_limit_inferior, Double altitude_limit_inferior,
             String altitude_level_limit_superior, Double altitude_limit_superior, 

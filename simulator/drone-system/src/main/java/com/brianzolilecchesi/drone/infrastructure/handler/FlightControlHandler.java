@@ -19,7 +19,7 @@ public class FlightControlHandler implements StepHandler {
             ctx.flightController.hover();
         }
 
-        if (ctx.navigationService.hasReached(ctx.props.getDestination()) &&
+        if (ctx.navigationService.hasReached(ctx.flightController.getCurrentPosition(), ctx.props.getDestination()) &&
             ctx.flightController.isOnGround()) {
             
             ctx.logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Destination reached, powering off");

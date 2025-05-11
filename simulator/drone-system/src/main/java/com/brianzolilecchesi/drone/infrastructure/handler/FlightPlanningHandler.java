@@ -39,7 +39,7 @@ public class FlightPlanningHandler implements StepHandler {
                 if (gzStatus == DataStatus.AVAILABLE) {
                     ctx.geozoneNavService.clearGeoZones();
                     List<GeoZone> zones = ctx.geoZoneService.getGeoZones();
-                    zones.removeIf(zone -> zone.getStatus().equals("INACTIVE"));
+                    zones.removeIf(zone -> zone.getStatus().equals(GeoZone.GEOZONE_INACTIVE_STATUS));
                     ctx.geozoneNavService.addGeoZones(zones);
                     ctx.navigationService.optimizeFlightPlan();
                     stepCounter = 0;
@@ -51,7 +51,7 @@ public class FlightPlanningHandler implements StepHandler {
         if (gzStatus == DataStatus.AVAILABLE) {
             ctx.geozoneNavService.clearGeoZones();
             List<GeoZone> zones = ctx.geoZoneService.getGeoZones();
-            zones.removeIf(zone -> zone.getStatus().equals("INACTIVE"));
+            zones.removeIf(zone -> zone.getStatus().equals(GeoZone.GEOZONE_INACTIVE_STATUS));
             ctx.geozoneNavService.addGeoZones(zones);
             ctx.navigationService.generateFlightPlan(
                 new Position(ctx.props.getSource(), 0),

@@ -1,16 +1,20 @@
 package com.brianzolilecchesi.drone.domain.model;
 
+import java.util.List;
+
 public class NearbyDroneStatus {
     private String droneId;
+    private String operationCategory;
     private DroneFlightMode flightMode;
     private Position position;
-    private Position nextPosition;
+    private List<Position> nextPositions;
 
-    public NearbyDroneStatus(String droneId, DroneFlightMode flightMode, Position position, Position nextPosition) {
+    public NearbyDroneStatus(String droneId, String operationCategory, DroneFlightMode flightMode, Position position, List<Position> nextPositions) {
         this.droneId = droneId;
+        this.operationCategory = operationCategory;
         this.flightMode = flightMode;
         this.position = position;
-        this.nextPosition = nextPosition;
+        this.nextPositions = nextPositions;
     }
 
     public String getDroneId() {
@@ -21,11 +25,19 @@ public class NearbyDroneStatus {
         this.droneId = droneId;
     }
 
-    public DroneFlightMode isEmergency() {
+    public String getOperationCategory() {
+        return operationCategory;
+    }
+
+    public void setOperationCategory(String operationCategory) {
+        this.operationCategory = operationCategory;
+    }
+
+    public DroneFlightMode getFlightMode() {
         return flightMode;
     }
 
-    public void setEmergency(DroneFlightMode flightMode) {
+    public void setFlightMode(DroneFlightMode flightMode) {
         this.flightMode = flightMode;
     }
 
@@ -37,12 +49,12 @@ public class NearbyDroneStatus {
         this.position = position;
     }
 
-    public Position getNextPosition() {
-        return nextPosition;
+    public List<Position> getNextPositions() {
+        return nextPositions;
     }
 
-    public void setNextPosition(Position nextPosition) {
-        this.nextPosition = nextPosition;
+    public void setNextPosition(List<Position> nextPositions) {
+        this.nextPositions = nextPositions;
     }
 
     @Override
@@ -51,7 +63,7 @@ public class NearbyDroneStatus {
                 "droneId='" + droneId + '\'' +
                 ", flightMode=" + flightMode +
                 ", position=" + position +
-                ", nextPosition=" + nextPosition +
+                ", nextPosition=" + nextPositions +
                 '}';
     }
 

@@ -13,7 +13,7 @@ import com.brianzolilecchesi.drone.domain.service.landing.LandingService;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.service.navigation.NavigationService;
-import com.brianzolilecchesi.drone.domain.service.navigation.PrecedenceService;
+import com.brianzolilecchesi.drone.domain.service.navigation.DroneSafetyNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionLayer;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.battery.BatteryMonitor;
@@ -21,7 +21,7 @@ import com.brianzolilecchesi.drone.infrastructure.service.communication.RadioSer
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
 import com.brianzolilecchesi.drone.infrastructure.service.landing.SafeLandingService;
 import com.brianzolilecchesi.drone.infrastructure.service.log.StepLogService;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.DronePrecedenceService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.CollisionAvoidanceService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.FlightNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
@@ -29,7 +29,7 @@ import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.handler.FlightPlanningHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.BatteryEmergencyHandler;
-import com.brianzolilecchesi.drone.infrastructure.handler.CollisionAvoidanceHandler;
+import com.brianzolilecchesi.drone.infrastructure.handler.ConflictAvoidanceHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.DataAcquisitionHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.FlightControlHandler;
 
@@ -49,10 +49,10 @@ public class DroneSystem {
         NavigationService navigationService = new FlightNavigationService(logService);
         GeozoneNavigationService geozoneNavigationService = new GeozoneNavigationService();
         FlightController flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
-        PrecedenceService precedenceService = new DronePrecedenceService();
+        DroneSafetyNavigationService collisionAvoidanceService = new CollisionAvoidanceService();
 
         GeoZoneService geoZoneService = new GeoZoneService(logService);
-        WeatherService weatherService = new WeatherService();
+        WeatherService weatherService = new WeatherService(logService);
         AuthorizationService authorizationService= new AuthorizationService();
         SupportPointService supportPointService = new SupportPointService();
                 
@@ -65,16 +65,19 @@ public class DroneSystem {
                 navigationService,
                 landingService,
                 geoZoneService,
+                weatherService,
+                authorizationService,
+                supportPointService,
                 geozoneNavigationService,
                 communicationService,
-                precedenceService
+                collisionAvoidanceService
         );
 
         this.stepHandlers = List.of(
                 new DataAcquisitionHandler(),               
                 new FlightPlanningHandler(),
                 new BatteryEmergencyHandler(),
-                new CollisionAvoidanceHandler(),
+                new ConflictAvoidanceHandler(),
                 new FlightControlHandler()
         );
     
@@ -93,9 +96,10 @@ public class DroneSystem {
         context.communicationService.sendDroneStatus(
             new NearbyDroneStatus(
                 context.props.getId(),
+                context.props.getOperationCategory(),
                 context.getFlightMode(),
                 context.flightController.getCurrentPosition(),
-                context.navigationService.getNextPosition()));
+                context.navigationService.getNextPositions()));
     
         return getDroneStatus();
     }

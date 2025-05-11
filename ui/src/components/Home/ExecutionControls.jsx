@@ -10,13 +10,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import { useWebSocket } from "../../contexts/WebSocketContext";
 
 const ExecutionControls = () => {
-  const { client, executionState } = useWebSocket();
-
-  const sendCommand = (command) => {
-    if (client && client.connected) {
-      client.publish({ destination: `/app/${command}` });
-    }
-  };
+  const { executionState, sendCommand } = useWebSocket();
 
   return (
     <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between" }}>

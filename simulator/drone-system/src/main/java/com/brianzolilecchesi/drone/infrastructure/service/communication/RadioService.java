@@ -23,9 +23,10 @@ public class RadioService implements CommunicationService {
     public void sendDroneStatus(NearbyDroneStatus droneStatus) {
         RadioMessageDTO radioMessage = new RadioMessageDTO(
                 droneStatus.getDroneId(),
-                droneStatus.isEmergency(),
+                droneStatus.getOperationCategory(),
+                droneStatus.getFlightMode(),
                 droneStatus.getPosition(),
-                droneStatus.getNextPosition()
+                droneStatus.getNextPositions()
         );
         radio.sendMessage(radioMessage);
     }
@@ -36,9 +37,10 @@ public class RadioService implements CommunicationService {
         List<NearbyDroneStatus> nearbyDroneStatuses = messages.stream()
                 .map(message -> new NearbyDroneStatus(
                         message.getDroneId(),
+                        message.getOperationCategory(),
                         message.getFlightMode(),
                         message.getPosition(),
-                        message.getNexPosition()))
+                        message.getNextPositions()))
                 .toList();
         for (NearbyDroneStatus status : nearbyDroneStatuses) {
             logService.info(LogConstants.Component.COMMUNICATION_SERVICE, LogConstants.Event.MESSAGE_RECEIVED, status.toString());

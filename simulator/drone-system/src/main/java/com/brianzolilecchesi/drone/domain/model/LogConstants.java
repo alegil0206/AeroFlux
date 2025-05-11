@@ -14,6 +14,7 @@ public class LogConstants {
         public static final String BATTERY_HANDLER = "BatteryHandler";
         public static final String FLIGHT_PLANNING_HANDLER = "FlightPlanningHandler";
         public static final String COLLISION_AVOIDANCE_HANDLER = "CollisionAvoidanceHandler";
+        public static final String CONFLICT_AVOIDANCE_HANDLER = "ConflictAvoidanceHandler";
         public static final String DATA_ACQUISITION_HANDLER = "DataAcquisitionHandler";
         public static final String FLIGHT_CONTROL_HANDLER = "FlightControlHandler";
         public static final String DRONE_SYSTEM = "DroneSystem";
@@ -35,6 +36,9 @@ public class LogConstants {
         public static final String OPTIMIZING_FLIGHT_PLAN = "OPTIMIZING_FLIGHT_PLAN";
         public static final String FLIGHT_PLAN_OPTIMIZED = "FLIGHT_PLAN_OPTIMIZED";
         public static final String FLIGHT_PLAN_NOT_OPTIMIZED = "FLIGHT_PLAN_NOT_OPTIMIZED";
+        public static final String FLIGHT_PLAN_ADAPTED = "FLIGHT_PLAN_ADAPTED";
+        public static final String FLIGHT_PLAN_NOT_ADAPTED = "FLIGHT_PLAN_NOT_ADAPTED";
+        public static final String ADAPT_FLIGHT_PLAN = "ADAPT_FLIGHT_PLAN";
 
         public static final String FETCHING = "FETCHING";
         public static final String FETCHED = "FETCHED";
@@ -45,6 +49,9 @@ public class LogConstants {
         public static final String LANDING = "LANDING";
         public static final String SHUTDOWN = "SHUTDOWN";
         public static final String LANDED = "LANDED";
+
+        public static final String COLLISION_AVOIDANCE = "COLLISION_AVOIDANCE";
+        public static final String CONFLICT_AVOIDANCE = "CONFLICT_AVOIDANCE";
 
     }
 

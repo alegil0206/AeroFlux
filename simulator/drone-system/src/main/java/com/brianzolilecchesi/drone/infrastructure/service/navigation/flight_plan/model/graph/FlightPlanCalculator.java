@@ -168,6 +168,7 @@ public class FlightPlanCalculator {
 	    	report.setAlgorithm(lpf.algorithm());
 	    	report.setTimeSeconds(Duration.between(startTime, Instant.now()).toMillis() / 1000.0);
 	    	report.setIterations(0);
+			fp.setReport(report);
 	    	return fp;
 	    	
 	    } catch (IllegalLinearPathException e) {}
@@ -191,6 +192,7 @@ public class FlightPlanCalculator {
 			report.setCode(Code.NO_PATH_FOUND);
 			report.setTimeSeconds(Duration.between(startTime, Instant.now()).toMillis() / 1000.0);
 			report.setIterations(0);
+			fp.setReport(report);
 			return fp;
 		}
 	    	    

@@ -7,30 +7,47 @@ import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 
 public class DataAcquisitionHandler implements StepHandler {
 
-    private static final int REFRESH_EVERY_N_STEPS = 25;
-    private int stepCounter = REFRESH_EVERY_N_STEPS;
+    private static final int GEOZONES_UPDATE_INTERVAL = 25;
+    private int lastGeoZoneUpdate = GEOZONES_UPDATE_INTERVAL;
+
+    private static final int WEATHER_UPDATE_INTERVAL = 25;
+    private int lastWeatherUpdate = WEATHER_UPDATE_INTERVAL;
+
 
     @Override
     public boolean handle(DroneContext ctx) {
+
+        int currentStep = ctx.stepCounter;
 
         if (ctx.getFlightMode() == DroneFlightMode.LANDING_CONFIGURED ||
             ctx.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
             return false;
         }
 
-        stepCounter++;
-
         DataStatus geoZonesStatus = ctx.geoZoneService.getGeoZonesStatus();
 
-        boolean shouldRefresh =
+        boolean shouldRefreshGeoZones =
                 geoZonesStatus == DataStatus.NOT_REQUESTED ||
                 geoZonesStatus == DataStatus.FAILED ||
-                (geoZonesStatus == DataStatus.AVAILABLE && stepCounter >= REFRESH_EVERY_N_STEPS);
+                (geoZonesStatus == DataStatus.AVAILABLE && currentStep - lastGeoZoneUpdate >= GEOZONES_UPDATE_INTERVAL);
 
-        if (shouldRefresh) {
+        if (shouldRefreshGeoZones) {
             ctx.geoZoneService.fetchGeoZones();
-            stepCounter = 0;
+            lastGeoZoneUpdate = currentStep;
         }
+
+        DataStatus weatherStatus = ctx.geoZoneService.getGeoZonesStatus();
+
+        boolean shouldRefreshWeather =
+                weatherStatus == DataStatus.NOT_REQUESTED ||
+                weatherStatus == DataStatus.FAILED ||
+                (weatherStatus == DataStatus.AVAILABLE && currentStep - lastWeatherUpdate >= WEATHER_UPDATE_INTERVAL);
+
+        if (shouldRefreshWeather) {
+            ctx.weatherService.fetchRainCells();
+            lastWeatherUpdate = currentStep;
+        }
+        
 
         return false;
     }

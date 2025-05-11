@@ -1,19 +1,23 @@
 package com.brianzolilecchesi.drone.domain.dto;
 
+import java.util.List;
+
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
 public class RadioMessageDTO {
     private String droneId;
+    private String operationCategory;
     private DroneFlightMode flightMode;
     private Position position;
-    private Position nexPosition;
+    private List<Position> nextPositions;
 
-    public RadioMessageDTO(String droneId, DroneFlightMode flightMode, Position position, Position nexPosition) {
+    public RadioMessageDTO(String droneId, String operationCategory, DroneFlightMode flightMode, Position position, List<Position> nextPositions) {
         this.droneId = droneId;
+        this.operationCategory = operationCategory;
         this.flightMode = flightMode;
         this.position = position;
-        this.nexPosition = nexPosition;
+        this.nextPositions = nextPositions;
     }
 
     public String getDroneId() {
@@ -22,6 +26,14 @@ public class RadioMessageDTO {
 
     public void setDroneId(String droneId) {
         this.droneId = droneId;
+    }
+
+    public String getOperationCategory() {
+        return operationCategory;
+    }
+
+    public void setOperationCategory(String operationCategory) {
+        this.operationCategory = operationCategory;
     }
 
     public DroneFlightMode getFlightMode() {
@@ -40,12 +52,12 @@ public class RadioMessageDTO {
         this.position = position;
     }
 
-    public Position getNexPosition() {
-        return nexPosition;
+    public List<Position> getNextPositions() {
+        return nextPositions;
     }
 
-    public void setNexPosition(Position nexPosition) {
-        this.nexPosition = nexPosition;
+    public void setNextPositions(List<Position> nextPositions) {
+        this.nextPositions = nextPositions;
     }
 
     @Override
@@ -54,7 +66,7 @@ public class RadioMessageDTO {
                 "droneId='" + droneId + '\'' +
                 ", flightMode=" + flightMode +
                 ", position=" + position +
-                ", nexPosition=" + nexPosition +
+                ", nextPositions=" + nextPositions +
                 '}';
     }
 }

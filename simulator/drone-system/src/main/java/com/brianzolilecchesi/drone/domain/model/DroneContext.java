@@ -2,11 +2,14 @@ package com.brianzolilecchesi.drone.domain.model;
 
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.service.navigation.NavigationService;
-import com.brianzolilecchesi.drone.domain.service.navigation.PrecedenceService;
+import com.brianzolilecchesi.drone.domain.service.navigation.DroneSafetyNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionLayer;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
+import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
+import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 import com.brianzolilecchesi.drone.domain.service.battery.BatteryService;
 import com.brianzolilecchesi.drone.domain.service.communication.CommunicationService;
 import com.brianzolilecchesi.drone.domain.service.landing.LandingService;
@@ -21,11 +24,14 @@ public class DroneContext {
     public final NavigationService navigationService;
     public final LandingService landingService;
     public final GeoZoneService geoZoneService;
+    public final WeatherService weatherService;
+    public final AuthorizationService authorizationService;
+    public final SupportPointService supportPointService;
     public final GeozoneNavigationService geozoneNavService;
     public final CommunicationService communicationService;
-    public final PrecedenceService precedenceService;
+    public final DroneSafetyNavigationService precedenceService;
     public DroneFlightMode flightMode = DroneFlightMode.NORMAL;
-    private int stepCounter = 0;
+    public int stepCounter = 0;
 
     public DroneContext(DroneProperties props,
                         HardwareAbstractionLayer hal,
@@ -35,9 +41,12 @@ public class DroneContext {
                         NavigationService nav,
                         LandingService land,
                         GeoZoneService gzService,
+                        WeatherService weatherService,
+                        AuthorizationService authorizationService,
+                        SupportPointService supportPointService,
                         GeozoneNavigationService gzNav,
                         CommunicationService comm,
-                        PrecedenceService prec) {
+                        DroneSafetyNavigationService prec) {
         this.props = props;
         this.hardwareAbstractionLayer = hal;
         this.logService = log;
@@ -46,6 +55,9 @@ public class DroneContext {
         this.navigationService = nav;
         this.landingService = land;
         this.geoZoneService = gzService;
+        this.weatherService = weatherService;
+        this.authorizationService = authorizationService; 
+        this.supportPointService = supportPointService;
         this.geozoneNavService = gzNav;
         this.communicationService = comm;
         this.precedenceService = prec;

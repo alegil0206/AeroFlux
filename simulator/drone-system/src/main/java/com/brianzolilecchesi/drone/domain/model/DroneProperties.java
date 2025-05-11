@@ -13,6 +13,9 @@ public class DroneProperties {
 	private Coordinate source;
 	private Coordinate destination;
 
+	public static final String DRONE_SPECIFIC_OPERATION_CATEGORY = "SPECIFIC";
+	public static final String DRONE_CERTIFIED_OPERATION_CATEGORY = "CERTIFIED";
+
 	public DroneProperties() {
 	}
 

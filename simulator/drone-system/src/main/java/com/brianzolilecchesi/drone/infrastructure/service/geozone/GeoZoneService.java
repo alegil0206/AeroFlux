@@ -30,9 +30,10 @@ public class GeoZoneService {
 
     public void fetchGeoZones() {
 
-        if (getGeoZonesStatus() == DataStatus.LOADING) return;
-        
-        setGeoZonesStatus(DataStatus.LOADING);
+        synchronized(this){
+            if (geoZonesStatus == DataStatus.LOADING) return;
+            geoZonesStatus = DataStatus.LOADING;
+        }
 
         logService.info(
                 LogConstants.Component.GEOZONE_SERVICE,
@@ -48,18 +49,23 @@ public class GeoZoneService {
             }
         }).thenAccept(geoZoneDTOs -> {
             if (geoZoneDTOs != null) {
-                List<GeoZone> newGeoZones = geoZoneDTOs.stream()
-                        .map(GeoZone::new)
-                        .collect(Collectors.toUnmodifiableList());
-                setGeoZones(newGeoZones);
-                setGeoZonesStatus( DataStatus.AVAILABLE);                
+                synchronized(this){
+                    geoZones = geoZoneDTOs.stream()
+                    .map(GeoZone::new)
+                    .collect(Collectors.toUnmodifiableList());
+                    geoZonesStatus = DataStatus.AVAILABLE;
+                }
+              
                 logService.info(
                         LogConstants.Component.GEOZONE_SERVICE,
                         LogConstants.Event.FETCHED,
                         "Geo zones fetched successfully"
                 );
             } else {
-                setGeoZonesStatus(DataStatus.FAILED);
+                synchronized(this) {
+                    geoZonesStatus = DataStatus.FAILED;
+                }
+                
             }
         }).exceptionally(e -> {
             Throwable cause = e.getCause();
@@ -76,7 +82,10 @@ public class GeoZoneService {
                         "Unexpected error while fetching geo zones: " + cause.getMessage()
                 );
             }
-            setGeoZonesStatus(DataStatus.FAILED);
+            synchronized(this) {
+                geoZonesStatus = DataStatus.FAILED;    
+            }
+            
             return null;
         });
     }
@@ -85,16 +94,9 @@ public class GeoZoneService {
         return new ArrayList<>(geoZones);
     }
 
-    private synchronized void setGeoZones(List<GeoZone> geoZones) {
-        this.geoZones = new ArrayList<>(geoZones);
-    }
-
     public synchronized DataStatus getGeoZonesStatus() {
         return geoZonesStatus;
     }
 
-    private synchronized void setGeoZonesStatus(DataStatus geoZonesStatus) {
-        this.geoZonesStatus = geoZonesStatus;
-    }
 }
 

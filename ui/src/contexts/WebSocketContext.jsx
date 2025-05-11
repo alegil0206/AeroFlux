@@ -12,6 +12,16 @@ export const WebSocketProvider = ({ children }) => {
 
   const { mainService } = useSettings();
 
+  const sendCommand = (command) => {
+    if (client && client.connected) {
+      client.publish({ destination: `/app/${command}` });
+    }
+    if (command === "start") {
+      setLogs([]);
+      setDronesStatus({});
+    }
+  };
+
   useEffect(() => {
     if (!mainService) return;
     const stompClient = new Client({
@@ -50,10 +60,12 @@ export const WebSocketProvider = ({ children }) => {
   }, [mainService]);
 
   return (
-    <WebSocketContext.Provider value={{ client, logs, executionState, dronesStatus }}>
+    <WebSocketContext.Provider value={{ client, logs, executionState, dronesStatus, sendCommand }}>
       {children}
     </WebSocketContext.Provider>
   );
 };
+
+
 
 export const useWebSocket = () => useContext(WebSocketContext);
