@@ -4,28 +4,28 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SimulationStatus {
-    private boolean running = false;
-    private boolean paused = false;
+    private ExecutionState executionState = ExecutionState.STOPPED;
+    private int executionSpeed = 1;
 
-    public synchronized boolean isRunning() {
-        return running;
+    public enum ExecutionState {
+        RUNNING,
+        PAUSED,
+        STOPPED
     }
 
-    public synchronized void setRunning(boolean running) {
-        this.running = running;
+    public synchronized int getExecutionSpeed() {
+        return executionSpeed;
     }
 
-    public synchronized boolean isPaused() {
-        return paused;
+    public synchronized void setExecutionSpeed(int executionSpeed) {
+        this.executionSpeed = executionSpeed;
     }
 
-    public synchronized void setPaused(boolean paused) {
-        this.paused = paused;
+    public synchronized void setExecutionState(ExecutionState state) {
+        this.executionState = state;
     }
 
-    public synchronized String getStatus() {
-        if (running && paused) return "PAUSED";
-        if (running) return "RUNNING";
-        return "STOPPED";
+    public synchronized ExecutionState getExecutionState() {
+        return executionState;
     }
 }

@@ -10,6 +10,7 @@ public class LogConstants {
         public static final String FLIGHT_CONTROLLER = "FlightController";
         public static final String GEOZONE_SERVICE = "GeoZoneService";
         public static final String WEATHER_SERVICE = "WeatherService";
+        public static final String AUTHORIZATION_SERVICE = "AuthorizationService";
 
         public static final String BATTERY_HANDLER = "BatteryHandler";
         public static final String FLIGHT_PLANNING_HANDLER = "FlightPlanningHandler";

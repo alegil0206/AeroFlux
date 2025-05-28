@@ -1,5 +1,6 @@
 package com.brianzolilecchesi.simulator.dto;
 
+import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -43,6 +44,19 @@ public class DronePropertiesDTO {
 		setBattery(battery);
 		setSource(source);
 		setDestination(destination);
+	}
+
+	public DronePropertiesDTO(DroneProperties droneProperties) {
+		this.id = droneProperties.getId();
+		this.name = droneProperties.getName();
+		this.model = droneProperties.getModel();
+		this.owner = droneProperties.getOwner();
+		this.operationCategory = droneProperties.getOperationCategory();
+		this.planDefinitionTimestamp = droneProperties.getPlanDefinitionTimestamp();
+		this.adaptiveCapabilities = new AdaptiveCapabilitiesDTO(droneProperties.getAdaptiveCapabilities());
+		this.battery = droneProperties.getBattery();
+		this.source = new PositionDTO(droneProperties.getSource().getLongitude(), droneProperties.getSource().getLatitude());
+		this.destination = new PositionDTO(droneProperties.getDestination().getLongitude(), droneProperties.getDestination().getLatitude());
 	}
 	
 	public String getId() {

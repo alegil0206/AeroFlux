@@ -71,7 +71,8 @@ public class GeozoneListenerService {
 		
 		try {
 			geozoneService.update(geozoneDTO);
-		} catch (NotFoundException e) {
+			authorizationService.updateAuthorizationsOnGeozoneChanges(geozoneDTO.getId());
+		} catch (Exception e) {
 			System.err.println(String.format("Error updating published geozone: %s", e.getMessage()));
 		}
     }

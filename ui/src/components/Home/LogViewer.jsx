@@ -1,10 +1,9 @@
 import React from "react";
-import { useWebSocket } from "../../contexts/WebSocketContext";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import Tooltip from "@mui/material/Tooltip";
+import PropTypes from "prop-types";
 
-const LogViewer = () => {
-  const { logs } = useWebSocket();
+const LogViewer = ({logs}) => {
 
   const columns = [
     {
@@ -109,8 +108,6 @@ const LogViewer = () => {
           },
         }}
         pageSizeOptions={[10, 20, 50]}
-        disableColumnResize
-        density="compact"
         sx={{
           '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': {
             py: 1,
@@ -124,6 +121,19 @@ const LogViewer = () => {
         }}      />
     </div>
   );
+};
+
+LogViewer.propTypes = {
+  logs: PropTypes.arrayOf(
+    PropTypes.shape({
+      timestamp: PropTypes.string.isRequired,
+      systemId: PropTypes.string.isRequired,
+      level: PropTypes.string.isRequired,
+      component: PropTypes.string.isRequired,
+      event: PropTypes.string.isRequired,
+      message: PropTypes.string.isRequired,
+    }).isRequired
+  )
 };
 
 export default LogViewer;

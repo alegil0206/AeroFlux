@@ -1,5 +1,6 @@
 package com.brianzolilecchesi.simulator.dto;
 
+import com.brianzolilecchesi.drone.domain.model.AdaptiveCapabilities;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,6 +26,14 @@ public class AdaptiveCapabilitiesDTO {
         setGeoAwareness(geoAwareness);
         setAutoAuthorization(autoAuthorization);
         setBatteryManagement(batteryManagement);
+    }
+
+    public AdaptiveCapabilitiesDTO(AdaptiveCapabilities adaptiveCapabilities) {
+        this.safeLanding = adaptiveCapabilities.getSafeLanding();
+        this.collisionAvoidance = adaptiveCapabilities.getCollisionAvoidance();
+        this.geoAwareness = adaptiveCapabilities.getGeoAwareness();
+        this.autoAuthorization = adaptiveCapabilities.getAutoAuthorization();
+        this.batteryManagement = adaptiveCapabilities.getBatteryManagement();
     }
     
     public Boolean getSafeLanding() {

@@ -51,6 +51,8 @@ function HomeSection() {
     error: weatherError, 
     fetchWeather} = useWeather();
 
+  const { logs } = useWebSocket();
+
   const showSnackbar = (type, message) => {
     setAlertMessage({ type: type, text: message });
     setSnackbarOpen(true);
@@ -131,7 +133,7 @@ function HomeSection() {
           <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
             Execution Logs
           </Typography>
-          <LogViewer />
+          <LogViewer logs={logs} />
         </Grid>
       </Grid>
 

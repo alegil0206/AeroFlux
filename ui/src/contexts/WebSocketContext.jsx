@@ -9,12 +9,15 @@ export const WebSocketProvider = ({ children }) => {
   const [logs, setLogs] = useState([]);
   const [executionState, setExecutionState] = useState("unknown");
   const [dronesStatus, setDronesStatus] = useState({});
+  const [executionSpeed, setExecutionSpeed] = useState(1);
 
   const { mainService } = useSettings();
 
-  const sendCommand = (command) => {
+  const sendCommand = (command, data = null) => {
     if (client && client.connected) {
-      client.publish({ destination: `/app/${command}` });
+      client.publish({ 
+        destination: `/app/${command}`,
+        body: JSON.stringify(data),});
     }
     if (command === "start") {
       setLogs([]);
@@ -35,7 +38,9 @@ export const WebSocketProvider = ({ children }) => {
         });
 
         stompClient.subscribe("/topic/status", (message) => {
-          setExecutionState(message.body);
+          const newStatus = JSON.parse(message.body);
+          setExecutionState(newStatus.execution_state);
+          setExecutionSpeed(newStatus.execution_speed);
         });
 
         stompClient.subscribe("/topic/drone-status", (message) => {
@@ -60,7 +65,7 @@ export const WebSocketProvider = ({ children }) => {
   }, [mainService]);
 
   return (
-    <WebSocketContext.Provider value={{ client, logs, executionState, dronesStatus, sendCommand }}>
+    <WebSocketContext.Provider value={{ client, logs, executionState, executionSpeed, dronesStatus, sendCommand }}>
       {children}
     </WebSocketContext.Provider>
   );

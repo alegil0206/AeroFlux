@@ -65,4 +65,9 @@ public class CellGraph {
 			   other.getSource().equals(getSource()) && 
 			   other.getDest().equals(getDest());
 	}
+
+	@Override
+	public int hashCode() {
+		return graph.hashCode() + source.hashCode() + dest.hashCode();
+	}
 }

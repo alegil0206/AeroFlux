@@ -7,7 +7,9 @@ import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionL
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.DroneZoneNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.WeatherNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 import com.brianzolilecchesi.drone.domain.service.battery.BatteryService;
@@ -28,6 +30,8 @@ public class DroneContext {
     public final AuthorizationService authorizationService;
     public final SupportPointService supportPointService;
     public final GeozoneNavigationService geozoneNavService;
+    public final WeatherNavigationService weatherNavService;
+    public final DroneZoneNavigationService droneZoneNavService;
     public final CommunicationService communicationService;
     public final DroneSafetyNavigationService precedenceService;
     public DroneFlightMode flightMode = DroneFlightMode.NORMAL;
@@ -45,6 +49,8 @@ public class DroneContext {
                         AuthorizationService authorizationService,
                         SupportPointService supportPointService,
                         GeozoneNavigationService gzNav,
+                        WeatherNavigationService weatherNavService,
+                        DroneZoneNavigationService droneZoneNavService,
                         CommunicationService comm,
                         DroneSafetyNavigationService prec) {
         this.props = props;
@@ -59,6 +65,8 @@ public class DroneContext {
         this.authorizationService = authorizationService; 
         this.supportPointService = supportPointService;
         this.geozoneNavService = gzNav;
+        this.weatherNavService = weatherNavService;
+        this.droneZoneNavService = droneZoneNavService;
         this.communicationService = comm;
         this.precedenceService = prec;
     }

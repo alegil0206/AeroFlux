@@ -1,4 +1,4 @@
-package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo;
+package com.brianzolilecchesi.drone.domain.geo;
 
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
@@ -8,14 +8,21 @@ import org.gavaghan.geodesy.GlobalCoordinates;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
-public class GeoCalculator {
+public class GeoDistanceCalculator {
 	
 	private final Ellipsoid ellipsoid;
 	private final GeodeticCalculator calculator;
 	
-	GeoCalculator(Ellipsoid ellipsoid, GeodeticCalculator calculator) {
+	GeoDistanceCalculator(Ellipsoid ellipsoid, GeodeticCalculator calculator) {
+		assert ellipsoid != null;
+		assert calculator != null;
+		
 		this.ellipsoid = ellipsoid;
 		this.calculator = calculator;
+	}
+	
+	GeoDistanceCalculator() {
+		this(Ellipsoid.WGS84, new GeodeticCalculator());
 	}
 	
 	public double distance(Coordinate c1, Coordinate c2) {

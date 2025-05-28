@@ -2,7 +2,7 @@ package com.brianzolilecchesi.drone.domain.model;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
 
 public final class Position extends Coordinate {
 	
@@ -28,11 +28,7 @@ public final class Position extends Coordinate {
 	}
 	
 	public double distance(Position other, boolean includeAltitude) {
-		return GeoCalculatorSingleton.INSTANCE.getInstance().distance(
-				this, 
-				other, 
-				includeAltitude
-				);
+		return GeoCalculatorFactory.getGeoDistanceCalculator().distance(this, other, includeAltitude);
 	}
 	
 	public double distance(Position other) {
@@ -41,10 +37,7 @@ public final class Position extends Coordinate {
 	
 	
 	public Position move(double latitudeDisplacement, double longitudeDisplacement, double altitudeDisplacement) {
-		return GeoCalculatorSingleton
-				.INSTANCE
-				.getInstance()
-				.moveByDisplacement(
+		return GeoCalculatorFactory.getGeoDistanceCalculator().moveByDisplacement(
 						this, 
 						latitudeDisplacement, 
 						longitudeDisplacement, 
@@ -75,5 +68,13 @@ public final class Position extends Coordinate {
 	    return Math.abs(this.getLatitude() - other.getLatitude()) < THRESHOLD &&
 	         Math.abs(this.getLongitude() - other.getLongitude()) < THRESHOLD &&
 	         Math.abs(this.altitude - other.altitude) < THRESHOLD;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		long temp = Double.doubleToLongBits(altitude);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		return result;
 	}
 }

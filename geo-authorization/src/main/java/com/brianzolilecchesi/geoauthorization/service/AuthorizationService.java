@@ -215,7 +215,7 @@ public class AuthorizationService {
 		
 		return factory.createAuthorizationDTO(revoked);
 	}
-	
+
 	@Transactional
 	void deleteByDrone(final Drone drone) {
         assert drone != null;
@@ -238,4 +238,17 @@ public class AuthorizationService {
             service.deleteAll();
 		}		
 	}
+
+	@Transactional
+	public void updateAuthorizationsOnGeozoneChanges(String id) throws NotFoundException, ForbiddenException {
+		Geozone geozone = geozoneService.getGeozoneById(id);
+		if (!geozone.getCategory().equals("EXCLUDED")) return; 
+		List<Authorization> authorizations = authorizationGrantedService.getByGeozone(geozone);
+		for (Authorization authorization : authorizations) {
+			if (authorization.isValid()) {
+				revokeAuthorization(authorization.getId());
+			}
+		}
+	}
+
 }

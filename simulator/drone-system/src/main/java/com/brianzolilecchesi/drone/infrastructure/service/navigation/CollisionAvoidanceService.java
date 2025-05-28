@@ -10,47 +10,44 @@ import com.brianzolilecchesi.drone.domain.service.navigation.DroneSafetyNavigati
 
 public class CollisionAvoidanceService implements DroneSafetyNavigationService {
 
-    private static final double COLLISION_AVOIDANCE_THRESHOLD = 20.0;
-    private static final double SELF_SEPARATION_THRESHOLD = 200.0; // maggiore di cell_width
+
+    private double collisionAvoidanceThreshold;
+    private double verticalCollisionAvoidanceThreshold = 20.0;
+    private double selfSeparationThreshold;
+    
+    public CollisionAvoidanceService(double droneMaxSpeed) {
+        collisionAvoidanceThreshold = droneMaxSpeed;
+        selfSeparationThreshold = 160.0 + 2 * droneMaxSpeed;
+    }
 
     @Override
     public boolean hasPriority(NearbyDroneStatus droneStatus, NearbyDroneStatus otherDroneStatus) {
-            // Priorità d'urgenza
             if (droneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING) return true;
             if (droneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) return false;
         
             if (droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && !otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return true;
             if (!droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return false;
 
-            // Entrambi in EMERGENZA o NORMAL: confronta altitudine
             if (droneStatus.getPosition().getAltitude() < otherDroneStatus.getPosition().getAltitude()) return true;
             if (droneStatus.getPosition().getAltitude() > otherDroneStatus.getPosition().getAltitude()) return false;
         
-            // Altitudine uguale: ID più basso vince
             return droneStatus.getDroneId().compareTo(otherDroneStatus.getDroneId()) < 0;
     }
     
-/*    
-    private boolean conflictCondition(List<Position> nextA, List<Position> nextB) {
-            int steps = Math.min(nextA.size(), nextB.size()) - 1;
-            for (int i = 0; i < steps; i++) {
-                if (nextA.get(i).distance(nextB.get(i)) <= COLLISION_AVOIDANCE_THRESHOLD) {
-                    return true;
-                }
-            }
-            return false;
-        }
-*/
-
     @Override
     public boolean conflictCondition(List<Position> nextA, List<Position> nextB) {
-        for (int i = 0; i < nextA.size(); i++) {
-            for (int j = 0; j < nextB.size(); j++) {
-                if (nextA.get(i).distance(nextB.get(j)) <= COLLISION_AVOIDANCE_THRESHOLD) {
+        int maxSteps = Math.max(nextA.size(), nextB.size());
+
+        for (int i = 0; i < maxSteps; i++) {    
+            Position posA = i < nextA.size() ? nextA.get(i) : nextA.get(nextA.size() - 1);
+            for (int j = Math.max(0, i - 2); j <= Math.min(nextB.size() - 1, i + 2); j++) {
+                Position posB = nextB.get(j);
+                if (posA.distance(posB) <= collisionAvoidanceThreshold && Math.abs(posA.getAltitude() - posB.getAltitude()) <= verticalCollisionAvoidanceThreshold) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -84,12 +81,12 @@ public class CollisionAvoidanceService implements DroneSafetyNavigationService {
 
     @Override
     public boolean isInConflictVolume(Position dronePosition, Position otherDronePosition) {
-        return dronePosition.distance(otherDronePosition) < COLLISION_AVOIDANCE_THRESHOLD;
+        return dronePosition.distance(otherDronePosition) < collisionAvoidanceThreshold;
     }
 
     @Override
     public boolean isInSelfSeparationVolume(Position dronePosition, Position otherDronePosition) {
-        return dronePosition.distance(otherDronePosition) < SELF_SEPARATION_THRESHOLD;
+        return dronePosition.distance(otherDronePosition) < selfSeparationThreshold;
     }
 
 }

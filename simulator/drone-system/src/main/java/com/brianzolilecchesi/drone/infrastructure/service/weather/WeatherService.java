@@ -97,4 +97,8 @@ public class WeatherService {
     public synchronized DataStatus getRainCellsStatus(){
         return rainCellsStatus;
     }
+
+    public synchronized void setRainCellsStatus(DataStatus status) {
+        this.rainCellsStatus = status;
+    }
 }

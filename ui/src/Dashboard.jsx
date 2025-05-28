@@ -1,4 +1,3 @@
-import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -20,6 +19,7 @@ import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import PublicIcon from '@mui/icons-material/Public';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
 
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -37,6 +37,7 @@ import DroneSection from './pages/DroneSection';
 import GeoZoneSection from './pages/GeoZoneSection';
 import WeatherSection from './pages/WeatherSection';
 import HomeSection from './pages/HomeSection';
+import HistorySection from './pages/HistorySection';
 import AuthorizationSection from './pages/AuthorizationSection';
 import SettingSection from './pages/SettingSection';
 import LoadingSection from './pages/LoadingSection';
@@ -50,6 +51,7 @@ const primaryListItems = [
   { text: 'Drone', path: '/drone', icon: <AirplanemodeActiveRoundedIcon /> },
   { text: 'Authorization', path: '/authorization', icon: <FactCheckIcon /> },
   { text: 'Weather', path: '/weather', icon: <ThunderstormRoundedIcon /> },
+  { text: 'Sim History', path: '/history', icon: <FastRewindIcon /> },
   { text: 'Setting', path: '/setting', icon: <SettingsIcon /> },
 ];
 
@@ -106,6 +108,7 @@ export default function Dashboard(props) {
                   <Route path="/geozone" element={<GeoZoneSection />} />
                   <Route path="/drone" element={<DroneSection />} />
                   <Route path="/weather" element={<WeatherSection />} />
+                  <Route path="/history" element={<HistorySection />} />
                   <Route path="/setting" element={<SettingSection />} />
                 </Routes>
               </Stack>

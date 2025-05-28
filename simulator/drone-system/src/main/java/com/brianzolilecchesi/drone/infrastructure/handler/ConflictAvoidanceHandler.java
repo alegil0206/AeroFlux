@@ -5,7 +5,6 @@ import java.util.List;
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
-import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 
@@ -26,7 +25,7 @@ public class ConflictAvoidanceHandler implements StepHandler {
                 ctx.props.getOperationCategory(),
                 ctx.getFlightMode(),
                 ctx.flightController.getCurrentPosition(),
-                ctx.navigationService.getNextPositions());
+                ctx.navigationService.getNextWaypoints());
 
         for (NearbyDroneStatus other : nearbyDrones) {
             boolean hasPriority = ctx.precedenceService.hasPriority(droneStatus, other);
@@ -49,15 +48,15 @@ public class ConflictAvoidanceHandler implements StepHandler {
                                             + other.getPosition().distance(droneStatus.getPosition()));
                         } else {
                             ctx.logService.info(LogConstants.Component.CONFLICT_AVOIDANCE_HANDLER, LogConstants.Event.CONFLICT_AVOIDANCE,
-                                    "Hovering and replanning - Drone hasn't priority over: " + other.getDroneId());
-                            if (ctx.navigationService.getFlightPlanStatus() != DataStatus.LOADING) {
-                                if (ctx.geoZoneService.getGeoZonesStatus() == DataStatus.AVAILABLE) {
-                                    ctx.geozoneNavService.clearGeoZones();
-                                    List<GeoZone> zones = ctx.geoZoneService.getGeoZones();
-                                    zones.removeIf(zone -> zone.getStatus().equals(GeoZone.GEOZONE_INACTIVE_STATUS));
-                                    ctx.geozoneNavService.addGeoZones(zones);
+                                    "Hovering and replanning - Drone hasn't priority over: " + other.getDroneId() + " - Distance: "
+                                            + other.getPosition().distance(droneStatus.getPosition()));
+                            if (ctx.navigationService.getFlightPlanStatus() != DataStatus.LOADING &&
+                                ctx.geoZoneService.getGeoZonesStatus() == DataStatus.LOADED_ON_GRAPH &&
+                                ctx.weatherService.getRainCellsStatus() == DataStatus.LOADED_ON_GRAPH &&
+                                ctx.authorizationService.getAuthorizationsStatus() == DataStatus.LOADED_ON_GRAPH) {
+                                    ctx.droneZoneNavService.clear();
+                                    ctx.droneZoneNavService.add(other);
                                     ctx.navigationService.adaptFlightPlan();
-                                }
                             }
                         }
                         ctx.flightController.hover();

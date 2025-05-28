@@ -1,7 +1,10 @@
 package com.brianzolilecchesi.simulator.controller;
 
+import com.brianzolilecchesi.simulator.dto.SimulationStatusDTO;
+import com.brianzolilecchesi.simulator.dto.StartCommandDTO;
 import com.brianzolilecchesi.simulator.service.SimulationService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
@@ -15,31 +18,32 @@ public class SimulationController {
 
     @MessageMapping("/start")
     @SendTo("/topic/status")
-    public String startSimulation() {
-        return simulationService.start();
+    public SimulationStatusDTO startSimulation(@Payload StartCommandDTO startCommand) {
+        int speed = startCommand.getExecutionSpeed();
+        return simulationService.start(speed);
     }
 
     @MessageMapping("/stop")
     @SendTo("/topic/status")
-    public String stopSimulation() {
+    public SimulationStatusDTO stopSimulation() {
         return simulationService.stop();
     }
 
     @MessageMapping("/pause")
     @SendTo("/topic/status")
-    public String pauseSimulation() {
+    public SimulationStatusDTO pauseSimulation() {
         return simulationService.pause();
     }
 
     @MessageMapping("/resume")
     @SendTo("/topic/status")
-    public String resumeSimulation() {
+    public SimulationStatusDTO resumeSimulation() {
         return simulationService.resume();
     }
 
     @MessageMapping("/status")
     @SendTo("/topic/status")
-    public String getStatus() {
+    public SimulationStatusDTO getStatus() {
         return simulationService.getStatus();
     }
 }

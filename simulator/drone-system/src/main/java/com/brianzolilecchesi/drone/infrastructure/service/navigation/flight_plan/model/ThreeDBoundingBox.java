@@ -3,13 +3,14 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 import java.util.Arrays;
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.util.Util;
 
 public final class ThreeDBoundingBox {
 	
-	private final Position tno;
-	private final Position bno;
+	private final Position tnw;
+	private final Position bnw;
 	
 	private final Position tne;
 	private final Position bne;
@@ -17,32 +18,62 @@ public final class ThreeDBoundingBox {
 	private final Position tse;
 	private final Position bse;
 	
-	private final Position tso;
-	private final Position bso;
+	private final Position tsw;
+	private final Position bsw;
 	
 	public ThreeDBoundingBox(
-			Position tno, Position bno, 
-			Position tne, Position bne, 
-			Position tse, Position bse, 
-			Position tso, Position bso
+			final Position tnw, final Position bnw, 
+			final Position tne, final Position bne, 
+			final Position tse, final Position bse, 
+			final Position tsw, final Position bsw
 			) {
+		assert tnw != null;
+		assert bnw != null;
+		assert tne != null;
+		assert bne != null;
+		assert tse != null;
+		assert bse != null;
+		assert tsw != null;
+		assert bsw != null;		
 		
-		this.tno = tno;
-		this.bno = bno;
+		this.tnw = tnw;
+		this.bnw = bnw;
 		this.tne = tne;
 		this.bne = bne;
 		this.tse = tse;
 		this.bse = bse;
-		this.tso = tso;
-		this.bso = bso;
+		this.tsw = tsw;
+		this.bsw = bsw;
 	}
 	
-	public Position getTNO() {
-		return tno;
+	public ThreeDBoundingBox(final Position p1, final Position p2, double delta) {
+		assert p1 != null;
+		assert p2 != null;
+		assert delta > 0;
+		
+		double northest = Math.max(p1.getLatitude(), p2.getLatitude());
+		double southest = Math.min(p1.getLatitude(), p2.getLatitude());
+		double westest = Math.min(p1.getLongitude(), p2.getLongitude());
+		double eastest = Math.max(p1.getLongitude(), p2.getLongitude());
+		double lowest = Math.min(p1.getAltitude(), p2.getAltitude());
+		double highest = Math.max(p1.getAltitude(), p2.getAltitude());
+		
+		this.tnw = new Position(northest, westest, highest).move(delta, -delta, 0); 	// TNO
+		this.bnw = new Position(northest, westest, lowest).move(delta, -delta, 0); 		// BNO
+		this.tne = new Position(northest, eastest, highest).move(delta, delta, 0); 		// TNE
+		this.bne = new Position(northest, eastest, lowest).move(delta, delta, 0); 		// BNE
+		this.tse = new Position(southest, eastest, highest).move(-delta, delta, 0); 	// TSE
+		this.bse = new Position(southest, eastest, lowest).move(-delta, delta, 0); 		// BSE
+		this.tsw = new Position(southest, westest, highest).move(-delta, -delta, 0); 	// TSO
+		this.bsw = new Position(southest, westest, lowest).move(-delta, -delta, 0); 	// BSO	
+	}	
+	
+	public Position getTNW() {
+		return tnw;
 	}
 	
-	public Position getBNO() {
-		return bno;
+	public Position getBNW() {
+		return bnw;
 	}
 	
 	public Position getTNE() {
@@ -61,28 +92,32 @@ public final class ThreeDBoundingBox {
 		return bse;
 	}
 	
-	public Position getTSO() {
-		return tso;
+	public Position getTSW() {
+		return tsw;
 	}
 	
-	public Position getBSO() {
-        return bso;
+	public Position getBSW() {
+        return bsw;
+	}
+	
+	public List<Coordinate> getCoordinates() {
+		return Arrays.asList(tnw, bnw, tne, bne, tse, bse, tsw, bsw);
 	}
 	
 	public List<Position> getPositions() {
-		return Arrays.asList(tno, bno, tne, bne, tse, bse, tso, bso);
+		return Arrays.asList(tnw, bnw, tne, bne, tse, bse, tsw, bsw);
 	}
 	
 	public double getLowerLatitude() {
-		return Util.min(tso.getLatitude(), bso.getLatitude(), tse.getLatitude(), bse.getLatitude());
+		return Util.min(tsw.getLatitude(), bsw.getLatitude(), tse.getLatitude(), bse.getLatitude());
 	}
 	
 	public double getUpperLatitude() {
-		return Util.max(tno.getLatitude(), bno.getLatitude(), tne.getLatitude(), bne.getLatitude());
+		return Util.max(tnw.getLatitude(), bnw.getLatitude(), tne.getLatitude(), bne.getLatitude());
 	}
 	
 	public double getLowerLongitude() {
-		return Util.min(tno.getLongitude(), bno.getLongitude(), tso.getLongitude(), bso.getLongitude());
+		return Util.min(tnw.getLongitude(), bnw.getLongitude(), tsw.getLongitude(), bsw.getLongitude());
 	}
 	
 	public double getUpperLongitude() {
@@ -90,11 +125,11 @@ public final class ThreeDBoundingBox {
 	}
 	
 	public double getLowerAltitude() {
-		return Util.min(bno.getAltitude(), bne.getAltitude(), bse.getAltitude(), bso.getAltitude());
+		return Util.min(bnw.getAltitude(), bne.getAltitude(), bse.getAltitude(), bsw.getAltitude());
 	}
 	
 	public double getUpperAltitude() {
-		return Util.max(tno.getAltitude(), tne.getAltitude(), tse.getAltitude(), tso.getAltitude());
+		return Util.max(tnw.getAltitude(), tne.getAltitude(), tse.getAltitude(), tsw.getAltitude());
 	}
 	
 	public boolean contains(Position position) {
@@ -119,13 +154,13 @@ public final class ThreeDBoundingBox {
 		assert bbox != null;
 		
 		if (partially) {
-			return intersect(bbox);
+			return overlaps(bbox);
 		}
 		
 		return contains(bbox);
 	}
 	
-	public boolean intersect(final ThreeDBoundingBox other) {
+	public boolean overlaps(final ThreeDBoundingBox other) {
 		assert other != null;
 		
 		double lowerBoundLat = getLowerLatitude();
@@ -164,11 +199,11 @@ public final class ThreeDBoundingBox {
 	@Override
 	public String toString() {
 		return String.format(
-				"ThreeDBoundingBox[tno=%s, bno=%s, tne=%s, bne=%s, tse=%s, bse=%s, tso=%s, bso=%s]", 
-				tno, bno, 
+				"ThreeDBoundingBox[tnw=%s, bnw=%s, tne=%s, bne=%s, tse=%s, bse=%s, tsw=%s, bsw=%s]", 
+				tnw, bnw, 
 				tne, bne, 
 				tse, bse, 
-				tso, bso
+				tsw, bsw
 				);
 	}
 	
@@ -183,9 +218,14 @@ public final class ThreeDBoundingBox {
 		}
 
 		ThreeDBoundingBox other = (ThreeDBoundingBox) obj;
-		return tno.equals(other.tno) && bno.equals(other.bno) && 
+		return tnw.equals(other.tnw) && bnw.equals(other.bnw) && 
 			   tne.equals(other.tne) && bne.equals(other.bne) && 
 			   tse.equals(other.tse) && bse.equals(other.bse) && 
-			   tso.equals(other.tso) && bso.equals(other.bso);
+			   tsw.equals(other.tsw) && bsw.equals(other.bsw);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(new Object[] { tnw, bnw, tne, bne, tse, bse, tsw, bsw });
 	}
 }

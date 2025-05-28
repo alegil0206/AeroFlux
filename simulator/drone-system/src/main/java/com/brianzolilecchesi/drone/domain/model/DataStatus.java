@@ -6,5 +6,6 @@ public enum DataStatus {
     AVAILABLE,
     FAILED,
     EXPIRED,
-    UPDATING
+    UPDATING,
+    LOADED_ON_GRAPH
 }

@@ -4,7 +4,7 @@ import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDBounds;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDRectangularBounds;
 
-public class Cell extends Zone {
+public class Cell extends Zone implements Cloneable {
 	
 	private static String getId(int x, int y, int z) {
 		return String.format("Cell[%d, %d, %d]", x, y, z);
@@ -64,11 +64,6 @@ public class Cell extends Zone {
 	}
 	
 	@Override
-	public Cell clone() {
-        return new Cell(x, y, z, center, width, height);
-	}
-	
-	@Override
 	public String toString() {
 		return String.format("Cell[%s, x=%d, y=%d, z=%d, center=%s, width=%f, height=%f]", 
 				super.toString(),
@@ -94,5 +89,26 @@ public class Cell extends Zone {
 				x == other.x && 
 				y == other.y && 
 				z == other.z;
+	}
+
+		
+	@Override
+	public Cell clone() {
+		try {
+			Cell cloned = (Cell) super.clone();
+			cloned.bounds = this.bounds != null ? this.bounds : null;
+			return cloned;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();			
+		}
+	}
+
+
+	@Override
+	public int hashCode() {
+		int result = Integer.hashCode(x);
+		result = 31 * result + Integer.hashCode(y);
+		result = 31 * result + Integer.hashCode(z);
+		return result;
 	}
 }

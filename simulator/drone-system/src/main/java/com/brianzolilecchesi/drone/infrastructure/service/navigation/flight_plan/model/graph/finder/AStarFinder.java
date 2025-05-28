@@ -5,23 +5,23 @@ import org.jgrapht.alg.interfaces.AStarAdmissibleHeuristic;
 import org.jgrapht.alg.shortestpath.AStarShortestPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
+import com.brianzolilecchesi.drone.domain.geo.GeoDistanceCalculator;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.FlightPlan;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculator;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.CellGraph;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Cell;
 
 public class AStarFinder extends PathFinder {
 	
-	private GeoCalculator dc;
+	private GeoDistanceCalculator dc;
 
-	public AStarFinder(GeoCalculator dc) {
+	public AStarFinder(GeoDistanceCalculator dc) {
         super();
         this.dc = dc;
     }
 	
 	public AStarFinder() {
-		this(GeoCalculatorSingleton.INSTANCE.getInstance());
+		this(GeoCalculatorFactory.getGeoDistanceCalculator());
 	}
 	
 	@Override

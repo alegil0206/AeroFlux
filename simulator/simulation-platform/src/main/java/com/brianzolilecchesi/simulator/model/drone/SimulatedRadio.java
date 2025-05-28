@@ -11,6 +11,8 @@ import com.brianzolilecchesi.drone.DroneSystem;
 public class SimulatedRadio implements Radio {
 
     private static final double MAX_TRANSMISSION_DISTANCE = 500.0; // Distanza massima di trasmissione in metri
+    private static final List<PendingMessage> pendingMessages = new ArrayList<>(); // buffer globale
+
     private final List<DroneSystem> drones = new CopyOnWriteArrayList<>();
     private final List<RadioMessageDTO> messageQueue = new ArrayList<>();
     private DroneSystem sender;
@@ -19,7 +21,7 @@ public class SimulatedRadio implements Radio {
     public void sendMessage(RadioMessageDTO message) {
         for (DroneSystem receiver : drones) {
             if (!receiver.getDroneProperties().getId().equals(sender.getDroneProperties().getId()) && isWithinRange(sender, receiver)) {
-                ((SimulatedRadio) receiver.getHardwareAbstractionLayer().getRadio()).receiveMessage(message);
+                pendingMessages.add(new PendingMessage(receiver, message));
             }
         }
     }
@@ -46,5 +48,23 @@ public class SimulatedRadio implements Radio {
 
     public void setSender(DroneSystem sender) {
         this.sender = sender;
+    }
+
+    public static void deliverMessages() {
+        for (PendingMessage pm : pendingMessages) {
+            SimulatedRadio radio = (SimulatedRadio) pm.receiver.getHardwareAbstractionLayer().getRadio();
+            radio.receiveMessage(pm.message);
+        }
+        pendingMessages.clear();
+    }
+
+    private static class PendingMessage {
+        DroneSystem receiver;
+        RadioMessageDTO message;
+
+        public PendingMessage(DroneSystem receiver, RadioMessageDTO message) {
+            this.receiver = receiver;
+            this.message = message;
+        }
     }
 }

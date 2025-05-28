@@ -2,7 +2,7 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 
 public class FlightPlanRefinerSingleton {
 	
-	private static FlightPlanRefiner instance;
+	private static volatile FlightPlanRefiner instance;
 
 	public static FlightPlanRefiner getInstance() {
 		if (instance == null) {

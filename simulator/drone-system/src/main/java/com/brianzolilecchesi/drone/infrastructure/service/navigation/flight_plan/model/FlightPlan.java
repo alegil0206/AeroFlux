@@ -3,9 +3,9 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 import java.util.ArrayList;
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
+import com.brianzolilecchesi.drone.domain.geo.GeoDistanceCalculator;
 import com.brianzolilecchesi.drone.domain.model.Position;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculator;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculationReport;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Cell;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.ZoneCell;
@@ -78,7 +78,7 @@ public class FlightPlan {
 	
 	public double getPathLength() {
 		double length = 0;
-		GeoCalculator calculator = GeoCalculatorSingleton.INSTANCE.getInstance();
+		GeoDistanceCalculator calculator = GeoCalculatorFactory.getGeoDistanceCalculator();
 		
 		List<Position> points = getPathPositions();
 		for (int i = 0; i < points.size() - 1; i++) {
@@ -112,5 +112,14 @@ public class FlightPlan {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 1;
+		for (Cell cell : path) {
+			result = 31 * result + cell.hashCode();
+		}
+		return result;
 	}
 }

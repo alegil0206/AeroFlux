@@ -33,7 +33,8 @@ public class BatteryEmergencyHandler implements StepHandler {
             ctx.logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.LANDING, "Safe landing at " + pos);
             ctx.setFlightMode(DroneFlightMode.LANDING_CONFIGURED);
         }
-        ctx.geozoneNavService.clearGeoZones();
+        ctx.geozoneNavService.clear();
+        ctx.weatherNavService.clear();
         ctx.navigationService.configureVerticalLanding(pos);
         return false;
     }

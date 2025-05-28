@@ -2,7 +2,7 @@ package com.brianzolilecchesi.drone.infrastructure.integration;
 
 import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
 import com.brianzolilecchesi.drone.domain.dto.AuthorizationRequestDTO;
-import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
+import com.brianzolilecchesi.drone.domain.dto.AuthorizationDTO;
 import com.brianzolilecchesi.drone.domain.exception.AuthorizationException;
 import com.brianzolilecchesi.drone.domain.exception.ExternalServiceException;
 
@@ -30,12 +30,12 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
         this.restTemplate = restTemplate;
     }
 
-    public AuthorizationResponseDTO requestAuthorization(AuthorizationRequestDTO authorizationRequestDTO) throws AuthorizationException, ExternalServiceException {
+    public AuthorizationDTO requestAuthorization(AuthorizationRequestDTO authorizationRequestDTO) throws AuthorizationException, ExternalServiceException {
         try {
-            ResponseEntity<AuthorizationResponseDTO> responseEntity = restTemplate.postForEntity(
+            ResponseEntity<AuthorizationDTO> responseEntity = restTemplate.postForEntity(
                 authorizationApiUrl + "/authorization",
                 new HttpEntity<>(authorizationRequestDTO),
-                AuthorizationResponseDTO.class
+                AuthorizationDTO.class
             );
             return responseEntity.getBody();
         } catch (HttpClientErrorException e) {
@@ -46,14 +46,14 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
     }
 
     @Override
-    public List<AuthorizationResponseDTO> getAuthorizations(String droneId) throws AuthorizationException, ExternalServiceException {
+    public List<AuthorizationDTO> getAuthorizations(String droneId) throws AuthorizationException, ExternalServiceException {
         System.out.println("Call to geo-authorization API for the drone: " + droneId);
         try {
-            ResponseEntity<List<AuthorizationResponseDTO>> response = restTemplate.exchange(
+            ResponseEntity<List<AuthorizationDTO>> response = restTemplate.exchange(
                 authorizationApiUrl + "/authorization/drone/" + droneId,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<AuthorizationResponseDTO>>() {}
+                new ParameterizedTypeReference<List<AuthorizationDTO>>() {}
             );
             return response.getBody() != null ? response.getBody() : Collections.emptyList();
         } catch (HttpClientErrorException e) {

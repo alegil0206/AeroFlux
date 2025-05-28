@@ -4,14 +4,14 @@ import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
+import com.brianzolilecchesi.drone.infrastructure.service.geozone.registry.GeoZoneRegistry;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 
+import com.brianzolilecchesi.drone.domain.dto.GeoZoneDTO;
 import com.brianzolilecchesi.drone.domain.exception.ExternalServiceException;
 import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessGateway;
 
@@ -19,12 +19,12 @@ public class GeoZoneService {
 
     private final GeoAwarenessGateway restApiGateway;
     private final LogService logService;
-
-    private List<GeoZone> geoZones = Collections.emptyList();
+    private final GeoZoneRegistry geoZoneRegistry;
     private DataStatus geoZonesStatus = DataStatus.NOT_REQUESTED;
 
     public GeoZoneService(LogService logService) {
         this.restApiGateway = new GeoAwarenessRestClient();
+        this.geoZoneRegistry = new GeoZoneRegistry();
         this.logService = logService;
     }
 
@@ -50,9 +50,10 @@ public class GeoZoneService {
         }).thenAccept(geoZoneDTOs -> {
             if (geoZoneDTOs != null) {
                 synchronized(this){
-                    geoZones = geoZoneDTOs.stream()
-                    .map(GeoZone::new)
-                    .collect(Collectors.toUnmodifiableList());
+                    geoZoneRegistry.clear();
+                    for (GeoZoneDTO dto : geoZoneDTOs) {
+                        geoZoneRegistry.add(new GeoZone(dto));
+                    }
                     geoZonesStatus = DataStatus.AVAILABLE;
                 }
               
@@ -90,12 +91,16 @@ public class GeoZoneService {
         });
     }
 
-    public synchronized List<GeoZone> getGeoZones() {
-        return new ArrayList<>(geoZones);
-    }
+    public synchronized Map<String, GeoZone> getGeoZones() {
+		return new HashMap<>(geoZoneRegistry.getAll());
+	}
 
     public synchronized DataStatus getGeoZonesStatus() {
         return geoZonesStatus;
+    }
+
+    public synchronized void setGeoZonesStatus(DataStatus status) {
+        this.geoZonesStatus = status;
     }
 
 }

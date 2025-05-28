@@ -2,14 +2,39 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
+import com.brianzolilecchesi.drone.domain.geo.GeoDistanceCalculator;
 import com.brianzolilecchesi.drone.domain.model.Position;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculator;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
 
 public class FlightPlanRefiner {
 	
 	public FlightPlanRefiner() {
+	}
+	
+	public List<Position> refineLinearPath(final List<Position> positions, double d) {
+		assert positions != null;
+		assert positions.size() == 2;
 		
+		Position current = positions.get(0);
+		Position target = positions.remove(positions.size() - 1);
+		
+		GeoDistanceCalculator geo = GeoCalculatorFactory.getGeoDistanceCalculator();
+		
+		while (geo.distance(current, target, false) > d) {	
+			double altitude = current.getAltitude();
+			if (altitude == 0)
+				altitude = FlightPlanCalculator.DEFAULT_HEIGHT / 2;
+			
+			double bearing = geo.bearing(current, target);
+			Position next = new Position(geo.moveByBearing(current, bearing, d), altitude);
+
+			positions.add(next);
+			current = next;
+			
+		}	
+		positions.add(target);
+	
+		return positions;
 	}
 	
 	public List<Position> refine(final List<Position> positions, double d) {
@@ -19,7 +44,11 @@ public class FlightPlanRefiner {
 		if (positions.size() == 1)
 			return positions;
 		
-		GeoCalculator geo = GeoCalculatorSingleton.INSTANCE.getInstance();
+		if (positions.size() == 2) {
+			return refineLinearPath(positions, d);
+		}
+		
+		GeoDistanceCalculator geo = GeoCalculatorFactory.getGeoDistanceCalculator();
 				
 		boolean changed = true;
 		

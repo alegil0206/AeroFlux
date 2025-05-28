@@ -22,8 +22,10 @@ import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService
 import com.brianzolilecchesi.drone.infrastructure.service.landing.SafeLandingService;
 import com.brianzolilecchesi.drone.infrastructure.service.log.StepLogService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.CollisionAvoidanceService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.DroneZoneNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.FlightNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.GeozoneNavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.WeatherNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
@@ -40,20 +42,23 @@ public class DroneSystem {
     
     public DroneSystem(
             DroneProperties droneProperties,
-            HardwareAbstractionLayer hardwareAbstractionLayer
+            HardwareAbstractionLayer hardwareAbstractionLayer,
+            double droneMaxSpeed
             ) {
         LogService logService = new StepLogService(droneProperties.getId());
         BatteryService batteryService = new BatteryMonitor(hardwareAbstractionLayer.getBattery(), logService);
         CommunicationService communicationService = new RadioService(hardwareAbstractionLayer.getRadio(), logService);
         LandingService landingService = new SafeLandingService(hardwareAbstractionLayer.getCamera(), logService);
-        NavigationService navigationService = new FlightNavigationService(logService);
+        NavigationService navigationService = new FlightNavigationService(logService, droneMaxSpeed);
         GeozoneNavigationService geozoneNavigationService = new GeozoneNavigationService();
+        DroneZoneNavigationService droneZoneNavigationService = new DroneZoneNavigationService();
+        WeatherNavigationService weatherNavigationService = new WeatherNavigationService();
         FlightController flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
-        DroneSafetyNavigationService collisionAvoidanceService = new CollisionAvoidanceService();
+        DroneSafetyNavigationService collisionAvoidanceService = new CollisionAvoidanceService(droneMaxSpeed);
 
         GeoZoneService geoZoneService = new GeoZoneService(logService);
         WeatherService weatherService = new WeatherService(logService);
-        AuthorizationService authorizationService= new AuthorizationService();
+        AuthorizationService authorizationService= new AuthorizationService(logService);
         SupportPointService supportPointService = new SupportPointService();
                 
         this.context = new DroneContext(
@@ -69,6 +74,8 @@ public class DroneSystem {
                 authorizationService,
                 supportPointService,
                 geozoneNavigationService,
+                weatherNavigationService,
+                droneZoneNavigationService,
                 communicationService,
                 collisionAvoidanceService
         );
@@ -99,7 +106,7 @@ public class DroneSystem {
                 context.props.getOperationCategory(),
                 context.getFlightMode(),
                 context.flightController.getCurrentPosition(),
-                context.navigationService.getNextPositions()));
+                context.navigationService.getNextWaypoints()));
     
         return getDroneStatus();
     }

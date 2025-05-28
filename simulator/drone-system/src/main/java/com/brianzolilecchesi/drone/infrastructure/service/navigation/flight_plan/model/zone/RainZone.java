@@ -2,20 +2,22 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDBounds;
 
-//TODO: Implement this class
-public class WeatherZone extends Zone {
+public class RainZone extends Zone {
+	private final ThreeDBounds bounds;
+
 	
-	public WeatherZone(String id) {
+	public RainZone(String id, ThreeDBounds bounds) {
 		super(id);
+		this.bounds = bounds;
 	}
 
 	@Override
 	public ThreeDBounds getBounds() {
-		return null;
+		return bounds;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("WeatherZone[%s]", super.toString());
+		return String.format("RainZone[%s]", super.toString());
 	}
 }

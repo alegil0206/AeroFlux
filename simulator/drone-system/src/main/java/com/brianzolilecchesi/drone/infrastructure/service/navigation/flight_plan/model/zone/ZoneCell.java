@@ -27,17 +27,37 @@ public class ZoneCell extends Cell {
 	private void setZone(Zone zone) {
 		this.zone = zone;
 	}
-	
-	@Override
-	public ZoneCell clone() {
-		return new ZoneCell(getX(), getY(), getZ(), getCenter(), getWidth(), getHeight(), zone);
-	}
-	
+		
 	@Override
 	public String toString() {
 		return String.format("ZoneCell[%s, zone=%s]", 
 				super.toString(),
 				zone
 				);
+	}
+
+	@Override
+	public ZoneCell clone() {
+		ZoneCell cloned = (ZoneCell) super.clone();
+		return cloned;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (!(o instanceof ZoneCell)) {
+			return false;
+		}
+		
+		ZoneCell other = (ZoneCell) o;
+		
+		return super.equals(other) && zone.equals(other.getZone());
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() + zone.hashCode();
 	}
 }

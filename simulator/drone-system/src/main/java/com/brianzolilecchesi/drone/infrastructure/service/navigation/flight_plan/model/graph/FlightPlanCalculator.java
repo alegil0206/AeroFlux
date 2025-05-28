@@ -2,12 +2,14 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_pla
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
+import com.brianzolilecchesi.drone.domain.geo.GeoDistanceCalculator;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.exception.flight_plan.model.graph.IllegalLinearPathException;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.FlightPlan;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.ThreeDBoundingBox;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds.ThreeDRectangularBounds;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculationReport.Code;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.finder.LinearFinder;
@@ -18,72 +20,21 @@ import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan
 
 public class FlightPlanCalculator {
 
-	private static final double TOLLERANCE = 1e-12;
+	private static final double PATH_BOUNDS_DELTA = 25.0;
 	static final double DEFAULT_HEIGHT = 40.0;
 	
-	protected double targetSensitivity;
-	protected double acceptableSensitivity;
-	protected int maxTimeAcceptable;
-	protected int maxTime;
-
 	private final LinearFinder lpf;
 	private PathFinder pf;
 	private CellGraphBuilder cgb;
 	
 	public FlightPlanCalculator(
-			double targetSensitivity,
-			double acceptableSensitivity,
-			int maxTimeAcceptable,
-			int maxTime,
 			final PathFinder pf,
 			final CellGraphBuilder cgb
 			) {
 		
-		assert targetSensitivity > 0;
-		assert acceptableSensitivity > 0;
-		assert maxTimeAcceptable > 0;
-		assert maxTime > 0;
-	  
-		setTargetSensitivity(targetSensitivity);
-		setAcceptableSensitivity(acceptableSensitivity);
-		setMaxTimeAcceptable(maxTimeAcceptable);
-		setMaxTime(maxTime);
-		
 		this.lpf = new LinearFinder();
 		setPathFinder(pf);
 		setCellGraphBuilder(cgb);
-	}
-	
-	public double getTargetSensitivity() {
-	    return targetSensitivity;
-	}
-
-	public void setTargetSensitivity(double targetSensitivity) {
-		this.targetSensitivity = targetSensitivity;
-	}
-
-	public double getAcceptableSensitivity() {
-		return acceptableSensitivity;
-	}
-
-	public void setAcceptableSensitivity(double acceptableSensitivity) {
-		this.acceptableSensitivity = acceptableSensitivity;
-	}
-
-	public int getMaxTimeAcceptable() {
-	    return maxTimeAcceptable;
-	}
-
-	public void setMaxTimeAcceptable(int maxTimeAcceptable) {
-	    this.maxTimeAcceptable = maxTimeAcceptable;
-	}
-
-	public int getMaxTime() {
-	    return maxTime;
-	}
-
-	public void setMaxTime(int maxTime) {
-	    this.maxTime = maxTime;
 	}
 	
 	public PathFinder getPathFinder() {
@@ -106,28 +57,9 @@ public class FlightPlanCalculator {
 		assert source != null;
 		assert dest != null;
 		
-		double delta = 25.0;
-		
-		double northest = Math.max(source.getCenter().getLatitude(), dest.getCenter().getLatitude());
-		double southest = Math.min(source.getCenter().getLatitude(), dest.getCenter().getLatitude());
-		double westest = Math.min(source.getCenter().getLongitude(), dest.getCenter().getLongitude());
-		double eastest = Math.max(source.getCenter().getLongitude(), dest.getCenter().getLongitude());
-		double lowest = Math.min(source.getCenter().getAltitude(), dest.getCenter().getAltitude());
-		double highest = Math.max(source.getCenter().getAltitude(), dest.getCenter().getAltitude());
-		
-		ThreeDRectangularBounds pathBounds = new ThreeDRectangularBounds(new ThreeDBoundingBox(
-				new Position(northest, westest, highest).move(delta, -delta, 0), 	// TNO
-				new Position(northest, westest, lowest).move(delta, -delta, 0), 	// BNO
-				new Position(northest, eastest, highest).move(delta, delta, 0), 	// TNE
-				new Position(northest, eastest, lowest).move(delta, delta, 0), 		// BNE
-				new Position(southest, eastest, highest).move(-delta, delta, 0), 	// TSE
-				new Position(southest, eastest, lowest).move(-delta, delta, 0), 	// BSE
-				new Position(southest, westest, highest).move(-delta, -delta, 0), 	// TSO
-				new Position(southest, westest, lowest).move(-delta, -delta, 0)		// BSO
-				));
-		
+		ThreeDRectangularBounds pathBounds = new ThreeDRectangularBounds(source.getCenter(), dest.getCenter(), PATH_BOUNDS_DELTA);		
 		for (Zone zone : cgb.getZones()) {
-			if (zone.getBounds().intersects(pathBounds)) {
+			if (zone.getBounds().overlaps(pathBounds)) {
 				throw new IllegalLinearPathException(zone);
 			}
 		}
@@ -136,12 +68,145 @@ public class FlightPlanCalculator {
 		return lpf.computePath(cg);
 	}
 	
+	public List<Zone> getLinearPathZones(final Cell source, final Cell dest) {
+		assert source != null;
+		assert dest != null;
+		
+		List<Zone> overlappingZones = new ArrayList<>();
+		
+		ThreeDRectangularBounds pathBounds = new ThreeDRectangularBounds(source.getCenter(), dest.getCenter(), PATH_BOUNDS_DELTA);		
+		for (Zone zone : cgb.getZones()) {
+			if (zone.getBounds().overlaps(pathBounds)) {
+				overlappingZones.add(zone);
+			}
+		}
+		
+		return overlappingZones;
+	}
+	
 	public FlightPlan computeFlightPlan(
 			final GridZone grid,
 			final List<Double> altitudeLevels,
 			double cellWidth,
 			final Position source,
 			final Position dest
+			) {
+		return computeFlightPlan(grid, altitudeLevels, cellWidth, source, dest, true);
+	}
+	
+	private double getPositionAltitudeLevel(final List<Double> altitudeLevels, final Position p) {
+		assert altitudeLevels != null;
+		assert p != null;
+		
+		double altitude = p.getAltitude();
+		int i = 0;
+		while (i < altitudeLevels.size() && altitude > altitudeLevels.get(i)) {
+			++i;
+		}
+		
+		if (i == 0)
+			return 0.0;
+				
+		return altitudeLevels.get(i - 1);
+	}
+	
+	private void adjustSourceAndDestination(
+			FlightPlan fp, 
+			final Position source, 
+			final Position dest, 
+			double sensitivity,
+			double sourceAltitudeLevel, 
+			double destAltitudeLevel
+			) {
+		
+		assert fp != null;
+		assert fp.getPath() != null;
+		assert source != null;
+		assert dest != null;
+		assert sensitivity > 0;
+		assert sourceAltitudeLevel >= 0;
+		assert destAltitudeLevel >= 0;
+		
+		if (fp.getPath().isEmpty()) {
+			return;
+		}
+		
+		// Add the source and destination cells to the path
+    	Cell firstCell = fp.getPath().get(0);
+    	Cell sourceCell = new Cell(
+	    		firstCell.getX() - 1, firstCell.getY() - 1, firstCell.getZ() - 1,
+	    		source,
+	    		sensitivity,
+	    		sourceAltitudeLevel
+	    		);
+	    fp.getPath().add(0, sourceCell);
+	    
+	    Cell lastCell = fp.getPath().get(fp.getPath().size() - 1);
+	    Cell destCell = new Cell(
+	    		lastCell.getX() + 1, lastCell.getY() + 1, lastCell.getZ() + 1, 
+	    		dest,
+	    		sensitivity,
+	    		destAltitudeLevel
+	    		);
+	    fp.getPath().add(destCell);
+	    
+	    // Smooth the first and last cells of the path
+	    GeoDistanceCalculator gc = GeoCalculatorFactory.getGeoDistanceCalculator();
+	    
+	    Cell secondCell = fp.getPath().get(2);
+	    Cell penultimateCell = fp.getPath().get(fp.getPath().size() - 3);
+	    
+	    Position sourceCenter = sourceCell.getCenter(),
+	    		 firstCenter = firstCell.getCenter(),
+	    		 secondCenter = secondCell.getCenter();
+	    		 
+        Position destCenter = destCell.getCenter(),
+          		 lastCenter = lastCell.getCenter(),
+          		 penultimateCenter = penultimateCell.getCenter();
+        
+        boolean smoothSource = true, smoothDest = true;
+        ThreeDRectangularBounds sourceBounds = new ThreeDRectangularBounds(sourceCenter, secondCenter, PATH_BOUNDS_DELTA),
+    		                    destBounds = new ThreeDRectangularBounds(lastCenter, destCenter, PATH_BOUNDS_DELTA);
+        
+        for (Zone zone : cgb.getZones()) {
+        	var bounds = zone.getBounds();
+			if (bounds.overlaps(sourceBounds)) {
+				smoothSource = false;
+			}
+			if (bounds.overlaps(destBounds)) {
+				smoothDest = false;
+			}
+			if (!smoothSource && !smoothDest) {
+				break;
+			}
+		}
+		
+	    if (
+	    		smoothSource &&
+	    		gc.distance(sourceCenter, firstCenter) + gc.distance(firstCenter, secondCenter) 
+	    		> 
+	    		gc.distance(sourceCenter, secondCenter)) {
+			
+	    	fp.getPath().remove(1);
+		}
+		
+		if (	
+				smoothDest &&
+				gc.distance(destCenter, lastCenter) + gc.distance(lastCenter, penultimateCenter)
+				> 
+				gc.distance(destCenter, penultimateCenter)) {
+			
+			fp.getPath().remove(fp.getPath().size() - 2);
+		}
+	}
+	
+	public FlightPlan computeFlightPlan(
+			final GridZone grid,
+			final List<Double> altitudeLevels,
+			double cellWidth,
+			final Position source,
+			final Position dest, 
+			boolean computeLinearPath
 			) {
 		assert grid != null;
         assert altitudeLevels != null;
@@ -153,25 +218,28 @@ public class FlightPlanCalculator {
         FlightPlanCalculationReport report = new FlightPlanCalculationReport(pf.algorithm(), cellWidth);
         
         Instant startTime = Instant.now();
-	    Instant maxAccettableTime = startTime.plusSeconds(maxTimeAcceptable);
-	    Instant maxTime = startTime.plusSeconds(this.maxTime);
 	    
 	    FlightPlan fp = null;
 	    
-	    try {
-	    	fp = computeLinearFlightPlan(
-        			new Cell(0, 0, 0, source, cellWidth, DEFAULT_HEIGHT),
-        			new Cell(1, 1, 1, dest, cellWidth, DEFAULT_HEIGHT)
-        			);
-	    	
-	    	report.setCode(Code.LINEAR_PATH_FOUND);
-	    	report.setAlgorithm(lpf.algorithm());
-	    	report.setTimeSeconds(Duration.between(startTime, Instant.now()).toMillis() / 1000.0);
-	    	report.setIterations(0);
-			fp.setReport(report);
-	    	return fp;
-	    	
-	    } catch (IllegalLinearPathException e) {}
+	    double sourceAltitudeLevel = getPositionAltitudeLevel(altitudeLevels, source);
+	    double destAltitudeLevel = getPositionAltitudeLevel(altitudeLevels, dest);
+	    
+	    if (computeLinearPath) {
+		    try {
+		    	fp = computeLinearFlightPlan(
+	        			new Cell(0, 0, 0, source, cellWidth, sourceAltitudeLevel),
+	        			new Cell(1, 1, 1, dest, cellWidth, destAltitudeLevel)
+	        			);
+		    	
+		    	report.setCode(Code.LINEAR_PATH_FOUND);
+		    	report.setAlgorithm(lpf.algorithm());
+		    	report.setTimeSeconds(Duration.between(startTime, Instant.now()).toMillis() / 1000.0);
+		    	fp.setReport(report);
+		    	
+		    	return fp;
+		    	
+		    } catch (IllegalLinearPathException e) {}
+	    }
 	
 	    CellGraph cg = cgb.build(grid, altitudeLevels, cellWidth, source, dest);
 	    
@@ -181,7 +249,6 @@ public class FlightPlanCalculator {
             else 						report.setCode(Code.DESTINATION_NOT_FOUND);
 			
 			report.setTimeSeconds(Duration.between(startTime, endTime).toMillis() / 1000.0);
-			report.setIterations(0);
 			return new FlightPlan(null, report);
 		}
 		
@@ -191,77 +258,14 @@ public class FlightPlanCalculator {
 		if (!fp.hasPath()) {
 			report.setCode(Code.NO_PATH_FOUND);
 			report.setTimeSeconds(Duration.between(startTime, Instant.now()).toMillis() / 1000.0);
-			report.setIterations(0);
-			fp.setReport(report);
 			return fp;
 		}
 	    	    
-	    double sensitivity = cellWidth;
-	    int i = 0;
-	    boolean failure = false;
-	    
-	    // Iteratively refine the path with a lower sensitivity
-	    while (
-	    		(targetSensitivity < sensitivity) && 
-	    		(sensitivity > acceptableSensitivity || Instant.now().isBefore(maxAccettableTime)) && 
-	    		Instant.now().isBefore(maxTime)
-	    	  ) {
-	    	
-	    	sensitivity /= 2;
-	    	
-	    	cg = cgb.build(fp, sensitivity, source, dest, sensitivity, TOLLERANCE);
-	    	if (cg.getSource() == null || cg.getDest() == null) {
-	    		failure = true;
-	    		break;
-	    	}
-	    	
-	    	FlightPlan fp1 = pf.computePath(cg);
-			if (!fp1.hasPath()) {
-				failure = true;
-				break;
-			}
-			
-			fp = fp1;
-	    	++i;
-	    }
-	    
-	    // Insert start and destination in the path
-	    if (!fp.getPath().isEmpty()) {
-	    	Cell firstCell = fp.getPath().getFirst();
-		    fp.getPath().add(0, new Cell(
-		    		firstCell.getX() - 1, firstCell.getY() - 1, firstCell.getZ() - 1,
-		    		source,
-		    		sensitivity,
-		    		DEFAULT_HEIGHT
-		    		));
-		    
-		    Cell lastCell = fp.getPath().getLast();
-		    fp.getPath().add(new Cell(
-		    		lastCell.getX() + 1, lastCell.getY() + 1, lastCell.getZ() + 1, 
-		    		dest,
-		    		sensitivity,
-		    		DEFAULT_HEIGHT
-		    		));
-	    }
+	    adjustSourceAndDestination(fp, source, dest, cellWidth, sourceAltitudeLevel, destAltitudeLevel);
 	    
 	    Instant endTime = Instant.now();
 	    double secondsElapsed = Duration.between(startTime, endTime).toMillis() / 1000.0;
-	    report.setIterations(i);
 	    report.setTimeSeconds(secondsElapsed);
-	    
-		if (sensitivity <= targetSensitivity) {
-			report.setCode(Code.TARGET_SENSITIVITY_REACHED);
-		} 
-		else if (secondsElapsed >= this.maxTime) {
-			report.setCode(Code.MAX_TIME_REACHED);
-		} 
-		else if (sensitivity <= acceptableSensitivity) {
-			if (failure) {
-				report.setCode(Code.UNABLE_TO_IMPROVE_SENSITIVITY);
-            } else {
-                report.setCode(Code.ACCEPTABLE_SENSITIVITY_REACHED);
-			}
-		}
 		
 		fp.setReport(report);
 	    return fp;

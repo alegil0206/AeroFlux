@@ -25,6 +25,8 @@ const getPageNameFromPath = (path) => {
       return 'Drone';
     case '/weather':
       return 'Weather';
+    case '/history':
+      return 'Simulation History';
     case '/setting':
       return 'Settings';
     default:

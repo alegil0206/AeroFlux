@@ -7,18 +7,17 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
+import com.brianzolilecchesi.drone.domain.geo.GeoDistanceCalculator;
 import com.brianzolilecchesi.drone.domain.model.Position;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.FlightPlan;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.ThreeDBoundingBox;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculator;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Cell;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.GridZone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
 
 public class CellGraphBuilder {
 
-	private List<Zone> zones;
+	private volatile List<Zone> zones;
 
 	public CellGraphBuilder(final List<Zone> zones) {
 		setZones(zones);
@@ -28,11 +27,11 @@ public class CellGraphBuilder {
 		this(new ArrayList<>());
 	}
 
-	public List<Zone> getZones() {
+	public synchronized List<Zone> getZones() {
 		return zones;
 	}
 
-	public void setZones(final List<Zone> zones) {
+	public synchronized void setZones(final List<Zone> zones) {
 		this.zones = zones;
 	}
 	
@@ -51,14 +50,14 @@ public class CellGraphBuilder {
 		assert source != null;
 		assert dest != null;
 
-		GeoCalculator dc = GeoCalculatorSingleton.INSTANCE.getInstance();
+		GeoDistanceCalculator dc = GeoCalculatorFactory.getGeoDistanceCalculator();
 		ThreeDBoundingBox bb = grid.getBounds().getBoundingBox();
 
-		int width = (int) Math.ceil(dc.distance(bb.getBNO(), bb.getBNE()) / cellWidth);
-		int height = (int) Math.ceil(dc.distance(bb.getBNO(), bb.getBSO()) / cellWidth);
+		int width = (int) Math.ceil(dc.distance(bb.getBNW(), bb.getBNE()) / cellWidth);
+		int height = (int) Math.ceil(dc.distance(bb.getBNW(), bb.getBSW()) / cellWidth);
 		int nAltitudes = altitudeLevels.size();
 
-		Position tl = bb.getBNO();
+		Position tl = bb.getBNW();
 
 		Cell[][][] gridList = new Cell[height][width][nAltitudes];
 
@@ -68,6 +67,7 @@ public class CellGraphBuilder {
 		boolean isZoneBlocked = false;
 
 		Graph<Cell, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(DefaultWeightedEdge.class);
+		List<Zone> zones = getZones();
 
 		for (int i = 0; i < height; ++i) {
 			for (int j = 0; j < width; ++j) {
@@ -86,7 +86,7 @@ public class CellGraphBuilder {
 
 					gridList[i][j][k] = new Cell(i, j, k, center, cellWidth, cellHeight);
 						
-					for (Zone z : this.zones) {
+					for (Zone z : zones) {
 						if (z.getBounds().contains(gridList[i][j][k].getBounds(), true)) {
 							isZoneBlocked = true;
 							break;
@@ -111,8 +111,8 @@ public class CellGraphBuilder {
 		
 		DefaultWeightedEdge e = null;
 		
-		// All neighbours of cells with at least one lower index
-		// The neighbours with only greater indices are added in the following loops
+		// All neighbors of cells with at least one lower index
+		// The neighbors with only greater indices are added in the following loops
 		int[][] offsets = {
 			    {-1, -1, 0}, 	// x-1, y-1, z
 			    {-1, 0, -1}, 	// x-1, y, z-1
@@ -171,215 +171,6 @@ public class CellGraphBuilder {
 		return new CellGraph(graph, s, d);
 	}
 
-	public CellGraph build(
-			final FlightPlan flightPlan,
-			double cellWidth,
-			Position source,
-			Position destination,
-			double acceptableSensitivity,
-			double tollerance
-			) {
-
-		assert flightPlan != null;
-		assert cellWidth > 0;
-		assert source != null;
-		assert destination != null;
-		assert acceptableSensitivity > 0;
-		assert tollerance > 0;
-
-		GeoCalculator dc = GeoCalculatorSingleton.INSTANCE.getInstance();
-		Graph<Cell, DefaultWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(DefaultWeightedEdge.class);
-
-		Cell s = null; // new source
-		Cell d = null; // new destination
-
-		Cell x11, x12, x21, x22;
-		DefaultWeightedEdge e = null;
-		Cell xPrev11 = null, xPrev12 = null, xPrev21 = null, xPrev22 = null;
-		Cell xPrev = null;
-		boolean firstIter = true;
-		
-		List<Cell> path = flightPlan.getPath();
-		
-		for (Cell x : path) {
-			x11 = new Cell(
-					x.getX() * 2,
-					x.getY() * 2,
-					x.getZ(),
-					x.getCenter().move(-cellWidth / 2, -cellWidth / 2, 0),
-					cellWidth + tollerance,
-					x.getHeight());
-			x21 = new Cell(
-					x.getX() * 2 + 1,
-					x.getY() * 2,
-					x.getZ(),
-					x.getCenter().move(-cellWidth / 2, cellWidth / 2, 0),
-					cellWidth + tollerance,
-					x.getHeight());
-			x12 = new Cell(
-					x.getX() * 2,
-					x.getY() * 2 + 1,
-					x.getZ(),
-					x.getCenter().move(cellWidth / 2, -cellWidth / 2, 0),
-					cellWidth + tollerance,
-					x.getHeight());
-			x22 = new Cell(
-					x.getX() * 2 + 1,
-					x.getY() * 2 + 1,
-					x.getZ(),
-					x.getCenter().move(cellWidth / 2, cellWidth / 2, 0),
-					cellWidth + tollerance,
-					x.getHeight());
-			
-
-			if (s == null) {
-				if (x11.getBounds().contains(source))
-					s = x11;
-				else if (x12.getBounds().contains(source))
-					s = x12;
-				else if (x21.getBounds().contains(source))
-					s = x21;
-				else if (x22.getBounds().contains(source))
-					s = x22;
-			}
-			if (d == null) {
-				if (x11.getBounds().contains(destination))
-					d = x11;
-				else if (x12.getBounds().contains(destination))
-					d = x12;
-				else if (x21.getBounds().contains(destination))
-					d = x21;
-				else if (x22.getBounds().contains(destination))
-					d = x22;
-			}
-			
-			graph.addVertex(x11);
-			graph.addVertex(x12);
-			graph.addVertex(x21);
-			graph.addVertex(x22);
-
-			e = graph.addEdge(x11, x21);
-			graph.setEdgeWeight(e, dc.distance(x11.getCenter(), x21.getCenter()));
-			e = graph.addEdge(x11, x12);
-			graph.setEdgeWeight(e, dc.distance(x11.getCenter(), x12.getCenter()));
-			e = graph.addEdge(x21, x22);
-			graph.setEdgeWeight(e, dc.distance(x21.getCenter(), x22.getCenter()));
-			e = graph.addEdge(x12, x22);
-			graph.setEdgeWeight(e, dc.distance(x12.getCenter(), x22.getCenter()));
-			
-			// Diagonals
-			e = graph.addEdge(x11, x22);
-			graph.setEdgeWeight(e, dc.distance(x11.getCenter(), x22.getCenter()));
-			e = graph.addEdge(x12, x21);
-			graph.setEdgeWeight(e, dc.distance(x12.getCenter(), x21.getCenter()));
-			
-			if (firstIter) {
-				firstIter = false;
-
-				xPrev11 = x11;
-				xPrev12 = x12;
-				xPrev21 = x21;
-				xPrev22 = x22;
-
-				xPrev = x;
-				continue;
-			}
-
-			assert xPrev != null;
-
-			if (x.getX() == xPrev.getX() - 1) {		// x -- xPrev
-				e = graph.addEdge(x21, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev11.getCenter()));
-
-				e = graph.addEdge(x22, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev12.getCenter()));
-				
-				// Diagonals
-				e = graph.addEdge(x21, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev12.getCenter()));
-				e = graph.addEdge(x22, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev11.getCenter()));
-
-			} else if (x.getX() == xPrev.getX() + 1) {		// xPrev -- x
-				e = graph.addEdge(x11, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev21.getCenter()));
-
-				e = graph.addEdge(x12, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev22.getCenter()));
-				
-				// Diagonals
-				e = graph.addEdge(x11, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev22.getCenter()));
-				
-				e = graph.addEdge(x12, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev21.getCenter()));
-
-			} else if (x.getY() == xPrev.getY() - 1) {			// x is under xPrev
-				e = graph.addEdge(x12, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev11.getCenter()));
-
-				e = graph.addEdge(x22, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev21.getCenter()));
-				
-				// Diagonals
-				e = graph.addEdge(x12, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev21.getCenter()));
-				
-				e = graph.addEdge(x22, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev11.getCenter()));
-
-			} else if (x.getY() == xPrev.getY() + 1) {			// x is over xPrev
-				e = graph.addEdge(x11, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev12.getCenter()));
-
-				e = graph.addEdge(x21, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev22.getCenter()));
-				
-				// Diagonals
-				e = graph.addEdge(x11, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev22.getCenter()));
-				
-				e = graph.addEdge(x21, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev12.getCenter()));
-
-			} else if (x.getZ() == xPrev.getZ() - 1 || x.getZ() == xPrev.getZ() + 1) {
-				e = graph.addEdge(x11, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev11.getCenter()));
-
-				e = graph.addEdge(x12, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev12.getCenter()));
-
-				e = graph.addEdge(x21, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev21.getCenter()));
-
-				e = graph.addEdge(x22, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev22.getCenter()));
-				
-				// Diagonals
-				e = graph.addEdge(x11, xPrev22);
-				graph.setEdgeWeight(e, dc.distance(x11.getCenter(), xPrev22.getCenter()));
-				
-				e = graph.addEdge(x12, xPrev21);
-				graph.setEdgeWeight(e, dc.distance(x12.getCenter(), xPrev21.getCenter()));
-				
-				e = graph.addEdge(x21, xPrev12);
-				graph.setEdgeWeight(e, dc.distance(x21.getCenter(), xPrev12.getCenter()));
-				
-				e = graph.addEdge(x22, xPrev11);
-				graph.setEdgeWeight(e, dc.distance(x22.getCenter(), xPrev11.getCenter()));
-			}
-
-			xPrev11 = x11;
-			xPrev12 = x12;
-			xPrev21 = x21;
-			xPrev22 = x22;
-			xPrev = x;
-
-		}
-		
-		return new CellGraph(graph, s, d);
-	}
-
 	@Override
 	public String toString() {
 		return String.format("CellGraphBuilder[zones=%s]", zones);
@@ -397,5 +188,16 @@ public class CellGraphBuilder {
 
 		CellGraphBuilder other = (CellGraphBuilder) obj;
 		return zones.equals(other.zones);
+	}
+
+	@Override
+	public int hashCode() {
+		return zones.hashCode();
+	}
+	
+	public void reset() {
+		if (zones != null) {
+			zones.clear();
+		}
 	}
 }

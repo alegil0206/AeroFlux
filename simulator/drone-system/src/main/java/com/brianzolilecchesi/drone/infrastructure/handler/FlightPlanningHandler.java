@@ -1,12 +1,9 @@
 package com.brianzolilecchesi.drone.infrastructure.handler;
 
-import java.util.List;
-
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
-import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
 public class FlightPlanningHandler implements StepHandler {
@@ -31,16 +28,14 @@ public class FlightPlanningHandler implements StepHandler {
                 return false;
         }
 
-        DataStatus gzStatus = ctx.geoZoneService.getGeoZonesStatus();
+        boolean dataAvailable = ctx.geoZoneService.getGeoZonesStatus() == DataStatus.LOADED_ON_GRAPH &&
+            ctx.weatherService.getRainCellsStatus() == DataStatus.LOADED_ON_GRAPH &&
+            ctx.authorizationService.getAuthorizationsStatus() == DataStatus.LOADED_ON_GRAPH;
 
         if (status == DataStatus.AVAILABLE) {
             stepCounter++;
             if (stepCounter >= OPTIMIZE_EVERY_N_STEPS) {
-                if (gzStatus == DataStatus.AVAILABLE) {
-                    ctx.geozoneNavService.clearGeoZones();
-                    List<GeoZone> zones = ctx.geoZoneService.getGeoZones();
-                    zones.removeIf(zone -> zone.getStatus().equals(GeoZone.GEOZONE_INACTIVE_STATUS));
-                    ctx.geozoneNavService.addGeoZones(zones);
+                if (dataAvailable) {
                     ctx.navigationService.optimizeFlightPlan();
                     stepCounter = 0;
                 }
@@ -48,11 +43,7 @@ public class FlightPlanningHandler implements StepHandler {
             return false;
         }
 
-        if (gzStatus == DataStatus.AVAILABLE) {
-            ctx.geozoneNavService.clearGeoZones();
-            List<GeoZone> zones = ctx.geoZoneService.getGeoZones();
-            zones.removeIf(zone -> zone.getStatus().equals(GeoZone.GEOZONE_INACTIVE_STATUS));
-            ctx.geozoneNavService.addGeoZones(zones);
+        if (dataAvailable) {
             ctx.navigationService.generateFlightPlan(
                 new Position(ctx.props.getSource(), 0),
                 new Position(ctx.props.getDestination(), 0)

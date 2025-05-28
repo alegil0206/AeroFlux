@@ -34,7 +34,7 @@ public class DroneIdentificationService extends AbstractMicroservice {
         }
     }
 
-    public List<DronePropertiesDTO> getAllDrones() {
+    public List<DronePropertiesDTO> getDrones() {
         return restTemplate.exchange(serviceUrl + "/drone", 
                                      HttpMethod.GET, 
                                      null, 

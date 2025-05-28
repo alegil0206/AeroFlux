@@ -51,4 +51,13 @@ public class LogService {
     public void sendDroneStatus(DroneStatusDTO droneStatus) {
         messagingTemplate.convertAndSend("/topic/drone-status", droneStatus);
     }
+
+    public List<LogDTO> getAndClearLogEntries () {
+        List<LogDTO> logs = new ArrayList<>();
+        for (LogEntry logEntry : logEntries) {
+            logs.add(new LogDTO(logEntry));
+        }
+        logEntries.clear();
+        return logs;
+    }
 }

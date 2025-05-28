@@ -1,6 +1,6 @@
 package com.brianzolilecchesi.drone.domain.model;
 
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.geo.GeoCalculatorSingleton;
+import com.brianzolilecchesi.drone.domain.geo.GeoCalculatorFactory;
 
 public class Coordinate {
 	
@@ -24,13 +24,12 @@ public class Coordinate {
 	}
 	
 	public double distance(Coordinate other) {
-		return GeoCalculatorSingleton.INSTANCE.getInstance().distance(this, other);
+		return GeoCalculatorFactory.getGeoDistanceCalculator().distance(this, other);
 	}
 	
 	public Coordinate move(double latitudeDisplacement, double longitudeDisplacement) {
-		return GeoCalculatorSingleton
-				.INSTANCE
-				.getInstance()
+		return GeoCalculatorFactory
+				.getGeoDistanceCalculator()
 				.moveByDisplacement(this, latitudeDisplacement, longitudeDisplacement);
 	}
 	
@@ -56,5 +55,12 @@ public class Coordinate {
 		Coordinate other = (Coordinate) obj;
 		return Double.compare(other.latitude, latitude) == 0 && 
 			   Double.compare(other.longitude, longitude) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Double.hashCode(latitude);
+		result = 31 * result + Double.hashCode(longitude);
+		return result;
 	}
 }

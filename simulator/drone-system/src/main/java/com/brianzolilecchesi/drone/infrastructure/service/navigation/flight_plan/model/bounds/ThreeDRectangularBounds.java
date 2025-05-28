@@ -1,6 +1,9 @@
 package com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.bounds;
 
+import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.domain.model.shape.GeoRectangle;
+import com.brianzolilecchesi.drone.domain.model.shape.GeoShape;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.ThreeDBoundingBox;
 
 public class ThreeDRectangularBounds extends ThreeDBounds {
@@ -30,6 +33,12 @@ public class ThreeDRectangularBounds extends ThreeDBounds {
 	public ThreeDRectangularBounds(final Position center, double width, double height) {
 		this(center, width, width, height);
 	}
+	
+	
+	
+	public ThreeDRectangularBounds(final Position p1, final Position p2, double delta) {
+		this(new ThreeDBoundingBox(p1, p2, delta));
+	}
 
 	@Override
 	public double getStartingAltitude() {
@@ -49,20 +58,26 @@ public class ThreeDRectangularBounds extends ThreeDBounds {
 	private void setBoundingBox(final ThreeDBoundingBox boundingBox) {
 		this.boundingBox = boundingBox;
 	}
-
-	@Override
-	public boolean contains(final Position coordinate) {
-		return boundingBox.contains(coordinate);
-	}
 	
 	@Override
-	public boolean contains(ThreeDBounds other) {
-		return boundingBox.contains(other.getBoundingBox());
-	}
-	
-	@Override
-	public boolean intersects(final ThreeDBounds other) {
-		return boundingBox.intersect(other.getBoundingBox());
+	public GeoShape getGeoShape() {
+		ThreeDBoundingBox bbox = this.getBoundingBox();
+		Position tne = bbox.getTNE(), 
+				 bne = bbox.getBNE(),
+				 tsw = bbox.getTSW(),
+				 bsw = bbox.getBSW();
+		
+		Coordinate ne = new Coordinate(
+				Math.max(tne.getLatitude(), bne.getLatitude()),
+				Math.max(tne.getLongitude(), bne.getLongitude())
+				);
+		
+		Coordinate sw = new Coordinate(
+				Math.min(tsw.getLatitude(), bsw.getLatitude()),
+				Math.min(tsw.getLongitude(), bsw.getLongitude())
+				);
+		
+		return new GeoRectangle(ne, sw);
 	}
 
 	@Override
@@ -82,5 +97,10 @@ public class ThreeDRectangularBounds extends ThreeDBounds {
 
 		ThreeDRectangularBounds other = (ThreeDRectangularBounds) obj;
 		return boundingBox.equals(other.boundingBox);
+	}
+	
+	@Override
+	public int hashCode() {
+		return boundingBox.hashCode();
 	}
 }

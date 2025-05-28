@@ -1,155 +1,170 @@
 package com.brianzolilecchesi.drone.domain.model;
 
-import com.brianzolilecchesi.drone.domain.dto.AuthorizationResponseDTO;
+import com.brianzolilecchesi.drone.domain.dto.AuthorizationDTO;
 
 public class Authorization {
-    private String status;
-    private Long id;
-    private String drone_id;
-    private String geozone_id;
-    private String duration_type;
-    private Integer duration;
-    private String start_time;
-    private String reason;
-    private String end_time;
-    private String revocation_time;
+	
+	public static enum Status {
+		GRANTED("GRANTED"), DENIED("DENIED"), EXPIRED("EXPIRED"), REVOKED("REVOKED");
 
-    public Authorization() {}
+		private String status;
 
-    public Authorization(Long id, String drone_id,
-                         String geozone_id, String duration_type, Integer duration, String start_time, 
-                         String status, String reason, String end_time, String revocation_time) {
+		private Status(String status) {
+			this.status = status;
+		}
+
+		public String getStatus() {
+			return status;
+		}
+	}
+	
+	public static enum DurationType {
+		SHORT("SHORT"), STANDARD("STANDARD"), EXTENDED("EXTENDED");
+		private String duration;
+		
+		private DurationType(String duration) {
+			this.duration = duration;
+		}
+		
+		public String getName() {
+			return duration;
+		}
+	}
+	
+    private final String status;
+    private final Long id;
+    private final String droneId;
+    private final String geozoneId;
+    private final String durationType;
+    private final Double duration;
+    private final String startTime;
+    private final String reason;
+    private final String endTime;
+    private final String revocationTime;
+
+    public Authorization(
+    		final Long id, 
+    		final String droneId,
+    		final String geozoneId, 
+    		final String durationType, 
+    		final Double duration, 
+    		final String startTime, 
+    		final String status, 
+    		final String reason, 
+    		final String endTime, 
+    		final String revocationTime
+            ) {
+    	
+    	assert id != null;
+    	assert droneId != null;
+    	assert geozoneId != null;
+    	assert durationType != null;
+    	assert duration != null;
+    	assert startTime != null;
+    	assert status != null;
+    	
         this.id = id;
-        this.drone_id = drone_id;
-        this.geozone_id = geozone_id;
-        this.duration_type = duration_type;
+        this.droneId = droneId;
+        this.geozoneId = geozoneId;
+        this.durationType = durationType;
         this.duration = duration;
-        this.start_time = start_time;
+        this.startTime = startTime;
         this.status = status;
         this.reason = reason;
-        this.end_time = end_time;
-        this.revocation_time = revocation_time;
+        this.endTime = endTime;
+        this.revocationTime = revocationTime;
     }
 
-    public Authorization(AuthorizationResponseDTO dto) {
-        this.id = dto.getId();
-        this.drone_id = dto.getDrone_id();
-        this.geozone_id = dto.getGeozone_id();
-        this.duration_type = dto.getDuration_type();
-        this.duration = dto.getDuration();
-        this.start_time = dto.getStart_time();
-        this.status = dto.getStatus();
-        this.reason = dto.getReason();
-        this.end_time = dto.getEnd_time();
-        this.revocation_time = dto.getRevocation_time();
+    public Authorization(final AuthorizationDTO dto) {
+		this(
+				dto.getId(), 
+				dto.getDroneId(), 
+				dto.getGeozoneId(), 
+				dto.getDurationType(), 
+				dto.getDuration(),
+				dto.getStartTime(), 
+				dto.getStatus(), 
+				dto.getReason(), 
+				dto.getEndTime(), 
+				dto.getRevocationTime()
+				);
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getDroneId() {
+        return droneId;
     }
 
-    public String getDrone_id() {
-        return drone_id;
+    public String getGeozoneId() {
+        return geozoneId;
     }
 
-    public void setDrone_id(String drone_id) {
-        this.drone_id = drone_id;
+    public String getDurationType() {
+        return durationType;
     }
 
-
-    public String getGeozone_id() {
-        return geozone_id;
-    }
-
-    public void setGeozone_id(String geozone_id) {
-        this.geozone_id = geozone_id;
-    }
-
-    public String getDuration_type() {
-        return duration_type;
-    }
-
-    public void setDuration_type(String duration_type) {
-        this.duration_type = duration_type;
-    }
-
-    public Integer getDuration() {
+    public Double getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public String getStartTime() {
+        return startTime;
     }
 
-    public String getStart_time() {
-        return start_time;
-    }
-
-    public void setStart_time(String start_time) {
-        this.start_time = start_time;
-    }
-
-    public String getStatus() {
+    public String getStatus(){
         return status;
     }
-
-    public void setStatus(String status) {
-        this.status = status;
+    
+    public String getEndTime() {
+        return endTime;
     }
 
     public String getReason() {
         return reason;
     }
 
-    public void setReason(String reason) {
-        this.reason = reason;
+    public String getRevocationTime() {
+        return revocationTime;
     }
+    
+	public boolean isGranted() {
+		return status.equalsIgnoreCase(Status.GRANTED.getStatus());
+	}
 
-    public String getEnd_time() {
-        return end_time;
-    }
-
-    public void setEnd_time(String end_time) {
-        this.end_time = end_time;
-    }
-
-    public String getRevocation_time() {
-        return revocation_time;
-    }
-
-    public void setRevocation_time(String revocation_time) {
-        this.revocation_time = revocation_time;
-    }
-
-    @Override
+	@Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Authorization{")
-          .append("id=").append(id)
-          .append(", status=").append(status)
-          .append(", drone_id='").append(drone_id).append('\'')
-          .append(", geozone_id='").append(geozone_id).append('\'')
-          .append(", duration_type='").append(duration_type).append('\'')
-          .append(", duration=").append(duration)
-          .append(", start_time='").append(start_time).append('\'');
+		return String.format("Authorization[id=%d, droneId=%s, geozoneId=%s, durationType=%s, duration=%f, startTime=%s, status=%s, reason=%s, endTime=%s, revocationTime=%s]",
+				id, 
+				droneId, 
+				geozoneId, 
+				durationType, 
+				duration, 
+				startTime, 
+				status, 
+				reason, 
+				endTime, 
+				revocationTime
+				);
+	}
+	
+    @Override
+    public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 
-        // Handle different statuses
-        if ("GRANTED".equals(status)) {
-            sb.append(", end_time='").append(end_time).append('\'');
-        } else if ("DENIED".equals(status)) {
-            sb.append(", reason='").append(reason).append('\'');
-        } else if ("EXPIRED".equals(status)) {
-            sb.append(", end_time='").append(end_time).append('\'');
-        } else if ("REVOKED".equals(status)) {
-            sb.append(", end_time='").append(end_time).append('\'')
-              .append(", revocation_time='").append(revocation_time).append('\'');
-        }
+		Authorization that = (Authorization) o;
 
-        sb.append('}');
-        return sb.toString();
+		return id.equals(that.id) &&
+			   status.equals(that.status);
     }
+    
+    @Override
+    public int hashCode() {
+		return id.hashCode();
+	}   
 }

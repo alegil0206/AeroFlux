@@ -1,8 +1,12 @@
 package com.brianzolilecchesi.simulator.service;
 
 import com.brianzolilecchesi.drone.DroneSystem;
+import com.brianzolilecchesi.simulator.dto.SimulationStatusDTO;
+import com.brianzolilecchesi.simulator.helper.DroneSystemFactory;
+import com.brianzolilecchesi.simulator.helper.SimulationEngine;
 import com.brianzolilecchesi.simulator.model.Constants;
 import com.brianzolilecchesi.simulator.model.SimulationStatus;
+import com.brianzolilecchesi.simulator.model.SimulationStatus.ExecutionState;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,58 +16,55 @@ public class SimulationService {
     private final SimulationStatus simulationStatus;
     private final LogService logService;
     private final SimulationEngine simulationTaskService;
-    private final DroneService droneService;
-    private long interval = 1000; // Valore predefinito
+    private final DroneSystemFactory droneSystemFactory;
+    private long interval = 1000;
 
     public SimulationService(SimulationStatus simulationStatus, LogService logService, 
-            SimulationEngine simulationTaskService , DroneService droneService) {
+            SimulationEngine simulationTaskService, DroneSystemFactory droneSystemFactory) {
         this.simulationStatus = simulationStatus;
         this.logService = logService;
         this.simulationTaskService = simulationTaskService;
-        this.droneService = droneService;
+        this.droneSystemFactory = droneSystemFactory;
     }
 
-    public String start() {
-        if (simulationStatus.isRunning() || simulationStatus.isPaused()) {
+    public SimulationStatusDTO start(int executionSpeed) {
+        if (simulationStatus.getExecutionState() != ExecutionState.STOPPED) {
             stop();
         }
 
-        simulationStatus.setRunning(true);
-        simulationStatus.setPaused(false);
+        simulationStatus.setExecutionSpeed(executionSpeed);
+        simulationStatus.setExecutionState(ExecutionState.RUNNING);
 
-        List<DroneSystem> drones = droneService.createDrones();
-        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started with interval " + interval + " ms");
+        List<DroneSystem> drones = droneSystemFactory.createDrones();
+        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started at speed " + simulationStatus.getExecutionSpeed() + "x");
 
-        // Starts the simulation in a separate thread
         simulationTaskService.runSimulationLoop(drones, interval);
-        return simulationStatus.getStatus();
+        return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
-    public String stop() {
-        simulationStatus.setRunning(false);
-        simulationStatus.setPaused(false);
-        droneService.clearDrones();
+    public SimulationStatusDTO stop() {
+        simulationStatus.setExecutionState(ExecutionState.STOPPED);
         logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_STOP, "Simulation stopped");
-        return simulationStatus.getStatus();
+        return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
-    public String pause() {
-        if (simulationStatus.isRunning() && !simulationStatus.isPaused()) {
-            simulationStatus.setPaused(true);
+    public SimulationStatusDTO pause() {
+        if (simulationStatus.getExecutionState() == ExecutionState.RUNNING) {
+            simulationStatus.setExecutionState(ExecutionState.PAUSED);;
             logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_PAUSE, "Execution paused");
         }
-        return simulationStatus.getStatus();
+        return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
-    public String resume() {
-        if (simulationStatus.isRunning() && simulationStatus.isPaused()) {
-            simulationStatus.setPaused(false);
+    public SimulationStatusDTO resume() {
+        if (simulationStatus.getExecutionState() == ExecutionState.PAUSED) {
+            simulationStatus.setExecutionState(ExecutionState.RUNNING);
             logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_RESUME, "Execution resumed");
         }
-        return simulationStatus.getStatus();
+        return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
-    public String getStatus() {
-        return simulationStatus.getStatus();
+    public SimulationStatusDTO getStatus() {
+        return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 }

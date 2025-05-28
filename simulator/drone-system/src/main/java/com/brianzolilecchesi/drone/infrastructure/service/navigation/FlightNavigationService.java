@@ -25,67 +25,55 @@ public class FlightNavigationService implements NavigationService {
 	public static final double INITIAL_CELL_WIDTH = 160.0; //320
 	public static final List<Double> ALTITUDE_LEVELS = List.of(20.0, 40.0, 60.0, 80.0, 100.0, 120.0);
 	
-	public static final double TARGET_SENSITIVITY = 160.0; //320
-	public static final double ACCEPTABLE_SENSITIVITY = 160.0; //320
-	public static final int MAX_TIME_ACCEPTABLE = 60;
-	public static final int MAX_TIME = 60;
-	
-	public static final double STEP_SIZE = 20.0;
-
 	public static final int AVERAGE_CALCULATION_STEPS = 20;
 
+
+	private final double stepSize;
 	private final LogService logService;
     
     private double initialCellWidth;
-    private double startingSensitivity;
     private List<Double> altitudeLevels;
     
-    private List<Position> positions;
-    private int nextPositionIndex;
+    private List<Position> waypoints;
+    private int nextWaypointIndex;
 	private int flightPlanVersion;
 	private DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
-    public FlightNavigationService(LogService logService) {
-        this(logService, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
+    public FlightNavigationService(LogService logService, double stepSize) {
+        this(logService, stepSize, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
     }
     
     public FlightNavigationService(
 			LogService logService,
+			double stepSize,
     		double initialCellWidth,
     		List<Double> altitudeLevels
     		) {
     	
         this(
 				logService,
+				stepSize,
         		initialCellWidth,
         		altitudeLevels,
-        		new ArrayList<Zone>(), 
-        		TARGET_SENSITIVITY, 
-        		ACCEPTABLE_SENSITIVITY, 
-        		MAX_TIME_ACCEPTABLE, 
-        		MAX_TIME
+        		new ArrayList<Zone>()
     		);
     }
     
     public FlightNavigationService(
 			LogService logService,
+			double stepSize,
     		double initialCellWidth,
     		List<Double> altitudeLevels,
-    		List<Zone> zones,
-    		double targetSensitivity,
-    		double acceptableSensitivity,
-    		int maxTimeAcceptable,
-    		int maxTime
+    		List<Zone> zones
     		) {
     	
 		this.logService = logService;
-        
+        this.stepSize = stepSize;
         setInitialCellWidth(initialCellWidth);
-        setStartingSensitivity(startingSensitivity);
         setAltitudeLevels(altitudeLevels);
         
-        this.positions = new ArrayList<>();
-        this.nextPositionIndex = 1;
+        this.waypoints = new ArrayList<>();
+        this.nextWaypointIndex = 1;
 		this.flightPlanVersion = 0;
         
         FlightPlanCalculatorSingleton.getInstance();	// Force singleton initialization
@@ -94,11 +82,9 @@ public class FlightNavigationService implements NavigationService {
     public double getInitialCellWidth() {return initialCellWidth;}
 	public void setInitialCellWidth(final double initialCellWidth) {this.initialCellWidth = initialCellWidth;}
 	
-	public double getStartingSensitivity() {return startingSensitivity;}
-	public void setStartingSensitivity(final double startingSensitivity) {this.startingSensitivity = startingSensitivity;}
-	
 	public List<Double> getAltitudeLevels() {return altitudeLevels;}
 	public void setAltitudeLevels(final List<Double> altitudeLevels) {this.altitudeLevels = altitudeLevels;}
+
     	
     @Override
     public void generateFlightPlan(final Position start, final Position destination) {
@@ -129,16 +115,16 @@ public class FlightNavigationService implements NavigationService {
 
 			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
 					.getInstance()
-					.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 			synchronized (this) {
-				newFlightPlanPositions.addAll(0, positions.subList(0, nextPositionIndex - 1));
+				newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
 				int actualFlightPlanVersion = flightPlanVersion;
 				if (initialFlightPlanVersion != actualFlightPlanVersion) {
 					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_GENERATED, "Flight plan generation cancelled: new flight plan version");
 					return;
 				}
 				flightPlanStatus = DataStatus.AVAILABLE;
-				positions = newFlightPlanPositions;
+				waypoints = newFlightPlanPositions;
 				flightPlanVersion++;
 			}
 
@@ -163,9 +149,9 @@ public class FlightNavigationService implements NavigationService {
 			if (flightPlanStatus != DataStatus.AVAILABLE) {
 				return;
 			}
-			initialPositions = positions;
+			initialPositions = waypoints;
 			initialFlightPlanVersion = flightPlanVersion;
-			initialNextPositionIndex = nextPositionIndex;
+			initialNextPositionIndex = nextWaypointIndex;
 		}
 
 		int remainingPositions = initialPositions.size() - initialNextPositionIndex;
@@ -188,7 +174,7 @@ public class FlightNavigationService implements NavigationService {
 		.thenAccept(generatedFlightPlan -> {
 			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
 					.getInstance()
-					.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 
 			newFlightPlanPositions.addAll(0, initialPositions.subList(0, calculateFrom));
 
@@ -199,7 +185,7 @@ public class FlightNavigationService implements NavigationService {
 				}
 
 				flightPlanStatus = DataStatus.AVAILABLE;
-				positions = newFlightPlanPositions;
+				waypoints = newFlightPlanPositions;
 				flightPlanVersion++;
 			}
 
@@ -228,10 +214,10 @@ public class FlightNavigationService implements NavigationService {
 			if (flightPlanStatus != DataStatus.AVAILABLE) {
 				return;
 			}
-			initialPositions = positions;
+			initialPositions = waypoints;
 			initialFlightPlanVersion = flightPlanVersion;
-			initialNextPositionIndex = nextPositionIndex - 1;
-			finalPositionIndex = initialNextPositionIndex + 2 * (int)(INITIAL_CELL_WIDTH / STEP_SIZE);
+			initialNextPositionIndex = nextWaypointIndex - 1;
+			finalPositionIndex = initialNextPositionIndex + 2 * (int)(INITIAL_CELL_WIDTH / stepSize);
 
 			if (finalPositionIndex >= initialPositions.size()) {
 				return;
@@ -252,7 +238,7 @@ public class FlightNavigationService implements NavigationService {
 		.thenAccept(generatedFlightPlan -> {
 			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
 					.getInstance()
-					.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 
 			newFlightPlanPositions.addAll(0, initialPositions.subList(0, initialNextPositionIndex));
 			newFlightPlanPositions.addAll(newFlightPlanPositions.size(), initialPositions.subList(finalPositionIndex + 1, initialPositions.size()) );
@@ -264,7 +250,7 @@ public class FlightNavigationService implements NavigationService {
 				}
 
 				flightPlanStatus = DataStatus.AVAILABLE;
-				positions = newFlightPlanPositions;
+				waypoints = newFlightPlanPositions;
 				flightPlanVersion++;
 			}
 
@@ -309,18 +295,18 @@ public class FlightNavigationService implements NavigationService {
 
     @Override
     public synchronized boolean hasReached(Position currentPosition, Position destination) {
-		if (positions == null || positions.isEmpty()) {
+		if (waypoints == null || waypoints.isEmpty()) {
 			return false;
 		}
-		return currentPosition.distance(destination) < STEP_SIZE;
+		return currentPosition.distance(destination) < stepSize;
     }
 
 	@Override
 	public synchronized boolean hasReached(Coordinate currentPosition, Coordinate destination) {
-		if (positions == null || positions.isEmpty()) {
+		if (waypoints == null || waypoints.isEmpty()) {
 			return false;
 		}
-		return currentPosition.distance(destination) < STEP_SIZE;
+		return currentPosition.distance(destination) < stepSize;
 	}
 
 	@Override
@@ -345,10 +331,10 @@ public class FlightNavigationService implements NavigationService {
 
 		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
 				.getInstance()
-				.refine(generatedFlightPlan.getPathPositions(), STEP_SIZE);		
+				.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 		
-		newFlightPlanPositions.addAll(0, positions.subList(0, nextPositionIndex - 1));
-		positions = newFlightPlanPositions;
+		newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
+		waypoints = newFlightPlanPositions;
 
 		flightPlanStatus = DataStatus.AVAILABLE;
 		
@@ -356,46 +342,41 @@ public class FlightNavigationService implements NavigationService {
 
 	@Override
     public synchronized Position followFlightPlan() {
-		if (positions == null || positions.isEmpty()) {
+		if (waypoints == null || waypoints.isEmpty()) {
 			return null;
 		}
 		
-		assert nextPositionIndex < positions.size();
+		assert nextWaypointIndex < waypoints.size();
         
-		Position nextPosition = positions.get(nextPositionIndex++);
+		Position nextPosition = waypoints.get(nextWaypointIndex++);
 	
 		return nextPosition;
     }
 
 	@Override
-	public synchronized List<Position> getNextPositions() {
-		if (positions == null || positions.isEmpty()) {
+	public synchronized List<Position> getNextWaypoints() {
+		if (waypoints == null || waypoints.isEmpty()) {
 			return null;
 		}
-		if (nextPositionIndex >= positions.size()) {
+		if (nextWaypointIndex >= waypoints.size()) {
 			return null;
 		}
 
-		int lastIndex = Math.min(nextPositionIndex + (int)(INITIAL_CELL_WIDTH / STEP_SIZE), positions.size());
+		int lastIndex = Math.min(nextWaypointIndex + (int)(INITIAL_CELL_WIDTH / stepSize), waypoints.size());
 
-		return positions.subList(nextPositionIndex, lastIndex);
+		return waypoints.subList(nextWaypointIndex, lastIndex);
 	}
 
 	public synchronized FlightPlanDTO getFlightPlan() {
-		if (positions == null || positions.isEmpty()) {
+		if (waypoints == null || waypoints.isEmpty()) {
 			return null;
 		}
-		return new FlightPlanDTO(positions);
+		return new FlightPlanDTO(waypoints);
 	}
 
 	@Override
 	public synchronized DataStatus getFlightPlanStatus() {
 		return flightPlanStatus;
-	}
-
-	@Override
-	public double getStepSize() {
-		return STEP_SIZE;
 	}
 
 }

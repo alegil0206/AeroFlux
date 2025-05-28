@@ -16,8 +16,7 @@ public interface NavigationService {
     boolean hasReached(Coordinate actualCoordinate, Coordinate destination);
     FlightPlanDTO getFlightPlan();
     void configureVerticalLanding(Position position);
-    List<Position> getNextPositions();
+    List<Position> getNextWaypoints();
     DataStatus getFlightPlanStatus();
-    double getStepSize();
     void adaptFlightPlan();
 }
