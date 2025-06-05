@@ -3,8 +3,8 @@ package com.brianzolilecchesi.drone.infrastructure.handler;
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
-import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
+import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
@@ -32,7 +32,9 @@ public class FlightControlHandler implements StepHandler {
         }
 
         if (navigationService.getFlightPlanStatus() == DataStatus.AVAILABLE) {
-            flightController.moveTo(navigationService.followFlightPlan());
+            Position nextPosition = navigationService.followFlightPlan();
+            if (nextPosition != null)
+                flightController.moveTo(nextPosition);
         } else {
             flightController.hover();
         }
@@ -44,11 +46,15 @@ public class FlightControlHandler implements StepHandler {
             flightController.powerOff();
             return true;
         }
-        if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING && flightController.isOnGround()) {
-            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.LANDED, "Drone is on the ground and battery is critical.");
+
+        if (navigationService.hasReached(flightController.getCurrentPosition(), context.getCurrentDestination()) && 
+            flightController.isOnGround()) {
+
+            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Reached current destination: " + context.getCurrentDestination() + ", powering off");
             flightController.powerOff();
             return true;
         }
+
         return false;
     }
 }

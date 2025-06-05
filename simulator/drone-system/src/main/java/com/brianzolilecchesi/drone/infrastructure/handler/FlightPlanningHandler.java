@@ -31,6 +31,7 @@ public class FlightPlanningHandler implements StepHandler {
 
     private List<GeoZone> geoZonesInFlightPlan = new ArrayList<>();
     private List<RainCell> rainCellsInFlightPlan = new ArrayList<>();
+    private Position destinationInFlighPlan;
 
     public FlightPlanningHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
@@ -39,6 +40,7 @@ public class FlightPlanningHandler implements StepHandler {
         this.weatherService = droneServices.getWeatherService();
         this.authorizationService = droneServices.getAuthorizationService();
         this.flightController = droneServices.getFlightController();
+        this.destinationInFlighPlan = context.getCurrentDestination();
     }
 
     @Override
@@ -66,8 +68,6 @@ public class FlightPlanningHandler implements StepHandler {
             Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();
             Map<String, Authorization> authorizations = authorizationService.getAuthorizations();
 
-            System.out.println("Authori: " + authorizations.values());
-
             List<GeoZone> geoZonesToConsider = new ArrayList<>();
             for (Entry<String, GeoZone> entry : geoZones.entrySet()) {
                 String geoZoneId = entry.getKey();
@@ -86,7 +86,8 @@ public class FlightPlanningHandler implements StepHandler {
             if (status == DataStatus.AVAILABLE) {
                 boolean needToAdaptFlightPlan = 
                     !(geoZonesInFlightPlan.equals(geoZonesToConsider) &&
-                    rainCellsInFlightPlan.equals(rainCellsToConsider));
+                    rainCellsInFlightPlan.equals(rainCellsToConsider) &&
+                    destinationInFlighPlan.equals(context.getCurrentDestination()));
                     
                 if (needToAdaptFlightPlan) {
                     navigationService.adaptFlightPlan(
@@ -96,6 +97,7 @@ public class FlightPlanningHandler implements StepHandler {
                     );
                     geoZonesInFlightPlan = geoZonesToConsider;
                     rainCellsInFlightPlan = rainCellsToConsider;
+                    destinationInFlighPlan = context.getCurrentDestination();
                 }
                 return false;
             }
@@ -109,6 +111,7 @@ public class FlightPlanningHandler implements StepHandler {
                 );
                 geoZonesInFlightPlan = geoZonesToConsider;
                 rainCellsInFlightPlan = rainCellsToConsider;
+                destinationInFlighPlan = context.getCurrentDestination();
             }
         }
         return true;

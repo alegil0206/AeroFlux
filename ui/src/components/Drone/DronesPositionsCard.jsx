@@ -78,7 +78,7 @@ export default function DronesPositionCard({ data }) {
       headerName: 'Battery',
       flex: 1,
       renderCell: (params) => (
-        <Tooltip title={`Battery: ${params.value}%`} arrow>
+        <Tooltip title={`Battery: ${params.value} mAh`} arrow>
           <span>{`${params.value}`}</span>
         </Tooltip>
       )

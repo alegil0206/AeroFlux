@@ -242,6 +242,19 @@ public class NavigationService  {
 		return currentPosition.distance(destination) < stepSize;
 	}
 
+	public synchronized double getFlightDistanceToEnd() {
+		if (waypoints == null || waypoints.isEmpty()) {
+			return -1.0;
+		}
+		
+		double totalDistance = 0.0;
+		for (int i = nextWaypointIndex; i < waypoints.size() - 1; i++) {
+			totalDistance += waypoints.get(i).distance(waypoints.get(i + 1));
+		}
+		
+		return totalDistance;
+	}
+
 	public synchronized void configureVerticalLanding(Position currentPosition) {
 
 		flightPlanVersion++;
@@ -279,7 +292,7 @@ public class NavigationService  {
 			return null;
 		}
 		
-		assert nextWaypointIndex < waypoints.size();
+		if(nextWaypointIndex >= waypoints.size()) return null;
         
 		Position nextPosition = waypoints.get(nextWaypointIndex++);
 	

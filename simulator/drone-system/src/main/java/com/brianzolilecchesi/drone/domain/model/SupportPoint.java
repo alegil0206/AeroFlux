@@ -6,7 +6,7 @@ public class SupportPoint {
     
     private String id;
     private String name;
-    private Coordinate coordinates;
+    private Coordinate coordinate;
 
     public SupportPoint(
         String id,
@@ -15,7 +15,7 @@ public class SupportPoint {
     ) {
         setId(id);
         setName(name);
-        setCoordinates(coordinates);
+        setCoordinate(coordinates);
     }
 
     public SupportPoint() {
@@ -24,7 +24,7 @@ public class SupportPoint {
     public SupportPoint(final SupportPointDTO supportPointDTO) {
         setId(supportPointDTO.getId());
         setName(supportPointDTO.getName());
-        setCoordinates(new Coordinate(
+        setCoordinate(new Coordinate(
             supportPointDTO.getLatitude(), 
             supportPointDTO.getLongitude()
         ));
@@ -46,12 +46,12 @@ public class SupportPoint {
         this.name = name;
     }
 
-    public Coordinate getCoordinates() {
-        return coordinates;
+    public Coordinate getCoordinate() {
+        return coordinate;
     }
 
-    public void setCoordinates(Coordinate coordinates) {
-        this.coordinates = coordinates;
+    public void setCoordinate(Coordinate coordinates) {
+        this.coordinate = coordinates;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SupportPoint {
         SupportPoint that = (SupportPoint) obj;
         return id.equals(that.id) && 
                name.equals(that.name) &&
-               coordinates.equals(coordinates);
+               coordinate.equals(coordinate);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class SupportPoint {
             "SupportPointDTO[id=%s, name=%s, coordinates=%s]",
             getId(), 
             getName(), 
-            getCoordinates().toString()
+            getCoordinate().toString()
         );
     }
 

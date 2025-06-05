@@ -7,21 +7,40 @@ import java.util.concurrent.CompletionException;
 
 import com.brianzolilecchesi.drone.domain.exception.ExternalServiceException;
 import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessGateway;
+import com.brianzolilecchesi.drone.domain.model.DataStatus;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
+import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.model.SupportPoint;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class SupportPointService {
     
     private final GeoAwarenessGateway geoAwarenessGateway;
+    private LogService logService;
     private List<SupportPoint> supportPoints;
+    private DataStatus supportPointsStatus = DataStatus.NOT_REQUESTED;
 
-    public SupportPointService() {
+    public SupportPointService(LogService logService) {
+        this.logService = logService;
         this.geoAwarenessGateway = new GeoAwarenessRestClient();
         this.supportPoints = new ArrayList<>();
     }
 
-    public void fetchSupportPoints() {
-        CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<Void> fetchSupportPoints() {
+
+        synchronized(this) {
+            if (supportPointsStatus == DataStatus.LOADING) return CompletableFuture.completedFuture(null);
+            supportPointsStatus = DataStatus.LOADING;
+        }
+
+        logService.info(
+                LogConstants.Component.SUPPORT_POINT_SERVICE,
+                LogConstants.Event.FETCHING,
+                "Fetching support points from geo-awareness service"
+        );
+        
+        return CompletableFuture.supplyAsync(() -> {
             try {
                 return geoAwarenessGateway.getSupportPoints();
             } catch (Exception e) {
@@ -29,22 +48,54 @@ public class SupportPointService {
             }
         }).thenAccept(supportPointDTOs -> {
             if (supportPointDTOs != null) {
-                supportPoints = supportPointDTOs.stream()
-                    .map(dto -> new SupportPoint(dto))
-                    .toList();
+                synchronized(this) {
+                    supportPointsStatus = DataStatus.AVAILABLE;
+                    supportPoints = supportPointDTOs.stream()
+                        .map(dto -> new SupportPoint(dto))
+                        .toList();
+                }
+                logService.info(
+                        LogConstants.Component.SUPPORT_POINT_SERVICE,
+                        LogConstants.Event.FETCHED,
+                        "Support points fetched successfully"
+                );
             }
         }).exceptionally(e -> {
+            synchronized(this) {
+                supportPointsStatus = DataStatus.FAILED;
+            }
             Throwable cause = e.getCause();
             if (cause instanceof ExternalServiceException) {
-                System.err.println("Error communicating with geo-awareness service: " + cause.getMessage());
+                logService.info(
+                        LogConstants.Component.SUPPORT_POINT_SERVICE,
+                        LogConstants.Event.FETCH_FAILED,
+                        "Failed to fetch support points from geo-awareness service: " + cause.getMessage()
+                );
             } else {
-                System.err.println("Unexpected error: " + e.getMessage());
+                logService.info(
+                        LogConstants.Component.SUPPORT_POINT_SERVICE,
+                        LogConstants.Event.FETCH_FAILED,
+                        "An unexpected error occurred while fetching support points: " + cause.getMessage()
+                );
             }
             return null;
         });
     }
 
-    public List<SupportPoint> getSupportPoints() {
-        return supportPoints;
+    public SupportPoint getClosestSupportPoint(Position currentPosition, List<SupportPoint> points) {
+        return points.stream()
+                .min((sp1, sp2) -> Double.compare(
+                        currentPosition.distance(sp1.getCoordinate()),
+                        currentPosition.distance(sp2.getCoordinate())
+                ))
+                .orElse(null);
+    }
+
+    public synchronized DataStatus getSupportPointsStatus() {
+        return supportPointsStatus;
+    }
+
+    public synchronized List<SupportPoint> getSupportPoints() {
+        return new ArrayList<>(supportPoints);
     }
 }

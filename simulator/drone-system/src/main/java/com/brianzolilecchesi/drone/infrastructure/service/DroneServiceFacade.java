@@ -40,7 +40,7 @@ public class DroneServiceFacade {
         geoZoneService = new GeoZoneService(logService);
         weatherService = new WeatherService(logService);
         authorizationService= new AuthorizationService(logService);
-        supportPointService = new SupportPointService();
+        supportPointService = new SupportPointService(logService);
     }
 
     public LogService getLogService() {

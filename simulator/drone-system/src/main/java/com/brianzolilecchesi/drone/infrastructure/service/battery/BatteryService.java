@@ -1,10 +1,14 @@
 package com.brianzolilecchesi.drone.infrastructure.service.battery;
 
 import com.brianzolilecchesi.drone.domain.component.Battery;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class BatteryService {
-    
+
+    private static final double CRITICAL_BATTERY_LEVEL = 1000.0;
+    private static final double BATTERY_CONSUMPTION_RATE = 100.0;
+
     private Battery battery;
     private LogService logService;
 
@@ -18,6 +22,15 @@ public class BatteryService {
     }
 
     public boolean isBatteryCritical() {
-        return battery.getBatteryLevel() <= 300;
-    } 
+        return battery.getBatteryLevel() <= CRITICAL_BATTERY_LEVEL;
+    }
+
+    public boolean isBatteryEnoughForFlight(double distance) {
+        double requiredBatteryLevel = distance * BATTERY_CONSUMPTION_RATE;
+        logService.info(
+            LogConstants.Component.BATTERY_SERVICE,
+            LogConstants.Event.BATTERY_NEED_PREDICTION,
+            "Required battery level for distance " + distance + " is " + requiredBatteryLevel + " mAh. Actual battery level is " + battery.getBatteryLevel() + " mAh." );
+        return battery.getBatteryLevel() >= requiredBatteryLevel;
+    }
 }

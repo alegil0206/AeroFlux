@@ -11,6 +11,7 @@ public class LogConstants {
         public static final String GEOZONE_SERVICE = "GeoZoneService";
         public static final String WEATHER_SERVICE = "WeatherService";
         public static final String AUTHORIZATION_SERVICE = "AuthorizationService";
+        public static final String SUPPORT_POINT_SERVICE = "SupportPointService";
 
         public static final String BATTERY_HANDLER = "BatteryHandler";
         public static final String FLIGHT_PLANNING_HANDLER = "FlightPlanningHandler";
@@ -24,6 +25,8 @@ public class LogConstants {
     public static class Event {
         public static final String BATTERY_CHECK = "BATTERY_CHECK";
         public static final String BATTERY_CRITICAL = "BATTERY_CRITICAL";
+        public static final String BATTERY_NEED_PREDICTION = "BATTERY_NEED_PREDICTION";
+        public static final String INSUFFICIENT_BATTERY = "INSUFFICIENT_BATTERY";
         public static final String FOLLOW_FLIGHT_PLAN = "FOLLOW_FLIGHT_PLAN";
         public static final String POWER_ON = "POWER_ON";
         public static final String POWER_OFF = "POWER_OFF";
