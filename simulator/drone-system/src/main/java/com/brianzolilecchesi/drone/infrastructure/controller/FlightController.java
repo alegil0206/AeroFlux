@@ -4,8 +4,8 @@ import com.brianzolilecchesi.drone.domain.component.Motor;
 import com.brianzolilecchesi.drone.domain.component.Altimeter;
 import com.brianzolilecchesi.drone.domain.component.GPS;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
-import com.brianzolilecchesi.drone.domain.service.log.LogService;
 
 public class FlightController {
     private final LogService logService;

@@ -68,13 +68,13 @@ public class FlightPlanCalculator {
 		return lpf.computePath(cg);
 	}
 	
-	public List<Zone> getLinearPathZones(final Cell source, final Cell dest) {
+	public List<Zone> getLinearPathZones(final Position source, final Position dest) {
 		assert source != null;
 		assert dest != null;
 		
 		List<Zone> overlappingZones = new ArrayList<>();
 		
-		ThreeDRectangularBounds pathBounds = new ThreeDRectangularBounds(source.getCenter(), dest.getCenter(), PATH_BOUNDS_DELTA);		
+		ThreeDRectangularBounds pathBounds = new ThreeDRectangularBounds(source, dest, PATH_BOUNDS_DELTA);		
 		for (Zone zone : cgb.getZones()) {
 			if (zone.getBounds().overlaps(pathBounds)) {
 				overlappingZones.add(zone);

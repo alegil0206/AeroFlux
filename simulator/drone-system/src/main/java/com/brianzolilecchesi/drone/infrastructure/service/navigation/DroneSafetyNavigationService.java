@@ -6,21 +6,18 @@ import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
-import com.brianzolilecchesi.drone.domain.service.navigation.DroneSafetyNavigationService;
 
-public class CollisionAvoidanceService implements DroneSafetyNavigationService {
-
+public class DroneSafetyNavigationService {
 
     private double collisionAvoidanceThreshold;
     private double verticalCollisionAvoidanceThreshold = 20.0;
     private double selfSeparationThreshold;
     
-    public CollisionAvoidanceService(double droneMaxSpeed) {
+    public DroneSafetyNavigationService(double droneMaxSpeed) {
         collisionAvoidanceThreshold = droneMaxSpeed;
         selfSeparationThreshold = 160.0 + 2 * droneMaxSpeed;
     }
 
-    @Override
     public boolean hasPriority(NearbyDroneStatus droneStatus, NearbyDroneStatus otherDroneStatus) {
             if (droneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING) return true;
             if (droneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) return false;
@@ -34,7 +31,6 @@ public class CollisionAvoidanceService implements DroneSafetyNavigationService {
             return droneStatus.getDroneId().compareTo(otherDroneStatus.getDroneId()) < 0;
     }
     
-    @Override
     public boolean conflictCondition(List<Position> nextA, List<Position> nextB) {
         int maxSteps = Math.max(nextA.size(), nextB.size());
 
@@ -51,7 +47,6 @@ public class CollisionAvoidanceService implements DroneSafetyNavigationService {
         return false;
     }
 
-    @Override
     public boolean headToHeadCondition(List<Position> nextA, List<Position> nextB) {
         Position a1 = nextA.getFirst();
         Position a2 = nextA.getLast();
@@ -79,12 +74,10 @@ public class CollisionAvoidanceService implements DroneSafetyNavigationService {
         return angleOpposite && dotA > 0 && dotB > 0;
     }
 
-    @Override
     public boolean isInConflictVolume(Position dronePosition, Position otherDronePosition) {
         return dronePosition.distance(otherDronePosition) < collisionAvoidanceThreshold;
     }
 
-    @Override
     public boolean isInSelfSeparationVolume(Position dronePosition, Position otherDronePosition) {
         return dronePosition.distance(otherDronePosition) < selfSeparationThreshold;
     }

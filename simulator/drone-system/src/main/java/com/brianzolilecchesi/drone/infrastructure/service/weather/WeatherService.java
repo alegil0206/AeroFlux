@@ -11,8 +11,8 @@ import com.brianzolilecchesi.drone.domain.integration.WeatherGateway;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.RainCell;
-import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.infrastructure.integration.WeatherServiceRestClient;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class WeatherService {
 
@@ -27,10 +27,10 @@ public class WeatherService {
         this.logService = logService;
     }
 
-    public void fetchRainCells() {
+    public CompletableFuture<Void> fetchRainCells() {
 
         synchronized(this) {
-            if (rainCellsStatus == DataStatus.LOADING) return;
+            if (rainCellsStatus == DataStatus.LOADING) return CompletableFuture.completedFuture(null);
             rainCellsStatus = DataStatus.LOADING;
         }
 
@@ -39,55 +39,50 @@ public class WeatherService {
                 LogConstants.Event.FETCHING,
                 "Fetching rain cells from weather service"
         );
-        CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             try {
                 return restApiGateway.getWeather();
             } catch (Exception e) {
                 throw new CompletionException(e);
             }
         }).thenAccept(
-                rainCellDTOs -> {
-                    if (rainCellDTOs != null) {
-                        synchronized(this) {
-                            rainCells = rainCellDTOs.stream()
-                            .map(rainCellDTO -> new RainCell(rainCellDTO.getCoordinates()))
-                            .toList();
-                            
-                            rainCellsStatus = DataStatus.AVAILABLE;
-                        }
+            rainCellDTOs -> {
+                if (rainCellDTOs != null) {
+                    synchronized (this) {
+                        rainCells = rainCellDTOs.stream()
+                                .map(rainCellDTO -> new RainCell(rainCellDTO.getCoordinates()))
+                                .toList();
+                        rainCellsStatus = DataStatus.AVAILABLE;
+                    }
 
-                        logService.info(
+                    logService.info(
                             LogConstants.Component.WEATHER_SERVICE,
                             LogConstants.Event.FETCHED,
-                            "Rain Cells fetched successfully"
-                        );
-                    } else {
-                        synchronized (this) {
-                            rainCellsStatus = DataStatus.FAILED;
-                        }
-                    }
-
-                })
-                .exceptionally(e -> {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof ExternalServiceException) {
-                        logService.info(
-                                LogConstants.Component.WEATHER_SERVICE,
-                                LogConstants.Event.FETCH_FAILED,
-                                "Failed to fetch rain cells: " + cause.getMessage()
-                        );
-                    } else {
-                        logService.info(
-                                LogConstants.Component.WEATHER_SERVICE,
-                                LogConstants.Event.FETCH_FAILED,
-                                "Unexpected error while fetching rain cells: " + cause.getMessage()
-                        );
-                    }
-                    synchronized(this) {
+                            "Rain Cells fetched successfully");
+                } else {
+                    synchronized (this) {
                         rainCellsStatus = DataStatus.FAILED;
                     }
-                    return null;
-                });
+                }
+        })
+        .exceptionally(e -> {
+            synchronized (this) {
+                rainCellsStatus = DataStatus.FAILED;
+            }            
+            Throwable cause = e.getCause();
+            if (cause instanceof ExternalServiceException) {
+                logService.info(
+                        LogConstants.Component.WEATHER_SERVICE,
+                        LogConstants.Event.FETCH_FAILED,
+                        "Failed to fetch rain cells: " + cause.getMessage());
+            } else {
+                logService.info(
+                        LogConstants.Component.WEATHER_SERVICE,
+                        LogConstants.Event.FETCH_FAILED,
+                        "Unexpected error while fetching rain cells: " + cause.getMessage());
+            }
+            return null;
+        });
     }
 
     public synchronized List<RainCell> getRainCells() {

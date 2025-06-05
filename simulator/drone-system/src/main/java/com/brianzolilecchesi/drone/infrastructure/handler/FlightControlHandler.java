@@ -3,32 +3,50 @@ package com.brianzolilecchesi.drone.infrastructure.handler;
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
+import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
+import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
 
 public class FlightControlHandler implements StepHandler {
+
+    private final DroneContext context;
+    private final FlightController flightController;
+    private final NavigationService navigationService;
+    private final LogService logService;
+
+    public FlightControlHandler(DroneContext ctx, DroneServiceFacade droneServices) {
+        this.context = ctx;
+        this.flightController = droneServices.getFlightController();
+        this.navigationService = droneServices.getNavigationService();
+        this.logService = droneServices.getLogService();
+    }
+
     @Override
-    public boolean handle(DroneContext ctx) {
+    public boolean handle() {
 
-        if (!ctx.flightController.isPoweredOn()) {
+        if (!flightController.isPoweredOn()) {
             return true;
         }
 
-        if (ctx.navigationService.getFlightPlanStatus() == DataStatus.AVAILABLE) {
-            ctx.flightController.moveTo(ctx.navigationService.followFlightPlan());
+        if (navigationService.getFlightPlanStatus() == DataStatus.AVAILABLE) {
+            flightController.moveTo(navigationService.followFlightPlan());
         } else {
-            ctx.flightController.hover();
+            flightController.hover();
         }
 
-        if (ctx.navigationService.hasReached(ctx.flightController.getCurrentPosition(), ctx.props.getDestination()) &&
-            ctx.flightController.isOnGround()) {
+        if (navigationService.hasReached(flightController.getCurrentPosition(), context.getDroneProperties().getDestination()) &&
+            flightController.isOnGround()) {
             
-            ctx.logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Destination reached, powering off");
-            ctx.flightController.powerOff();
+            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Destination reached, powering off");
+            flightController.powerOff();
             return true;
         }
-        if (ctx.batteryService.isBatteryCritical() && ctx.flightController.isOnGround()) {
-            ctx.logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.LANDED, "Drone is on the ground and battery is critical.");
-            ctx.flightController.powerOff();
+        if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING && flightController.isOnGround()) {
+            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.LANDED, "Drone is on the ground and battery is critical.");
+            flightController.powerOff();
             return true;
         }
         return false;

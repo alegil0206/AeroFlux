@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculatorSingleton;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculator;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Geozone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.adapter.ZoneAdapterFacade;
@@ -14,21 +14,26 @@ import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan
 public class GeozoneNavigationService {
 	
 	public static final double MAX_ALTITUDE = 120.0;
+
+	private FlightPlanCalculator flightPlanCalculator;
+	private ZoneAdapterFacade zoneAdapterFacade;
 	
-	public GeozoneNavigationService() {
-	}
+	public GeozoneNavigationService(FlightPlanCalculator flightPlanCalculator, ZoneAdapterFacade zoneAdapterFacade) {
+        this.flightPlanCalculator = flightPlanCalculator;
+        this.zoneAdapterFacade = zoneAdapterFacade;
+    }
 	
 	public boolean add(final GeoZone geoZone) {
 		Zone geozone = null;
 		
 		try {
-			geozone = ZoneAdapterFacade.getInstance().adapt(geoZone);		
+			geozone = zoneAdapterFacade.adapt(geoZone);		
 		} catch (Exception e) {
 			System.err.println("Error adapting GeoZone: " + e.getMessage());
 			return false;
 		}
 		
-		return FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones().add(geozone);
+		return flightPlanCalculator.getCellGraphBuilder().getZones().add(geozone);
 	}
 	
 	public boolean add(final List<GeoZone> geoZones) {
@@ -45,7 +50,7 @@ public class GeozoneNavigationService {
 	public boolean remove(final GeoZone geoZone) {
 		assert geoZone != null;
 		
-		List<Zone> zones = FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones();
+		List<Zone> zones = flightPlanCalculator.getCellGraphBuilder().getZones();
 		int i = 0;
 		
 		while (i < zones.size()) {
@@ -76,7 +81,7 @@ public class GeozoneNavigationService {
 			geoZoneIds.add(zone.getId());
 		}
 		
-		List<Zone> previousZones = FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones();
+		List<Zone> previousZones = flightPlanCalculator.getCellGraphBuilder().getZones();
 		List<Zone> updatedZones = new ArrayList<>();
 		int i = 0;
 		
@@ -89,7 +94,7 @@ public class GeozoneNavigationService {
 			i++;
 		}
 		
-		FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().setZones(updatedZones);
+		flightPlanCalculator.getCellGraphBuilder().setZones(updatedZones);
 		boolean removedAll = previousZones.size() - updatedZones.size() == geoZones.size();
 		
 		return removedAll;
@@ -97,7 +102,7 @@ public class GeozoneNavigationService {
 	
 	public void clear() {
 		List<Zone> newZones = new ArrayList<>();
-		List<Zone> zones = FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones();		
+		List<Zone> zones = flightPlanCalculator.getCellGraphBuilder().getZones();		
 		
 		for (Zone zone : zones) {
 			if (!(zone instanceof Geozone)) {
@@ -105,6 +110,6 @@ public class GeozoneNavigationService {
 			}
 		}
 		
-		FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().setZones(newZones);
+		flightPlanCalculator.getCellGraphBuilder().setZones(newZones);
 	}
 }

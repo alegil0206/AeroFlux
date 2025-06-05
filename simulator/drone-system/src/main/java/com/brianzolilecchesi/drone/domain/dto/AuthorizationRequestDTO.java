@@ -1,60 +1,95 @@
 package com.brianzolilecchesi.drone.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AuthorizationRequestDTO {
-    private String drone_id;
-    private String geozone_id;
-    private String duration_type;
-    private Integer duration;
+	
+	@JsonProperty("drone_id")
+    private String droneId;
+	
+	@JsonProperty("geozone_id")
+    private String geozoneId;
+    
+	@JsonProperty("duration_type")
+	private String durationType;
+    private Double duration;
 
     public AuthorizationRequestDTO() {
     }
 
-    public AuthorizationRequestDTO(String drone_id, String geozone_id, String duration_type, Integer duration) {
-        this.drone_id = drone_id;
-        this.geozone_id = geozone_id;
-        this.duration_type = duration_type;
+    public AuthorizationRequestDTO(String droneId, String geozoneId, String durationType, Double duration) {
+        this.droneId = droneId;
+        this.geozoneId = geozoneId;
+        this.durationType = durationType;
         this.duration = duration;
     }
-
-    public String getDrone_id() {
-        return drone_id;
+    
+    public AuthorizationRequestDTO(String droneId, String geozoneId, String durationType) {
+        this(droneId, geozoneId, durationType, null);
     }
 
-    public void setDrone_id(String drone_id) {
-        this.drone_id = drone_id;
+    public String getDroneId() {
+        return droneId;
     }
 
-    public String getGeozone_id() {
-        return geozone_id;
+    public void setDroneId(String droneId) {
+        this.droneId = droneId;
     }
 
-    public void setGeozone_id(String geozone_id) {
-        this.geozone_id = geozone_id;
+    public String getGeozoneId() {
+        return geozoneId;
     }
 
-    public String getDuration_type() {
-        return duration_type;
+    public void setGeozoneId(String geozoneId) {
+        this.geozoneId = geozoneId;
     }
 
-    public void setDuration_type(String duration_type) {
-        this.duration_type = duration_type;
+    public String getDurationType() {
+        return durationType;
     }
 
-    public Integer getDuration() {
+    public void setDurationType(String durationType) {
+        this.durationType = durationType;
+    }
+
+    public Double getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
+    public void setDuration(Double duration) {
         this.duration = duration;
     }
 
     @Override
     public String toString() {
-        return "AuthorizationRequestDTO{" +
-                "drone_id='" + drone_id + '\'' +
-                ", geozone_id='" + geozone_id + '\'' +
-                ", duration_type='" + duration_type + '\'' +
-                ", duration=" + duration +
-                '}';
+		return String.format("AuthorizationRequestDTO [droneId=%s, geozoneId=%s, durationType=%s, duration=%s]", droneId, geozoneId, durationType, duration);
+    }
+    
+    @Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof AuthorizationRequestDTO))
+			return false;
+
+		AuthorizationRequestDTO that = (AuthorizationRequestDTO) o;
+
+		if (!droneId.equals(that.droneId))
+			return false;
+		if (!geozoneId.equals(that.geozoneId))
+			return false;
+		if (!durationType.equals(that.durationType))
+			return false;
+		
+		return duration.equals(that.duration);
+	}
+    
+    @Override
+    public int hashCode() {
+        int result = droneId.hashCode();
+        result = 31 * result + geozoneId.hashCode();
+        result = 31 * result + durationType.hashCode();
+        result = 31 * result + duration.hashCode();
+        return result;
     }
 }

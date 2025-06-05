@@ -16,6 +16,7 @@ public class RainCell {
     public void setCoordinates(List<double[]> coordinates) {
         this.coordinates = coordinates;
     }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

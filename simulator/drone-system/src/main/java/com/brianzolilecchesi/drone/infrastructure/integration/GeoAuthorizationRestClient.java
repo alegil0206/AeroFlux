@@ -30,6 +30,7 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
         this.restTemplate = restTemplate;
     }
 
+    @Override
     public AuthorizationDTO requestAuthorization(AuthorizationRequestDTO authorizationRequestDTO) throws AuthorizationException, ExternalServiceException {
         try {
             ResponseEntity<AuthorizationDTO> responseEntity = restTemplate.postForEntity(

@@ -6,15 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
-import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.model.LogEntry;
 
-public class StepLogService implements LogService {
+public class LogService {
     private final String systemId;
     private final List<LogEntry> logEntries = new ArrayList<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-    public StepLogService(String systemId) {
+    public LogService(String systemId) {
         this.systemId = systemId;
     }
 

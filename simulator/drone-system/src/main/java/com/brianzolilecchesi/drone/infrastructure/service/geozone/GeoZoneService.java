@@ -1,10 +1,10 @@
 package com.brianzolilecchesi.drone.infrastructure.service.geozone;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
-import com.brianzolilecchesi.drone.domain.service.log.LogService;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.registry.GeoZoneRegistry;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,10 +28,10 @@ public class GeoZoneService {
         this.logService = logService;
     }
 
-    public void fetchGeoZones() {
+    public CompletableFuture<Void> fetchGeoZones() {
 
         synchronized(this){
-            if (geoZonesStatus == DataStatus.LOADING) return;
+            if (geoZonesStatus == DataStatus.LOADING) return CompletableFuture.completedFuture(null);
             geoZonesStatus = DataStatus.LOADING;
         }
 
@@ -41,7 +41,7 @@ public class GeoZoneService {
                 "Fetching geo zones from geo-awareness service"
         );
 
-        CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             try {
                 return restApiGateway.getGeoZones();
             } catch (Exception e) {
@@ -61,14 +61,12 @@ public class GeoZoneService {
                         LogConstants.Component.GEOZONE_SERVICE,
                         LogConstants.Event.FETCHED,
                         "Geo zones fetched successfully"
-                );
-            } else {
-                synchronized(this) {
-                    geoZonesStatus = DataStatus.FAILED;
-                }
-                
+                ); 
             }
         }).exceptionally(e -> {
+            synchronized(this) {
+                geoZonesStatus = DataStatus.FAILED;
+            }
             Throwable cause = e.getCause();
             if (cause instanceof ExternalServiceException) {
                 logService.info(
@@ -83,10 +81,6 @@ public class GeoZoneService {
                         "Unexpected error while fetching geo zones: " + cause.getMessage()
                 );
             }
-            synchronized(this) {
-                geoZonesStatus = DataStatus.FAILED;    
-            }
-            
             return null;
         });
     }
@@ -102,6 +96,5 @@ public class GeoZoneService {
     public synchronized void setGeoZonesStatus(DataStatus status) {
         this.geoZonesStatus = status;
     }
-
 }
 

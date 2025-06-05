@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.brianzolilecchesi.drone.domain.model.RainCell;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculatorSingleton;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculator;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.RainZone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.adapter.ZoneAdapterFacade;
@@ -12,21 +12,25 @@ import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan
 public class WeatherNavigationService {
     public static final double MAX_ALTITUDE = 120.0;
     public static final double MIN_ALTITUDE = 0.0;
+    private final FlightPlanCalculator flightPlanCalculator;
+    private final ZoneAdapterFacade zoneAdapterFacade;
 
-    public WeatherNavigationService() {
-       
+    public WeatherNavigationService(FlightPlanCalculator flightPlanCalculator, ZoneAdapterFacade zoneAdapterFacade) {
+        this.flightPlanCalculator = flightPlanCalculator;
+        this.zoneAdapterFacade = zoneAdapterFacade;
     }
+
     public boolean add(final RainCell rainCell) {
         Zone weatherZone = null;
 
         try {
-            weatherZone =  ZoneAdapterFacade.getInstance().adapt(rainCell);
+            weatherZone =  zoneAdapterFacade.adapt(rainCell);
         } catch (Exception e) {
             System.err.println("Error adapting RainCell: " + e.getMessage());
             return false;
         }
 
-        return FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones().add(weatherZone);
+        return flightPlanCalculator.getCellGraphBuilder().getZones().add(weatherZone);
     }
 
     public boolean add(final List<RainCell> rainCells) {
@@ -42,13 +46,13 @@ public class WeatherNavigationService {
 
     public void clear() {
         List<Zone> newZones= new ArrayList<>();
-        List<Zone> zones = FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().getZones();
+        List<Zone> zones = flightPlanCalculator.getCellGraphBuilder().getZones();
         for (Zone zone : zones) {
             if (!(zone instanceof RainZone)) {
                 newZones.add(zone);
             }
         }
-        FlightPlanCalculatorSingleton.getInstance().getCellGraphBuilder().setZones(newZones);
+        flightPlanCalculator.getCellGraphBuilder().setZones(newZones);
     }
 
     

@@ -1,41 +1,50 @@
 package com.brianzolilecchesi.drone.infrastructure.handler;
 
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
-import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
+import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
+import com.brianzolilecchesi.drone.infrastructure.service.battery.BatteryService;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
 
 public class BatteryEmergencyHandler implements StepHandler {
-    
-    @Override
-    public boolean handle(DroneContext ctx) {
-        double level = ctx.batteryService.getBatteryLevel();
-        ctx.logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CHECK, "Battery level: " + level);
 
-        if (!ctx.batteryService.isBatteryCritical() ||
-            ctx.getFlightMode() == DroneFlightMode.LANDING_CONFIGURED ||
-            ctx.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
+    private final DroneContext context;
+    private final BatteryService batteryService;
+    private final LogService logService;
+    private final FlightController flightController;
+    private final NavigationService navigationService;
+
+    public BatteryEmergencyHandler(DroneContext ctx, DroneServiceFacade droneServices) {
+        this.context = ctx;
+        this.batteryService = droneServices.getBatteryService();
+        this.logService = droneServices.getLogService();
+        this.flightController = droneServices.getFlightController();
+        this.navigationService = droneServices.getNavigationService();
+    }
+
+    @Override
+    public boolean handle() {
+        double level = batteryService.getBatteryLevel();
+        logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CHECK, "Battery level: " + level);
+
+        if (!batteryService.isBatteryCritical() ||
+            context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
             return false;
         }
 
-        ctx.logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CRITICAL, "Battery critical, emergency landing initiated");
+        logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CRITICAL, "Battery critical, emergency landing initiated");
 
-        Position pos = ctx.flightController.getCurrentPosition();
-        boolean safe = ctx.landingService.evaluateLandingZone(
-            new Coordinate(pos.getLatitude(), pos.getLongitude())
-        );
-        if (!safe) {
-            ctx.logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.EMERGENCY_LANDING, "Unsafe zone, emergency at " + pos);
-            ctx.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
-        } else {
-            ctx.logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.LANDING, "Safe landing at " + pos);
-            ctx.setFlightMode(DroneFlightMode.LANDING_CONFIGURED);
-        }
-        ctx.geozoneNavService.clear();
-        ctx.weatherNavService.clear();
-        ctx.navigationService.configureVerticalLanding(pos);
+        Position pos = flightController.getCurrentPosition();
+        
+        logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.EMERGENCY_LANDING, "Unsafe zone, emergency at " + pos);
+        context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
+        
+        navigationService.configureVerticalLanding(pos);
         return false;
     }
 }

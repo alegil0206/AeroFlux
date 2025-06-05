@@ -3,22 +3,23 @@ package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 import com.brianzolilecchesi.drone.domain.dto.FlightPlanDTO;
 import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
+import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
+import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.domain.model.RainCell;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 
-import com.brianzolilecchesi.drone.domain.service.log.LogService;
-import com.brianzolilecchesi.drone.domain.service.navigation.NavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.FlightPlan;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculatorSingleton;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanRefinerSingleton;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanRefiner;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.GridZone;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.adapter.ZoneAdapterFacade;
 
-public class FlightNavigationService implements NavigationService {
+public class NavigationService  {
 
 	private static final double GRID_EXPANSION_METERS = 1000.0;
 	
@@ -26,7 +27,6 @@ public class FlightNavigationService implements NavigationService {
 	public static final List<Double> ALTITUDE_LEVELS = List.of(20.0, 40.0, 60.0, 80.0, 100.0, 120.0);
 	
 	public static final int AVERAGE_CALCULATION_STEPS = 20;
-
 
 	private final double stepSize;
 	private final LogService logService;
@@ -39,11 +39,11 @@ public class FlightNavigationService implements NavigationService {
 	private int flightPlanVersion;
 	private DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
-    public FlightNavigationService(LogService logService, double stepSize) {
+    public NavigationService(LogService logService, double stepSize) {
         this(logService, stepSize, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
     }
     
-    public FlightNavigationService(
+    public NavigationService(
 			LogService logService,
 			double stepSize,
     		double initialCellWidth,
@@ -59,7 +59,7 @@ public class FlightNavigationService implements NavigationService {
     		);
     }
     
-    public FlightNavigationService(
+    public NavigationService(
 			LogService logService,
 			double stepSize,
     		double initialCellWidth,
@@ -75,9 +75,7 @@ public class FlightNavigationService implements NavigationService {
         this.waypoints = new ArrayList<>();
         this.nextWaypointIndex = 1;
 		this.flightPlanVersion = 0;
-        
-        FlightPlanCalculatorSingleton.getInstance();	// Force singleton initialization
-    }
+	}
     
     public double getInitialCellWidth() {return initialCellWidth;}
 	public void setInitialCellWidth(final double initialCellWidth) {this.initialCellWidth = initialCellWidth;}
@@ -86,8 +84,7 @@ public class FlightNavigationService implements NavigationService {
 	public void setAltitudeLevels(final List<Double> altitudeLevels) {this.altitudeLevels = altitudeLevels;}
 
     	
-    @Override
-    public void generateFlightPlan(final Position start, final Position destination) {
+    public void generateFlightPlan(final Position start, final Position destination, List<GeoZone> geoZones, List<RainCell> rainCells) {
 
 		synchronized (this) {
 			if (flightPlanStatus == DataStatus.LOADING) {
@@ -104,7 +101,11 @@ public class FlightNavigationService implements NavigationService {
 			flightPlanStatus = DataStatus.LOADING;
 		}
 
-		CompletableFuture.supplyAsync(() -> calculateFlightPlan(start, destination))
+		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+		calculatorService.getGeozoneService().add(geoZones);
+		calculatorService.getWeatherService().add(rainCells);
+
+		CompletableFuture.supplyAsync(() -> calculateFlightPlan(start, destination, calculatorService))
 		.thenApply(generatedFlightPlan -> {
 			if (!generatedFlightPlan.hasPath()) {
 				throw new IllegalStateException("Flight plan not found");
@@ -113,8 +114,7 @@ public class FlightNavigationService implements NavigationService {
 		})
 		.thenAccept(generatedFlightPlan -> {
 
-			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-					.getInstance()
+			List<Position> newFlightPlanPositions = FlightPlanRefiner
 					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 			synchronized (this) {
 				newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
@@ -139,76 +139,14 @@ public class FlightNavigationService implements NavigationService {
 		});
 	}
 
-	@Override
-	public void optimizeFlightPlan() {
-		int initialFlightPlanVersion;
-		int initialNextPositionIndex;
-		List<Position> initialPositions;	
-		
-		synchronized (this) {
-			if (flightPlanStatus != DataStatus.AVAILABLE) {
-				return;
-			}
-			initialPositions = waypoints;
-			initialFlightPlanVersion = flightPlanVersion;
-			initialNextPositionIndex = nextWaypointIndex;
-		}
-
-		int remainingPositions = initialPositions.size() - initialNextPositionIndex;
-		
-		if (remainingPositions < AVERAGE_CALCULATION_STEPS) {
-			return;
-		}
-
-		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.OPTIMIZING_FLIGHT_PLAN, "Optimizing flight plan");
-
-		int calculateFrom = initialNextPositionIndex + AVERAGE_CALCULATION_STEPS;
-
-		CompletableFuture.supplyAsync(() -> calculateFlightPlan(initialPositions.get(calculateFrom), initialPositions.getLast()))
-		.thenApply(generatedFlightPlan -> {
-			if (!generatedFlightPlan.hasPath()) {
-				throw new IllegalStateException("Flight plan not found");
-			}
-			return generatedFlightPlan;
-		})
-		.thenAccept(generatedFlightPlan -> {
-			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-					.getInstance()
-					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
-
-			newFlightPlanPositions.addAll(0, initialPositions.subList(0, calculateFrom));
-
-			synchronized (this) {
-				if (initialFlightPlanVersion != flightPlanVersion) {
-					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_OPTIMIZED, "Flight plan optimization cancelled: new flight plan version");
-					return;
-				}
-
-				flightPlanStatus = DataStatus.AVAILABLE;
-				waypoints = newFlightPlanPositions;
-				flightPlanVersion++;
-			}
-
-			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_OPTIMIZED, "Flight plan optimized: " + generatedFlightPlan.getReport());
-		
-		}).exceptionally(
-			ex -> {
-				synchronized (this) {
-					flightPlanStatus = DataStatus.FAILED;
-				}
-				logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan optimization failed: " + ex.getMessage());
-				return null;
-			}
-		);
-
+	public void adaptFlightPlan(Position destination, List<GeoZone> geoZones, List<RainCell> rainCells) {
+		adaptFlightPlan(destination, geoZones, rainCells, null);
 	}
 
-	@Override
-	public void adaptFlightPlan() {
+	public void adaptFlightPlan(Position destination, List<GeoZone> geoZones, List<RainCell> rainCells, NearbyDroneStatus nearbyDroneStatus) {
 		int initialFlightPlanVersion;
 		int initialNextPositionIndex;
-		int finalPositionIndex;
-		List<Position> initialPositions;	
+		List<Position> initialPositions;
 		
 		synchronized (this) {
 			if (flightPlanStatus != DataStatus.AVAILABLE) {
@@ -217,18 +155,17 @@ public class FlightNavigationService implements NavigationService {
 			initialPositions = waypoints;
 			initialFlightPlanVersion = flightPlanVersion;
 			initialNextPositionIndex = nextWaypointIndex - 1;
-			finalPositionIndex = initialNextPositionIndex + 2 * (int)(INITIAL_CELL_WIDTH / stepSize);
-
-			if (finalPositionIndex >= initialPositions.size()) {
-				return;
-			}
-
 			flightPlanStatus = DataStatus.LOADING;
 		}
 
 		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.ADAPT_FLIGHT_PLAN, "Adapting flight plan");
+		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+		calculatorService.getGeozoneService().add(geoZones);
+		calculatorService.getWeatherService().add(rainCells);
+		if (nearbyDroneStatus != null)
+			calculatorService.getDroneZoneService().add(nearbyDroneStatus);
 
-		CompletableFuture.supplyAsync(() -> calculateFlightPlan(initialPositions.get(initialNextPositionIndex), initialPositions.get(finalPositionIndex)))
+		CompletableFuture.supplyAsync(() -> calculateFlightPlan(initialPositions.get(initialNextPositionIndex), destination, calculatorService))
 		.thenApply(generatedFlightPlan -> {
 			if (!generatedFlightPlan.hasPath()) {
 				throw new IllegalStateException("Flight plan not found");
@@ -236,12 +173,10 @@ public class FlightNavigationService implements NavigationService {
 			return generatedFlightPlan;
 		})
 		.thenAccept(generatedFlightPlan -> {
-			List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-					.getInstance()
+			List<Position> newFlightPlanPositions = FlightPlanRefiner
 					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 
 			newFlightPlanPositions.addAll(0, initialPositions.subList(0, initialNextPositionIndex));
-			newFlightPlanPositions.addAll(newFlightPlanPositions.size(), initialPositions.subList(finalPositionIndex + 1, initialPositions.size()) );
 
 			synchronized (this) {
 				if (initialFlightPlanVersion != flightPlanVersion) {
@@ -268,19 +203,19 @@ public class FlightNavigationService implements NavigationService {
 
 	}
 
-	private FlightPlan calculateFlightPlan(final Position start, final Position destination) {
+	private FlightPlan calculateFlightPlan(final Position start, final Position destination, FlightPlanCalculatorService calculatorService) {
 
         GridZone grid = null;
 		FlightPlan generatedFlightPlan = new FlightPlan();
     
         int i = 0, maxIter = 7;
         do {
-        	grid = ZoneAdapterFacade.getInstance().getGridAdapter().build(
+        	grid = calculatorService.getZoneAdapterFacade().getGridAdapter().build(
         			start, 
         			destination, 
         			GRID_EXPANSION_METERS * Math.pow(2, i++)
         			);
-	    	generatedFlightPlan = FlightPlanCalculatorSingleton.getInstance().computeFlightPlan(
+	    	generatedFlightPlan = calculatorService.getFlightPlanCalculator().computeFlightPlan(
 	        		grid,
 	        		getAltitudeLevels(), 
 	        		getInitialCellWidth(), 
@@ -293,7 +228,6 @@ public class FlightNavigationService implements NavigationService {
 		return generatedFlightPlan;
     }
 
-    @Override
     public synchronized boolean hasReached(Position currentPosition, Position destination) {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return false;
@@ -301,7 +235,6 @@ public class FlightNavigationService implements NavigationService {
 		return currentPosition.distance(destination) < stepSize;
     }
 
-	@Override
 	public synchronized boolean hasReached(Coordinate currentPosition, Coordinate destination) {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return false;
@@ -309,10 +242,11 @@ public class FlightNavigationService implements NavigationService {
 		return currentPosition.distance(destination) < stepSize;
 	}
 
-	@Override
 	public synchronized void configureVerticalLanding(Position currentPosition) {
 
 		flightPlanVersion++;
+
+		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
 
 		Position onGroundPosition = new Position(
 			currentPosition.getLatitude(),
@@ -322,15 +256,15 @@ public class FlightNavigationService implements NavigationService {
 
 		FlightPlan generatedFlightPlan = calculateFlightPlan(
 			currentPosition,
-			onGroundPosition
+			onGroundPosition,
+			calculatorService
 		);
 		
 		if (!generatedFlightPlan.hasPath()) {
 			return;
 		}
 
-		List<Position> newFlightPlanPositions = FlightPlanRefinerSingleton
-				.getInstance()
+		List<Position> newFlightPlanPositions = FlightPlanRefiner
 				.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 		
 		newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
@@ -340,7 +274,6 @@ public class FlightNavigationService implements NavigationService {
 		
 	}
 
-	@Override
     public synchronized Position followFlightPlan() {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return null;
@@ -353,7 +286,6 @@ public class FlightNavigationService implements NavigationService {
 		return nextPosition;
     }
 
-	@Override
 	public synchronized List<Position> getNextWaypoints() {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return null;
@@ -374,7 +306,6 @@ public class FlightNavigationService implements NavigationService {
 		return new FlightPlanDTO(waypoints);
 	}
 
-	@Override
 	public synchronized DataStatus getFlightPlanStatus() {
 		return flightPlanStatus;
 	}

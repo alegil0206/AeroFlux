@@ -54,6 +54,9 @@ public class LogConstants {
         public static final String COLLISION_AVOIDANCE = "COLLISION_AVOIDANCE";
         public static final String CONFLICT_AVOIDANCE = "CONFLICT_AVOIDANCE";
 
+        public static final String REQUESTING_AUTHORIZATION = "REQUESTING_AUTHORIZATION";
+        public static final String AUTHORIZATION_GRANTED = "AUTHORIZATION_GRANTED";
+        public static final String AUTHORIZATION_DENIED = "AUTHORIZATION_DENIED";
     }
 
     public static class Level {

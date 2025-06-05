@@ -11,7 +11,7 @@ public class FlightPlanRefiner {
 	public FlightPlanRefiner() {
 	}
 	
-	public List<Position> refineLinearPath(final List<Position> positions, double d) {
+	public static List<Position> refineLinearPath(final List<Position> positions, double d) {
 		assert positions != null;
 		assert positions.size() == 2;
 		
@@ -37,7 +37,7 @@ public class FlightPlanRefiner {
 		return positions;
 	}
 	
-	public List<Position> refine(final List<Position> positions, double d) {
+	public static List<Position> refine(final List<Position> positions, double d) {
 		assert positions != null;
 		assert positions.size() > 0;
 		

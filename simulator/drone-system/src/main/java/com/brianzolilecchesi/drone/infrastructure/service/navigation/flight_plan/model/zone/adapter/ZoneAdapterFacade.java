@@ -7,25 +7,12 @@ import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan
 
 public class ZoneAdapterFacade {
 	
-	private static ZoneAdapterFacade INSTANCE;
-	
-	public static ZoneAdapterFacade getInstance() {
-	    if (INSTANCE == null) {
-	        synchronized (ZoneAdapterFacade.class) {
-	            if (INSTANCE == null) {
-	                INSTANCE = new ZoneAdapterFacade(new GridZoneAdapter(), new GeozoneAdapter(), new WeatherZoneAdapter(), new DronePositionAdapter());
-	            }
-	        }
-	    }
-	    return INSTANCE;
-	}
-	
 	private final GridZoneAdapter gridAdapter;
 	private final GeozoneAdapter geozoneAdapter;
 	private final WeatherZoneAdapter weatherAdapter;
 	private final DronePositionAdapter dronePositionAdapter;
 	
-	private ZoneAdapterFacade(GridZoneAdapter gridAdapter, GeozoneAdapter geozoneAdapter, WeatherZoneAdapter weatherAdapter, DronePositionAdapter dronePositionAdapter) {
+	public ZoneAdapterFacade(GridZoneAdapter gridAdapter, GeozoneAdapter geozoneAdapter, WeatherZoneAdapter weatherAdapter, DronePositionAdapter dronePositionAdapter) {
 		this.gridAdapter = gridAdapter;
 		this.geozoneAdapter = geozoneAdapter;
 		this.weatherAdapter = weatherAdapter;

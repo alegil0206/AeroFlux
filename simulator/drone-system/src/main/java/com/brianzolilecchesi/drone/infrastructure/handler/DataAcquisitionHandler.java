@@ -1,16 +1,19 @@
 package com.brianzolilecchesi.drone.infrastructure.handler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
-import com.brianzolilecchesi.drone.domain.model.Authorization;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
+import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
+import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
+import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
+import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
+import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
 public class DataAcquisitionHandler implements StepHandler {
 
@@ -23,79 +26,81 @@ public class DataAcquisitionHandler implements StepHandler {
     private static final int AUTHORIZATION_UPDATE_INTERVAL = 25;
     private int lastAuthorizationUpdate = AUTHORIZATION_UPDATE_INTERVAL;
 
+    private final DroneContext context;
+    private final GeoZoneService geoZoneService;
+    private final AuthorizationService authorizationService;
+    private final WeatherService weatherService;
+    private final FlightController flightController;
+
+    private Position lastConsideredDestination;
+    private Map<String, GeoZone> lastConsideredGeoZones = new HashMap<>();
+    
+
+    public DataAcquisitionHandler(DroneContext ctx, DroneServiceFacade droneServices) {
+        this.context = ctx;
+        this.geoZoneService = droneServices.getGeoZoneService();
+        this.authorizationService = droneServices.getAuthorizationService();
+        this.weatherService = droneServices.getWeatherService();
+        this.flightController = droneServices.getFlightController();
+    }
+
     @Override
-    public boolean handle(DroneContext ctx) {
+    public boolean handle() {
 
-        int currentStep = ctx.stepCounter;
+        int currentStep = context.getStep();
 
-        if (ctx.getFlightMode() == DroneFlightMode.LANDING_CONFIGURED ||
-            ctx.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
+        if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
             return false;
         }
 
-        DataStatus geoZonesStatus = ctx.geoZoneService.getGeoZonesStatus();
-        boolean shouldRefreshGeoZones =
-                geoZonesStatus == DataStatus.NOT_REQUESTED ||
-                geoZonesStatus == DataStatus.FAILED ||
-                currentStep - lastGeoZoneUpdate >= GEOZONES_UPDATE_INTERVAL;
-        if (shouldRefreshGeoZones) {
-            ctx.geoZoneService.fetchGeoZones();
-            lastGeoZoneUpdate = currentStep;
-        }
-
-        DataStatus authorizationStatus = ctx.authorizationService.getAuthorizationsStatus();
-        boolean shouldRefreshAuthorizations =
-                authorizationStatus == DataStatus.NOT_REQUESTED ||
-                authorizationStatus == DataStatus.FAILED ||
-                currentStep - lastAuthorizationUpdate >= AUTHORIZATION_UPDATE_INTERVAL;
-        if (shouldRefreshAuthorizations) {
-            ctx.authorizationService.fetchAuthorizations(ctx.props.getId());
-            lastAuthorizationUpdate = currentStep;
-        }
-
-        DataStatus weatherStatus = ctx.geoZoneService.getGeoZonesStatus();
+        DataStatus weatherStatus = weatherService.getRainCellsStatus();
         boolean shouldRefreshWeather =
                 weatherStatus == DataStatus.NOT_REQUESTED ||
                 weatherStatus == DataStatus.FAILED ||
                 currentStep - lastWeatherUpdate >= WEATHER_UPDATE_INTERVAL;
         if (shouldRefreshWeather) {
-            ctx.weatherService.fetchRainCells();
+            weatherService.fetchRainCells();
             lastWeatherUpdate = currentStep;
         }
 
-        if (weatherStatus == DataStatus.AVAILABLE) {
-            ctx.weatherService.setRainCellsStatus(DataStatus.LOADED_ON_GRAPH);
-            ctx.weatherNavService.clear();
-            ctx.weatherNavService.add(ctx.weatherService.getRainCells());
+        DataStatus geoZonesStatus = geoZoneService.getGeoZonesStatus();
+        boolean shouldRefreshGeoZones =
+                geoZonesStatus == DataStatus.NOT_REQUESTED ||
+                geoZonesStatus == DataStatus.FAILED ||
+                currentStep - lastGeoZoneUpdate >= GEOZONES_UPDATE_INTERVAL;
+        if (shouldRefreshGeoZones) {
+            geoZoneService.fetchGeoZones();
+            lastGeoZoneUpdate = currentStep;
         }
 
-        boolean shouldLoadGeoZonesAndAuthorizations =
-                (geoZonesStatus == DataStatus.AVAILABLE && authorizationStatus == DataStatus.AVAILABLE) ||
-                (geoZonesStatus == DataStatus.LOADED_ON_GRAPH && authorizationStatus == DataStatus.AVAILABLE) ||
-                (geoZonesStatus == DataStatus.AVAILABLE && authorizationStatus == DataStatus.LOADED_ON_GRAPH);
-        if (shouldLoadGeoZonesAndAuthorizations) {
-            ctx.geoZoneService.setGeoZonesStatus(DataStatus.LOADED_ON_GRAPH);
-            ctx.authorizationService.setAuthorizationsStatus(DataStatus.LOADED_ON_GRAPH);
-
-            Map<String, GeoZone> geoZones = ctx.geoZoneService.getGeoZones();
-            Map<String, Authorization> authorizations = ctx.authorizationService.getAuthorizations();
-
-            List<GeoZone> geoZonesToConsider = new ArrayList<>();
-            for (Entry<String, GeoZone> entry : geoZones.entrySet()) {
-                String geoZoneId = entry.getKey();
-                GeoZone geoZone = entry.getValue();
-                if (geoZone.isActive()) {
-                    Authorization auth = authorizations.get(geoZoneId);
-                    if (auth == null || !auth.isGranted()) {
-                        geoZonesToConsider.add(geoZone);
-                    }
-                }
-            }
-
-            ctx.geozoneNavService.clear();
-            ctx.geozoneNavService.add(geoZonesToConsider);        
+        if(geoZoneService.getGeoZonesStatus() != DataStatus.AVAILABLE) {
+            return false;
         }
-        
+
+        boolean shouldRequestNewAuthorizations =
+                !(context.getCurrentDestination().equals(lastConsideredDestination) &&
+                geoZoneService.getGeoZones().equals(lastConsideredGeoZones));
+        if (shouldRequestNewAuthorizations) {
+            authorizationService.requestLinearPathAuthorizations(
+                context.getDroneProperties().getId(),
+                flightController.getCurrentPosition(),
+                context.getCurrentDestination(),
+                geoZoneService.getGeoZones());
+            lastConsideredDestination = context.getCurrentDestination();
+            lastConsideredGeoZones = geoZoneService.getGeoZones();
+        }
+
+        DataStatus authorizationStatus = authorizationService.getAuthorizationsStatus();
+        boolean shouldRefreshAuthorizations =
+                authorizationStatus == DataStatus.NOT_REQUESTED ||
+                authorizationStatus == DataStatus.FAILED ||
+                authorizationStatus == DataStatus.EXPIRED ||
+                currentStep - lastAuthorizationUpdate >= AUTHORIZATION_UPDATE_INTERVAL;
+        if (shouldRefreshAuthorizations) {
+            authorizationService.fetchAuthorizations(context.getDroneProperties().getId());
+            lastAuthorizationUpdate = currentStep;
+        }
+
         return false;
     }
-}
+}           

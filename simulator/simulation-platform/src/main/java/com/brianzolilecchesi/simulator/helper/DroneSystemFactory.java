@@ -2,7 +2,6 @@ package com.brianzolilecchesi.simulator.helper;
 
 import com.brianzolilecchesi.drone.DroneSystem;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
-import com.brianzolilecchesi.simulator.model.drone.SimulatedCamera;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedRadio;
 import com.brianzolilecchesi.simulator.service.api.DroneIdentificationService;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedGPS;
@@ -43,7 +42,6 @@ public class DroneSystemFactory {
         for (DronePropertiesDTO droneDTO : droneDTOs) {
             SimulatedBattery battery = new SimulatedBattery(droneDTO.getBattery());
             SimulatedRadio radio = new SimulatedRadio();
-            SimulatedCamera camera = new SimulatedCamera();
             SimulatedGPS gps = new SimulatedGPS(droneDTO.getSource().getLatitude(), droneDTO.getSource().getLongitude());
             SimulatedAltimeter altimeter = new SimulatedAltimeter(0);
             SimulatedMotor motor = new SimulatedMotor(gps, altimeter);
@@ -74,7 +72,6 @@ public class DroneSystemFactory {
             HardwareAbstractionLayer hardwareAbstractionLayer = new HardwareAbstractionLayer(
                 battery,
                 radio,
-                camera,
                 gps,
                 altimeter,
                 motor
