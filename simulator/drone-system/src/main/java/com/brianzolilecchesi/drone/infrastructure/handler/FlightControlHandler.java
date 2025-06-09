@@ -3,6 +3,7 @@ package com.brianzolilecchesi.drone.infrastructure.handler;
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
@@ -44,6 +45,7 @@ public class FlightControlHandler implements StepHandler {
             
             logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Destination reached, powering off");
             flightController.powerOff();
+            context.setFlightMode(DroneFlightMode.FLIGHT_COMPLETED);
             return true;
         }
 
@@ -52,6 +54,7 @@ public class FlightControlHandler implements StepHandler {
 
             logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Reached current destination: " + context.getCurrentDestination() + ", powering off");
             flightController.powerOff();
+            context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
             return true;
         }
 

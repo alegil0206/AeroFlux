@@ -6,7 +6,6 @@ import com.brianzolilecchesi.simulator.model.drone.SimulatedRadio;
 import com.brianzolilecchesi.simulator.service.api.DroneIdentificationService;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedGPS;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedMotor;
-import com.brianzolilecchesi.simulator.model.SimulationStatus;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedAltimeter;
 
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
@@ -24,21 +23,15 @@ import org.springframework.stereotype.Component;
 public class DroneSystemFactory {
 
     private final DroneIdentificationService droneIdentificationService;
-    private final SimulationStatus simulationStatus;
 
-    public DroneSystemFactory(DroneIdentificationService droneIdentificationService, SimulationStatus simulationStatus) {
+    public DroneSystemFactory(DroneIdentificationService droneIdentificationService) {
         this.droneIdentificationService = droneIdentificationService;
-        this.simulationStatus = simulationStatus;
     }
 
     public List<DroneSystem> createDrones() {
         List<DronePropertiesDTO> droneDTOs = droneIdentificationService.getDrones();
         List<DroneSystem> drones = new ArrayList<>();
         
-        int executionSpeed = simulationStatus.getExecutionSpeed();
-
-        double droneMaxSpeed = 20.0 * Math.pow(2, executionSpeed);
-
         for (DronePropertiesDTO droneDTO : droneDTOs) {
             SimulatedBattery battery = new SimulatedBattery(droneDTO.getBattery());
             SimulatedRadio radio = new SimulatedRadio();
@@ -77,7 +70,7 @@ public class DroneSystemFactory {
                 motor
             );
 
-            DroneSystem drone = new DroneSystem(droneProperties, hardwareAbstractionLayer, droneMaxSpeed);
+            DroneSystem drone = new DroneSystem(droneProperties, hardwareAbstractionLayer);
             drone.powerOn();
             drones.add(drone);
         }

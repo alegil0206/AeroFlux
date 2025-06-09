@@ -29,6 +29,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         const nextPoint = flightPlan[index + 1];
         const altitudeDifference = nextPoint.altitude - point.altitude;
         const color = altitudeDifference > 0 ? 'green' : altitudeDifference < 0 ? 'red' : 'blue';
+        const height = Math.max(point.altitude, nextPoint.altitude);
   
         const line = {
           type: 'Feature',
@@ -60,7 +61,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
             id: `${drone.id}-segment-${index}`,
             color: color,
             base_altitude: 0,
-            height: point.altitude,
+            height: height,
           },
         };
       });
@@ -107,7 +108,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
           setPopupInfo({ type: 'drone', data: drone });
         }}
       >
-        <DronePin height={drone.status.position.altitude} size={30} />
+        <DronePin flightMode={drone.status.flightMode} size={30} />
       </Marker>
     )),
     [drones]

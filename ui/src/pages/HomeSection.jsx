@@ -69,6 +69,7 @@ function HomeSection() {
       status: dronesStatus[drone.id] ? dronesStatus[drone.id] : { 
         position: { latitude: drone.source.latitude, longitude: drone.source.longitude, altitude: drone.source.altitude },
         batteryLevel: drone.battery,
+        flightMode: "",
         flightPlan: [[drone.source.longitude, drone.source.latitude, drone.source.altitude], 
           [drone.destination.longitude, drone.destination.latitude, drone.destination.altitude]],
         },

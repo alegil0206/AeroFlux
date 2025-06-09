@@ -29,6 +29,7 @@ public class SimulationEngine {
     private final SimulationHistoryService simulationHistoryService;
     private Map<DroneProperties, List<DroneStatusDTO>> droneStatusMap = new HashMap<>();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private final static long INTERVAL = 1000;
 
     private long lastStepExecutionTime = 0;
 
@@ -39,7 +40,7 @@ public class SimulationEngine {
     }
 
     @Async
-    public void runSimulationLoop(List<DroneSystem> drones, long interval) {
+    public void runSimulationLoop(List<DroneSystem> drones) {
 
         String startTime = java.time.LocalDateTime.now().format(formatter);
 
@@ -55,7 +56,7 @@ public class SimulationEngine {
                 long currentTime = System.currentTimeMillis();
                 long elapsedTime = currentTime - lastStepExecutionTime;
 
-                if (elapsedTime > interval) {
+                if (elapsedTime > INTERVAL / simulationStatus.getExecutionSpeed()) {
 
                     for (DroneSystem drone : drones) {
                         DroneStatus droneStatus = drone.executeStep();
@@ -64,6 +65,7 @@ public class SimulationEngine {
                                 droneStatus.getDroneId(),
                                 droneStatus.getPosition(),
                                 droneStatus.getBatteryLevel(),
+                                droneStatus.getFlightMode(),
                                 droneStatus.getFlightPlan(),
                                 droneStatus.getLogs()
                             );

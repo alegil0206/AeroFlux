@@ -2,6 +2,7 @@ package com.brianzolilecchesi.simulator.dto;
 
 import java.util.List;
 
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.LogEntry;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
@@ -9,21 +10,24 @@ public class DroneStatusDTO {
     private String droneId;
     private PositionDTO position;
     private double batteryLevel;
+    private DroneFlightMode flightMode;
     private List<PositionDTO> flightPlan;
     private List<LogEntry> logs;
 
-    public DroneStatusDTO(String droneId, PositionDTO position, double batteryLevel, List<PositionDTO> flightPlan, List<LogEntry> logs) {
+    public DroneStatusDTO(String droneId, PositionDTO position, double batteryLevel, DroneFlightMode flightMode, List<PositionDTO> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = position;
         this.batteryLevel = batteryLevel;
+        this.flightMode = flightMode;
         this.flightPlan = flightPlan;
         this.logs = logs;
     }
 
-    public DroneStatusDTO(String droneId, Position position, double batteryLevel, List<Position> flightPlan, List<LogEntry> logs) {
+    public DroneStatusDTO(String droneId, Position position, double batteryLevel, DroneFlightMode droneFlightMode, List<Position> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = new PositionDTO(position);
         this.batteryLevel = batteryLevel;
+        this.flightMode = droneFlightMode;
         this.flightPlan = flightPlan.stream()
                 .map(PositionDTO::new)
                 .toList();
@@ -52,6 +56,14 @@ public class DroneStatusDTO {
 
     public void setBatteryLevel(double batteryLevel) {
         this.batteryLevel = batteryLevel;
+    }
+
+    public DroneFlightMode getFlightMode() {
+        return flightMode;
+    }
+
+    public void setFlightMode(DroneFlightMode flightMode) {
+        this.flightMode = flightMode;
     }
 
     public List<PositionDTO> getFlightPlan() {

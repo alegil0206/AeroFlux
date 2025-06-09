@@ -6,6 +6,7 @@ import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
+import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
@@ -28,10 +29,9 @@ public class DroneSystem {
     
     public DroneSystem(
             DroneProperties droneProperties,
-            HardwareAbstractionLayer hardwareAbstractionLayer,
-            double droneMaxSpeed
+            HardwareAbstractionLayer hardwareAbstractionLayer
             ) {
-        this.context = new DroneContext(droneProperties, droneMaxSpeed);
+        this.context = new DroneContext(droneProperties);
         this.hardwareAbstractionLayer = hardwareAbstractionLayer;
         this.droneServices = new DroneServiceFacade(context, hardwareAbstractionLayer);
         this.stepHandlers = List.of(
@@ -69,6 +69,7 @@ public class DroneSystem {
                 context.getDroneProperties().getId(),
                 droneServices.getFlightController().getCurrentPosition(),
                 droneServices.getBatteryService().getBatteryLevel(),
+                context.getFlightMode(),
                 droneServices.getNavigationService().getFlightPlan() != null 
                     ? droneServices.getNavigationService().getFlightPlan().getPositions()
                     : Collections.emptyList(),
@@ -86,6 +87,7 @@ public class DroneSystem {
     
     public void powerOn() {
         droneServices.getFlightController().powerOn();
+        context.setFlightMode(DroneFlightMode.NORMAL_FLIGHT);
     }
 
     public void powerOff() {

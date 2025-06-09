@@ -9,6 +9,7 @@ function DronePopup({ drone }) {
       <p>Position: {drone.status.position.latitude.toFixed(3)}, {drone.status.position.longitude.toFixed(3)}</p>
       <p>Altitude: {drone.status.position.altitude}m</p>
       <p>Battery: {drone.status.batteryLevel}</p>
+      <p>Flight Mode: {drone.status.flightMode}</p>
     </div>
   );
 }
@@ -26,6 +27,7 @@ DronePopup.propTypes = {
         altitude: PropTypes.number.isRequired,
       }).isRequired,
       batteryLevel: PropTypes.number.isRequired,
+      flightMode: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
 };

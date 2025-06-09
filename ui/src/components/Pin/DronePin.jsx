@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import FlightIcon from '@mui/icons-material/Flight';
+import { getFlightStatusColor } from '../../utils/utils';
 
-function DronePin({ height, size = 30 }) {
-  const color = height > 0 ? 'green' : 'gray';
+function DronePin({ flightMode, size = 30 }) {
 
   return (
     <FlightIcon
       style={{
         fontSize: size,
-        color: color,
+        color: getFlightStatusColor(flightMode),
         backgroundColor: 'white',
         borderRadius: '50%',
         border: '2px solid white',
@@ -19,8 +19,8 @@ function DronePin({ height, size = 30 }) {
 }
 
 DronePin.propTypes = {
-  height: PropTypes.number.isRequired,
   size: PropTypes.number,
+  flightMode: PropTypes.string.isRequired
 };
 
 export default DronePin;

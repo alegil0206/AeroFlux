@@ -1,5 +1,5 @@
 package com.brianzolilecchesi.drone.domain.model;
 
 public enum DroneFlightMode {
-    NORMAL, EMERGENCY_LANDING
+    FLIGHT_COMPLETED, NORMAL_FLIGHT, EMERGENCY_LANDING, REROUTE_FLIGHT
 }

@@ -28,9 +28,11 @@ public class NavigationService  {
 	
 	public static final int AVERAGE_CALCULATION_STEPS = 20;
 
-	private final double stepSize;
+	public static final double STEP_SIZE = 20.0; // meters
+
 	private final LogService logService;
-    
+
+	private double stepSize;
     private double initialCellWidth;
     private List<Double> altitudeLevels;
     
@@ -39,8 +41,8 @@ public class NavigationService  {
 	private int flightPlanVersion;
 	private DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
     
-    public NavigationService(LogService logService, double stepSize) {
-        this(logService, stepSize, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
+    public NavigationService(LogService logService) {
+        this(logService, STEP_SIZE, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
     }
     
     public NavigationService(
@@ -68,7 +70,7 @@ public class NavigationService  {
     		) {
     	
 		this.logService = logService;
-        this.stepSize = stepSize;
+        setStepSize(stepSize);
         setInitialCellWidth(initialCellWidth);
         setAltitudeLevels(altitudeLevels);
         
@@ -82,6 +84,14 @@ public class NavigationService  {
 	
 	public List<Double> getAltitudeLevels() {return altitudeLevels;}
 	public void setAltitudeLevels(final List<Double> altitudeLevels) {this.altitudeLevels = altitudeLevels;}
+
+	public double getStepSize() {return stepSize;}
+	public void setStepSize(final double stepSize) {
+		if (stepSize <= 0) {
+			throw new IllegalArgumentException("Step size must be greater than zero");
+		}
+		this.stepSize = stepSize;
+	}
 
     	
     public void generateFlightPlan(final Position start, final Position destination, List<GeoZone> geoZones, List<RainCell> rainCells) {

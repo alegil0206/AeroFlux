@@ -5,14 +5,12 @@ public class DroneContext {
     private DroneFlightMode flightMode;
     private int stepCounter;
     private Position currentDestination;
-    private final double speed;
 
-    public DroneContext(DroneProperties props, double speed) {
+    public DroneContext(DroneProperties props) {
         this.properties = props;
         this.stepCounter = 0;
-        this.flightMode = DroneFlightMode.NORMAL;
+        this.flightMode = DroneFlightMode.NORMAL_FLIGHT;
         this.currentDestination = new Position(props.getDestination(), 0);
-        this.speed = speed;
     }
 
     public DroneProperties getDroneProperties() {
@@ -41,9 +39,5 @@ public class DroneContext {
 
     public void setFlightMode(DroneFlightMode flightMode) {
         this.flightMode = flightMode;
-    }
-
-    public double getSpeed() {
-        return speed;
     }
 }

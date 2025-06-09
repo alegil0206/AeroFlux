@@ -34,9 +34,9 @@ public class DroneServiceFacade {
         logService = new LogService(context.getDroneProperties().getId());
         batteryService = new BatteryService(hardwareAbstractionLayer.getBattery(), logService);
         communicationService = new CommunicationService(hardwareAbstractionLayer.getRadio(), logService);
-        navigationService = new NavigationService(logService, context.getSpeed());
+        navigationService = new NavigationService(logService);
         flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
-        droneSafetyNavigationService = new DroneSafetyNavigationService(context.getSpeed());
+        droneSafetyNavigationService = new DroneSafetyNavigationService();
         geoZoneService = new GeoZoneService(logService);
         weatherService = new WeatherService(logService);
         authorizationService= new AuthorizationService(logService);

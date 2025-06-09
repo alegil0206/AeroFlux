@@ -6,13 +6,15 @@ public class DroneStatus {
     private String droneId;
     private Position position;
     private double batteryLevel;
+    private DroneFlightMode flightMode;
     private List<Position> flightPlan;
     private List<LogEntry> logs;
 
-    public DroneStatus(String droneId, Position position, double batteryLevel, List<Position> flightPlan, List<LogEntry> logs) {
+    public DroneStatus(String droneId, Position position, double batteryLevel, DroneFlightMode droneFlightMode, List<Position> flightPlan, List<LogEntry> logs) {
         this.droneId = droneId;
         this.position = position;
         this.batteryLevel = batteryLevel;
+        this.flightMode = droneFlightMode;
         this.flightPlan = flightPlan;
         this.logs = logs;
     }
@@ -39,6 +41,14 @@ public class DroneStatus {
 
     public void setBatteryLevel(double batteryLevel) {
         this.batteryLevel = batteryLevel;
+    }
+
+    public DroneFlightMode getFlightMode() {
+        return flightMode;
+    }
+
+    public void setFlightMode(DroneFlightMode flightMode) {
+        this.flightMode = flightMode;
     }
 
     public List<Position> getFlightPlan() {

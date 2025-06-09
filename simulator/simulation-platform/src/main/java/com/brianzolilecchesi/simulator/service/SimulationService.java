@@ -17,7 +17,6 @@ public class SimulationService {
     private final LogService logService;
     private final SimulationEngine simulationTaskService;
     private final DroneSystemFactory droneSystemFactory;
-    private long interval = 1000;
 
     public SimulationService(SimulationStatus simulationStatus, LogService logService, 
             SimulationEngine simulationTaskService, DroneSystemFactory droneSystemFactory) {
@@ -38,7 +37,7 @@ public class SimulationService {
         List<DroneSystem> drones = droneSystemFactory.createDrones();
         logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started at speed " + simulationStatus.getExecutionSpeed() + "x");
 
-        simulationTaskService.runSimulationLoop(drones, interval);
+        simulationTaskService.runSimulationLoop(drones);
         return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 

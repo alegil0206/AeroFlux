@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 
 export default function DronesPositionCard({ data }) {
@@ -56,19 +55,13 @@ export default function DronesPositionCard({ data }) {
       ),
     },
     {
-      field: 'flightStatus',
+      field: 'flightMode',
       headerName: 'Status',
       flex: 2,
       renderCell: (params) => {
-        const isFlying = params.row.altitude > 0;
-        const label = isFlying ? 'In Flight' : 'On Ground';
         return (
-          <Tooltip title={label} arrow>
-            <Chip
-              label={label}
-              color={isFlying ? 'success' : 'default'}
-              size="small"
-            />
+          <Tooltip title={params.value} arrow>
+            <span>{params.value}</span>
           </Tooltip>
         );
       },
@@ -91,7 +84,7 @@ export default function DronesPositionCard({ data }) {
     latitude: item.status.position.latitude,
     longitude: item.status.position.longitude,
     altitude: item.status.position.altitude,
-    flightStatus: item.flightStatus,
+    flightMode: item.status.flightMode,
     battery: item.status.batteryLevel,
   }));
 
@@ -125,6 +118,7 @@ DronesPositionCard.propTypes = {
           altitude: PropTypes.number.isRequired,
         }).isRequired,
         batteryLevel: PropTypes.number.isRequired,
+        flightMode: PropTypes.string.isRequired,
       })
     })
   ).isRequired,
