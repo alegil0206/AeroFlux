@@ -11,8 +11,8 @@ import com.brianzolilecchesi.weather.model.GridCell;
 @Service
 public class GridService {
 
-    private static final int GRID_SIZE = 60;
-    private static final double CELL_SIZE_METERS = 1000.0; 
+    private static final int GRID_SIZE = 120;
+    private static final double CELL_SIZE_METERS = 500.0; 
     private static final double EARTH_RADIUS = 6378137.0; 
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -97,6 +97,10 @@ public class GridService {
 
     public int getGridSize() {
         return GRID_SIZE;
+    }
+
+    public double getCellSizeMeters() {
+        return CELL_SIZE_METERS;
     }
 
     public CoordinatesDTO getCenterCoordinatesDTO() {

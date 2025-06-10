@@ -8,7 +8,8 @@ import {
   TextField,
   Typography,
   FormControl,
-  FormHelperText
+  FormHelperText,
+  InputAdornment,
 } from "@mui/material";
 
 export default function WeatherSettingsCard({ weatherSettings, onSave }) {
@@ -18,7 +19,7 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
     windIntensity: NaN,
     minClusters: NaN,
     maxClusters: NaN,
-    maxClusterSize: NaN,
+    maxClusterRadius: NaN,
   });
 
   useEffect(() => {
@@ -42,19 +43,19 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
   const validateFields = () => {
     const newErrors = {};
     if (isNaN(settings.windDirection) || settings.windDirection<0 || settings.windDirection>359) {
-      newErrors.windDirection = "Wind direction is required and must be between 0 and 359";
+      newErrors.windDirection = "Wind direction is required and must be between 0° and 359°";
     }
     if (isNaN(settings.windIntensity) || settings.windIntensity < 0) {
-      newErrors.windIntensity = "Wind intensity is required and must be greater than 0";
+      newErrors.windIntensity = "Wind speed is required and must be greater than 0";
     }
     if (isNaN(settings.minClusters) || settings.minClusters < 0) {
-      newErrors.minClusters = "Min clusters is required and must be greater than 0";
+      newErrors.minClusters = "Minimum clusters is required and must be greater than 0";
     }
     if (isNaN(settings.maxClusters) || settings.maxClusters < settings.minClusters) {
-      newErrors.maxClusters = "Max clusters is required and must be greater than min clusters";
+      newErrors.maxClusters = "Maximum clusters is required and must be greater than min clusters";
     }
-    if (isNaN(settings.maxClusterSize) || settings.maxClusterSize < 0) {
-      newErrors.maxClusterSize = "Max cluster size is required and must be greater than 0";
+    if (isNaN(settings.maxClusterRadius) || settings.maxClusterRadius < 0) {
+      newErrors.maxClusterRadius = "Maximum cluster radius is required and must be greater than 0";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -68,40 +69,47 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
           Weather Settings
         </Typography>
        
-        {/* Direzione del vento */}
         <FormControl fullWidth margin="normal" error={!!errors.windDirection}>
           <TextField
             fullWidth
             type="number"
-            label="Wind Direction"
+            label="Wind Direction (North azimuth degrees)"
             name="windDirection"
             value={settings.windDirection}
-            onChange= {(e) => handleChange(e.target.name, parseFloat(e.target.value))}
-            inputProps={{ min: 0, step: 0.1, max: 360 }}
+            onChange={(e) => handleChange(e.target.name, parseFloat(e.target.value))}
+            inputProps={{ min: 0, step: 0.1, max: 359 }}
+            slotProps={{
+              input: {
+                  endAdornment: <InputAdornment position="end">°</InputAdornment>,
+                },
+            }}
           />
           <FormHelperText>{errors.windDirection}</FormHelperText>
         </FormControl>
 
-        {/* Intensità del vento */}
         <FormControl fullWidth margin="normal" error={!!errors.windIntensity}>
           <TextField
             fullWidth
             type="number"
-            label="Wind Intensity"
+            label="Wind Speed"
             name="windIntensity"
             value={settings.windIntensity}
             onChange={(e) => handleChange(e.target.name, parseFloat(e.target.value))}
             inputProps={{ min: 0, step: 0.1 }}
+            slotProps={{
+              input: {
+                  endAdornment: <InputAdornment position="end">km/h</InputAdornment>,
+                },
+            }}
           />
           <FormHelperText>{errors.windIntensity}</FormHelperText>
         </FormControl>
 
-        {/* Numero minimo di cluster */}
         <FormControl fullWidth margin="normal" error={!!errors.minClusters}>
           <TextField
             fullWidth
             type="number"
-            label="Min Clusters"
+            label="Minimum number of clusters"
             name="minClusters"
             value={settings.minClusters}
             onChange={(e) => handleChange(e.target.name, parseInt(e.target.value))}
@@ -110,12 +118,11 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
           <FormHelperText>{errors.minClusters}</FormHelperText>
         </FormControl>
 
-        {/* Numero massimo di cluster */}
         <FormControl fullWidth margin="normal" error={!!errors.maxClusters}>
           <TextField
             fullWidth
             type="number"
-            label="Max Clusters"
+            label="Maximum number of clusters"
             name="maxClusters"
             value={settings.maxClusters}
             onChange={(e) => handleChange(e.target.name, parseInt(e.target.value))}
@@ -124,18 +131,22 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
           <FormHelperText>{errors.maxClusters}</FormHelperText>
         </FormControl>
 
-        {/* Dimensione massima cluster */}
-        <FormControl fullWidth margin="normal" error={!!errors.maxClusterSize}>
+        <FormControl fullWidth margin="normal" error={!!errors.maxClusterRadius}>
           <TextField
             fullWidth
             type="number"
-            label="Max Cluster Size"
-            name="maxClusterSize"
-            value={settings.maxClusterSize}
+            label="Maximum Cluster Radius"
+            name="maxClusterRadius"
+            value={settings.maxClusterRadius}
             onChange={(e) => handleChange(e.target.name, parseInt(e.target.value))}
             inputProps={{ min: 0, step: 1 }}
+            slotProps={{
+              input: {
+                  endAdornment: <InputAdornment position="end">km</InputAdornment>,
+                },
+            }}
           />
-          <FormHelperText>{errors.maxClusterSize}</FormHelperText>
+          <FormHelperText>{errors.maxClusterRadius}</FormHelperText>
         </FormControl>
 
       </CardContent>
@@ -155,7 +166,7 @@ WeatherSettingsCard.propTypes = {
     windIntensity: PropTypes.number.isRequired,
     minClusters: PropTypes.number.isRequired,
     maxClusters: PropTypes.number.isRequired,
-    maxClusterSize: PropTypes.number.isRequired,
+    maxClusterRadius: PropTypes.number.isRequired,
   }).isRequired,
   onSave: PropTypes.func.isRequired,
 };

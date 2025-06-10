@@ -5,7 +5,7 @@ public class WeatherConfigDTO {
     private double windIntensity;
     private int minClusters;
     private int maxClusters;
-    private int maxClusterSize;
+    private double maxClusterRadius;
 
     public double getWindDirection() { return windDirection;}
     public void setWindDirection(double windDirection) { this.windDirection = windDirection; }
@@ -15,6 +15,6 @@ public class WeatherConfigDTO {
     public void setMinClusters(int minClusters) { this.minClusters = minClusters; }
     public int getMaxClusters() { return maxClusters; }
     public void setMaxClusters(int maxClusters) { this.maxClusters = maxClusters; }
-    public int getMaxClusterSize() { return maxClusterSize; }
-    public void setMaxClusterSize(int maxClusterSize) { this.maxClusterSize = maxClusterSize; }
+    public double getMaxClusterRadius() { return maxClusterRadius; }
+    public void setMaxClusterRadius(double maxClusterRadius) { this.maxClusterRadius = maxClusterRadius; }
 }
