@@ -3,7 +3,6 @@ package com.brianzolilecchesi.weather.service;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.brianzolilecchesi.weather.dto.CoordinatesDTO;
 import com.brianzolilecchesi.weather.model.GridCell;
@@ -15,7 +14,6 @@ public class GridService {
     private static final double CELL_SIZE_METERS = 500.0; 
     private static final double EARTH_RADIUS = 6378137.0; 
 
-    private final ReentrantLock lock = new ReentrantLock();
     private GridCell[][] gridCells;
     private double centerLat = 45.476592;
     private double centerLon = 9.219752;
@@ -44,47 +42,32 @@ public class GridService {
         }
     }
 
-    public GridCell getCell(int x, int y) {
-        lock.lock();
-        try {
-            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
-                return gridCells[x][y];
-            }
-            return null;
-        } finally {
-            lock.unlock();
+    public synchronized GridCell getCell(int x, int y) {
+        if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+            return gridCells[x][y];
         }
+        return null;
     }
 
-    public void setCellRaining(int x, int y, boolean raining) {
-        lock.lock();
-        try {
-            GridCell cell = getCell(x, y);
-            if (cell != null) {
-                cell.setRaining(raining);
-            }
-        } finally {
-            lock.unlock();
-        }
+    public synchronized void setCellRaining(int x, int y, boolean raining) {
+
+        GridCell cell = getCell(x, y);
+        if (cell != null)
+            cell.setRaining(raining);
     }
 
-    public void updateGridCenter(double newLat, double newLon) {
-        lock.lock();
-        try {
-            this.centerLat = newLat;
-            this.centerLon = newLon;
-            this.gridCells = new GridCell[GRID_SIZE][GRID_SIZE];
-            generateGrid();
-        } finally {
-            lock.unlock();
-        }
+    public synchronized void updateGridCenter(double newLat, double newLon) {
+        this.centerLat = newLat;
+        this.centerLon = newLon;
+        this.gridCells = new GridCell[GRID_SIZE][GRID_SIZE];
+        generateGrid();
     }
 
-    public double getCenterLat() {
+    public synchronized double getCenterLat() {
         return centerLat;
     }
 
-    public double getCenterLon() {
+    public synchronized double getCenterLon() {
         return centerLon;
     }
 
@@ -103,11 +86,11 @@ public class GridService {
         return CELL_SIZE_METERS;
     }
 
-    public CoordinatesDTO getCenterCoordinatesDTO() {
+    public synchronized CoordinatesDTO getCenterCoordinatesDTO() {
         return new CoordinatesDTO(centerLat, centerLon);
     }
 
-    public CoordinatesDTO setCenterCoordinates(CoordinatesDTO coordinates) {
+    public synchronized CoordinatesDTO setCenterCoordinates(CoordinatesDTO coordinates) {
         updateGridCenter(coordinates.getLatitude(), coordinates.getLongitude());
         return coordinates;
     }
