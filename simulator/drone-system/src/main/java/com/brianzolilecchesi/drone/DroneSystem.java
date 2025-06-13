@@ -15,6 +15,7 @@ import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionL
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 
 import com.brianzolilecchesi.drone.infrastructure.handler.FlightPlanningHandler;
+import com.brianzolilecchesi.drone.infrastructure.handler.GeoLocationHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.BatteryConsumptionHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.ConflictAvoidanceHandler;
 import com.brianzolilecchesi.drone.infrastructure.handler.DataAcquisitionHandler;
@@ -36,7 +37,8 @@ public class DroneSystem {
         this.droneServices = new DroneServiceFacade(context, hardwareAbstractionLayer);
         this.stepHandlers = List.of(
                 new BatteryConsumptionHandler(context, droneServices),
-                new DataAcquisitionHandler(context, droneServices),               
+                new DataAcquisitionHandler(context, droneServices),
+                new GeoLocationHandler(context, droneServices),          
                 new FlightPlanningHandler(context, droneServices),
                 new ConflictAvoidanceHandler(context, droneServices),
                 new FlightControlHandler(context, droneServices)

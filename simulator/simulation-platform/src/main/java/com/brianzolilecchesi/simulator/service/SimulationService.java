@@ -30,35 +30,36 @@ public class SimulationService {
         if (simulationStatus.getExecutionState() != ExecutionState.STOPPED) {
             stop();
         }
+        
+        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started at speed " + simulationStatus.getExecutionSpeed() + "x");
 
         simulationStatus.setExecutionSpeed(executionSpeed);
         simulationStatus.setExecutionState(ExecutionState.RUNNING);
 
         List<DroneSystem> drones = droneSystemFactory.createDrones();
-        logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_START, "Simulation started at speed " + simulationStatus.getExecutionSpeed() + "x");
 
         simulationTaskService.runSimulationLoop(drones);
         return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
     public SimulationStatusDTO stop() {
-        simulationStatus.setExecutionState(ExecutionState.STOPPED);
         logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_STOP, "Simulation stopped");
+        simulationStatus.setExecutionState(ExecutionState.STOPPED);
         return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
     public SimulationStatusDTO pause() {
         if (simulationStatus.getExecutionState() == ExecutionState.RUNNING) {
-            simulationStatus.setExecutionState(ExecutionState.PAUSED);;
             logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_PAUSE, "Execution paused");
+            simulationStatus.setExecutionState(ExecutionState.PAUSED);
         }
         return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }
 
     public SimulationStatusDTO resume() {
         if (simulationStatus.getExecutionState() == ExecutionState.PAUSED) {
-            simulationStatus.setExecutionState(ExecutionState.RUNNING);
             logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_RESUME, "Execution resumed");
+            simulationStatus.setExecutionState(ExecutionState.RUNNING);
         }
         return new SimulationStatusDTO(simulationStatus.getExecutionState(), simulationStatus.getExecutionSpeed());
     }

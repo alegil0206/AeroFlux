@@ -87,6 +87,7 @@ const LogViewer = ({logs}) => {
 
       <DataGrid
         getRowHeight={() => 'auto'}
+        disableRowSelectionOnClick
         slots={{ toolbar: GridToolbar }}
         rows={rows} 
         columns={columns}

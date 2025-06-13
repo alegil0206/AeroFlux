@@ -11,12 +11,15 @@ import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
+import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.model.RainCell;
+import com.brianzolilecchesi.drone.domain.navigation.GeoCalculator;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
+import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
@@ -28,6 +31,8 @@ public class FlightPlanningHandler implements StepHandler {
     private final WeatherService weatherService;
     private final AuthorizationService authorizationService;
     private final FlightController flightController;
+    private final GeoCalculator geoCalculator;
+    private final LogService logService;
 
     private List<GeoZone> geoZonesInFlightPlan = new ArrayList<>();
     private List<RainCell> rainCellsInFlightPlan = new ArrayList<>();
@@ -41,6 +46,9 @@ public class FlightPlanningHandler implements StepHandler {
         this.authorizationService = droneServices.getAuthorizationService();
         this.flightController = droneServices.getFlightController();
         this.destinationInFlighPlan = context.getCurrentDestination();
+        this.logService = droneServices.getLogService();
+        this.geoCalculator = new GeoCalculator();
+
     }
 
     @Override
@@ -76,8 +84,6 @@ public class FlightPlanningHandler implements StepHandler {
                     Authorization auth = authorizations.get(geoZoneId);
                     if (auth == null || !auth.isGranted()) {
                         geoZonesToConsider.add(geoZone);
-                    } else {
-                        System.out.println("GeoZone " + geoZone.getName() + " is authorized, skipping.");
                     }
                 }
             }
@@ -88,8 +94,15 @@ public class FlightPlanningHandler implements StepHandler {
                     !(geoZonesInFlightPlan.equals(geoZonesToConsider) &&
                     rainCellsInFlightPlan.equals(rainCellsToConsider) &&
                     destinationInFlighPlan.equals(context.getCurrentDestination()));
-                    
+
                 if (needToAdaptFlightPlan) {
+/*                    if (isSourceOrDestinationInConflictZone(geoZonesToConsider, rainCellsToConsider)) {
+                        logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.SOURCE_DESTINATION_NOT_ACCESSIBLE,
+                                    "Source or destination in conflict zone");
+                        if (!flightController.isOnGround())
+                            flightController.hover();
+                        return true;
+                    }*/
                     navigationService.adaptFlightPlan(
                         context.getCurrentDestination(),
                         geoZonesToConsider,
@@ -103,6 +116,11 @@ public class FlightPlanningHandler implements StepHandler {
             }
             
             if (status == DataStatus.NOT_REQUESTED) {
+/*                if (isSourceOrDestinationInConflictZone(geoZonesToConsider, rainCellsToConsider)) {
+                    logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.SOURCE_DESTINATION_NOT_ACCESSIBLE,
+                                "Source or destination in conflict zone");
+                    return true;
+                }*/
                 navigationService.generateFlightPlan(
                     new Position(context.getDroneProperties().getSource(), 0),
                     context.getCurrentDestination(),
@@ -115,6 +133,25 @@ public class FlightPlanningHandler implements StepHandler {
             }
         }
         return true;
+    }
+
+    private boolean isSourceOrDestinationInConflictZone(List<GeoZone> geoZones, List<RainCell> rainCells) {
+        Position source = flightController.getCurrentPosition();
+        Position destination = context.getCurrentDestination();
+
+        for (GeoZone geoZone : geoZoneService.getGeoZones().values()) {
+            if (geoCalculator.isPointInZone(source, geoZone) || geoCalculator.isPointInZone(destination, geoZone)) {
+                return true;
+            }
+        }
+
+        for (RainCell rainCell : weatherService.getRainCells()) {
+            if (geoCalculator.isPointInZone(source, rainCell) || geoCalculator.isPointInZone(destination, rainCell)) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
 }

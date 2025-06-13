@@ -15,13 +15,13 @@ import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
+import com.brianzolilecchesi.drone.domain.navigation.FlightPlanCalculatorFacade;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.graph.FlightPlanCalculator;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.zone.Geozone;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.zone.Zone;
 import com.brianzolilecchesi.drone.infrastructure.integration.GeoAuthorizationRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.registry.AuthorizationRegistry;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.FlightPlanCalculatorService;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanCalculator;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Geozone;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
 
 public class AuthorizationService {
 
@@ -175,7 +175,7 @@ public class AuthorizationService {
 
 	public void requestLinearPathAuthorizations(String droneId, final Position source, final Position destination, Map<String, GeoZone> geoZones) {
 
-        FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+        FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
 		FlightPlanCalculator calculator = calculatorService.getFlightPlanCalculator();
         calculatorService.getGeozoneService().add(new ArrayList<>(geoZones.values()));
 

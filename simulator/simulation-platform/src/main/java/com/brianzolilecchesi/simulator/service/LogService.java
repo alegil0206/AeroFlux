@@ -1,5 +1,6 @@
 package com.brianzolilecchesi.simulator.service;
 
+import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.drone.domain.model.LogEntry;
 import com.brianzolilecchesi.simulator.dto.DroneStatusDTO;
 import com.brianzolilecchesi.simulator.dto.LogDTO;
@@ -24,7 +25,7 @@ public class LogService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void log(String level, String component, String event, String message) {
+    public synchronized void log(String level, String component, String event, String message) {
         String dateTime = java.time.LocalDateTime.now().format(formatter);
         LogEntry logEntry = new LogEntry(Constants.System.SIMULATOR, level, component, event, message, dateTime);
         logEntries.add(logEntry);
@@ -36,7 +37,7 @@ public class LogService {
         log(Constants.Level.INFO, component, event, message);
     }
 
-    public void registerLogEntries(List<LogEntry> logs) {
+    public synchronized void registerLogEntries(List<LogEntry> logs) {
         logEntries.addAll(logs);
         for (LogEntry log : logs) {
             sendLog(log);
@@ -48,15 +49,20 @@ public class LogService {
         messagingTemplate.convertAndSend("/topic/logs", log);
     }
 
-    public void sendDroneStatus(DroneStatusDTO droneStatus) {
-        messagingTemplate.convertAndSend("/topic/drone-status", droneStatus);
+    public void sendDroneStatus(DroneStatus droneStatus) {
+        DroneStatusDTO droneStatusDTO = new DroneStatusDTO(
+            droneStatus.getDroneId(),
+            droneStatus.getPosition(),
+            droneStatus.getBatteryLevel(),
+            droneStatus.getFlightMode(),
+            droneStatus.getFlightPlan(),
+            droneStatus.getLogs()
+        );
+        messagingTemplate.convertAndSend("/topic/drone-status", droneStatusDTO);
     }
 
-    public List<LogDTO> getAndClearLogEntries () {
-        List<LogDTO> logs = new ArrayList<>();
-        for (LogEntry logEntry : logEntries) {
-            logs.add(new LogDTO(logEntry));
-        }
+    public synchronized List<LogEntry> getAndClearLogEntries () {
+        List<LogEntry> logs = new ArrayList<>(logEntries);
         logEntries.clear();
         return logs;
     }

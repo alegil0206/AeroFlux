@@ -54,7 +54,10 @@ public class FlightControlHandler implements StepHandler {
 
             logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Reached current destination: " + context.getCurrentDestination() + ", powering off");
             flightController.powerOff();
-            context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
+
+            if (context.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING)
+                context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
+            
             return true;
         }
 

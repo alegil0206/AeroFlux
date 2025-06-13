@@ -25,7 +25,6 @@ public class DroneServiceFacade {
     private final WeatherService weatherService;
     private final AuthorizationService authorizationService;
     private final SupportPointService supportPointService;
-
     
     public DroneServiceFacade(
             DroneContext context,
@@ -82,5 +81,4 @@ public class DroneServiceFacade {
     public SupportPointService getSupportPointService() {
         return supportPointService;
     }
-
 }

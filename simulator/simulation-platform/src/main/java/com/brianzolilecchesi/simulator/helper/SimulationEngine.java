@@ -9,9 +9,6 @@ import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedRadio;
 import com.brianzolilecchesi.simulator.service.LogService;
 import com.brianzolilecchesi.simulator.service.SimulationHistoryService;
-import com.brianzolilecchesi.simulator.dto.DroneHistoryDTO;
-import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
-import com.brianzolilecchesi.simulator.dto.DroneStatusDTO;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -27,11 +24,7 @@ public class SimulationEngine {
     private final SimulationStatus simulationStatus;
     private final LogService logService;
     private final SimulationHistoryService simulationHistoryService;
-    private Map<DroneProperties, List<DroneStatusDTO>> droneStatusMap = new HashMap<>();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final static long INTERVAL = 1000;
-
-    private long lastStepExecutionTime = 0;
 
     public SimulationEngine(SimulationStatus simulationStatus, LogService logService, SimulationHistoryService simulationHistoryService) {
         this.simulationStatus = simulationStatus;
@@ -42,13 +35,17 @@ public class SimulationEngine {
     @Async
     public void runSimulationLoop(List<DroneSystem> drones) {
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         String startTime = java.time.LocalDateTime.now().format(formatter);
 
+        Map<DroneProperties, List<DroneStatus>> droneStatusMap = new HashMap<>();
         for (DroneSystem drone : drones) {
             DroneProperties droneProperties = drone.getDroneProperties();
-            List<DroneStatusDTO> droneStatusList = new ArrayList<>();
+            List<DroneStatus> droneStatusList = new ArrayList<>();
             droneStatusMap.put(droneProperties, droneStatusList);
         }
+
+        long lastStepExecutionTime = 0;
 
         while (simulationStatus.getExecutionState() != SimulationStatus.ExecutionState.STOPPED) {
             if (simulationStatus.getExecutionState() == SimulationStatus.ExecutionState.RUNNING) {
@@ -61,18 +58,10 @@ public class SimulationEngine {
                     for (DroneSystem drone : drones) {
                         DroneStatus droneStatus = drone.executeStep();
                         if (droneStatus != null) {
-                            DroneStatusDTO droneStatusDTO = new DroneStatusDTO(
-                                droneStatus.getDroneId(),
-                                droneStatus.getPosition(),
-                                droneStatus.getBatteryLevel(),
-                                droneStatus.getFlightMode(),
-                                droneStatus.getFlightPlan(),
-                                droneStatus.getLogs()
-                            );
-                            logService.sendDroneStatus(droneStatusDTO);
+                            logService.sendDroneStatus(droneStatus);
                             logService.registerLogEntries(droneStatus.getLogs());
                             ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);
-                            droneStatusMap.get(drone.getDroneProperties()).add(droneStatusDTO);                  
+                            droneStatusMap.get(drone.getDroneProperties()).add(droneStatus);                  
                         }
                     }
                     SimulatedRadio.deliverMessages();
@@ -81,15 +70,7 @@ public class SimulationEngine {
             }
         }
 
-        List<DroneHistoryDTO> droneHistoryList = new ArrayList<>();
-
-        for (DroneSystem drone : drones) {
-            DroneProperties droneProperties = drone.getDroneProperties();
-            DronePropertiesDTO dronePropertiesDTO = new DronePropertiesDTO(droneProperties);
-            List<DroneStatusDTO> droneStatusList = droneStatusMap.get(droneProperties);
-            new DroneHistoryDTO(dronePropertiesDTO, droneStatusList);
-        }
         logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_COMPLETED, "Simulation completed");
-        simulationHistoryService.saveSimulationDetails(startTime, droneHistoryList);
+        simulationHistoryService.saveSimulationDetails(startTime, droneStatusMap);
     }
 }

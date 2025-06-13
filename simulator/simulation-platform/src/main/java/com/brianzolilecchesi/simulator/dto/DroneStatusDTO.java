@@ -3,6 +3,7 @@ package com.brianzolilecchesi.simulator.dto;
 import java.util.List;
 
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
+import com.brianzolilecchesi.drone.domain.model.DroneStatus;
 import com.brianzolilecchesi.drone.domain.model.LogEntry;
 import com.brianzolilecchesi.drone.domain.model.Position;
 
@@ -32,6 +33,17 @@ public class DroneStatusDTO {
                 .map(PositionDTO::new)
                 .toList();
         this.logs = logs; 
+    }
+
+    public DroneStatusDTO(DroneStatus droneStatus) {
+        this.droneId = droneStatus.getDroneId();
+        this.position = new PositionDTO(droneStatus.getPosition());
+        this.batteryLevel = droneStatus.getBatteryLevel();
+        this.flightMode = droneStatus.getFlightMode();
+        this.flightPlan = droneStatus.getFlightPlan().stream()
+                .map(PositionDTO::new)
+                .toList();
+        this.logs = droneStatus.getLogs();
     }
 
     public String getDroneId() {

@@ -8,16 +8,17 @@ import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.model.RainCell;
+import com.brianzolilecchesi.drone.domain.navigation.FlightPlanCalculatorFacade;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.FlightPlan;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.graph.FlightPlanRefiner;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.zone.GridZone;
+import com.brianzolilecchesi.drone.domain.navigation.flight_plan.model.zone.Zone;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.FlightPlan;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.graph.FlightPlanRefiner;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.GridZone;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.flight_plan.model.zone.Zone;
 
 public class NavigationService  {
 
@@ -111,7 +112,7 @@ public class NavigationService  {
 			flightPlanStatus = DataStatus.LOADING;
 		}
 
-		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+		FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
 		calculatorService.getGeozoneService().add(geoZones);
 		calculatorService.getWeatherService().add(rainCells);
 
@@ -169,7 +170,7 @@ public class NavigationService  {
 		}
 
 		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.ADAPT_FLIGHT_PLAN, "Adapting flight plan");
-		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+		FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
 		calculatorService.getGeozoneService().add(geoZones);
 		calculatorService.getWeatherService().add(rainCells);
 		if (nearbyDroneStatus != null)
@@ -213,14 +214,14 @@ public class NavigationService  {
 
 	}
 
-	private FlightPlan calculateFlightPlan(final Position start, final Position destination, FlightPlanCalculatorService calculatorService) {
+	private FlightPlan calculateFlightPlan(final Position start, final Position destination, FlightPlanCalculatorFacade calculatorService) {
 
         GridZone grid = null;
 		FlightPlan generatedFlightPlan = new FlightPlan();
     
         int i = 0, maxIter = 7;
         do {
-        	grid = calculatorService.getZoneAdapterFacade().getGridAdapter().build(
+        	grid = calculatorService.getZoneAdapter().buildGridZone(
         			start, 
         			destination, 
         			GRID_EXPANSION_METERS * Math.pow(2, i++)
@@ -265,11 +266,11 @@ public class NavigationService  {
 		return totalDistance;
 	}
 
-	public synchronized void configureVerticalLanding(Position currentPosition) {
+	public synchronized Position configureVerticalLanding(Position currentPosition) {
 
 		flightPlanVersion++;
 
-		FlightPlanCalculatorService calculatorService = new FlightPlanCalculatorService();
+		FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
 
 		Position onGroundPosition = new Position(
 			currentPosition.getLatitude(),
@@ -284,7 +285,7 @@ public class NavigationService  {
 		);
 		
 		if (!generatedFlightPlan.hasPath()) {
-			return;
+			return onGroundPosition;
 		}
 
 		List<Position> newFlightPlanPositions = FlightPlanRefiner
@@ -294,7 +295,7 @@ public class NavigationService  {
 		waypoints = newFlightPlanPositions;
 
 		flightPlanStatus = DataStatus.AVAILABLE;
-		
+		return onGroundPosition;
 	}
 
     public synchronized Position followFlightPlan() {

@@ -19,6 +19,7 @@ public class LogConstants {
         public static final String CONFLICT_AVOIDANCE_HANDLER = "ConflictAvoidanceHandler";
         public static final String DATA_ACQUISITION_HANDLER = "DataAcquisitionHandler";
         public static final String FLIGHT_CONTROL_HANDLER = "FlightControlHandler";
+        public static final String GEOLOCATION_HANDLER = "GeolocationHandler";
         public static final String DRONE_SYSTEM = "DroneSystem";
     }
 
@@ -43,6 +44,7 @@ public class LogConstants {
         public static final String FLIGHT_PLAN_ADAPTED = "FLIGHT_PLAN_ADAPTED";
         public static final String FLIGHT_PLAN_NOT_ADAPTED = "FLIGHT_PLAN_NOT_ADAPTED";
         public static final String ADAPT_FLIGHT_PLAN = "ADAPT_FLIGHT_PLAN";
+        public static final String SOURCE_DESTINATION_NOT_ACCESSIBLE = "SOURCE_DESTINATION_NOT_ACCESSIBLE";
 
         public static final String FETCHING = "FETCHING";
         public static final String FETCHED = "FETCHED";
@@ -60,6 +62,9 @@ public class LogConstants {
         public static final String REQUESTING_AUTHORIZATION = "REQUESTING_AUTHORIZATION";
         public static final String AUTHORIZATION_GRANTED = "AUTHORIZATION_GRANTED";
         public static final String AUTHORIZATION_DENIED = "AUTHORIZATION_DENIED";
+
+        public static final String GEOZONE_ENTERED = "GEOZONE_ENTERED";
+        public static final String RAIN_CELL_ENTERED = "RAIN_CELL_ENTERED";
     }
 
     public static class Level {

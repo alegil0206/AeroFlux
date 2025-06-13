@@ -42,10 +42,15 @@ public class BatteryConsumptionHandler implements StepHandler {
 
         if(batteryService.isBatteryCritical()){
             if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) return false;
-            logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CRITICAL, "Battery critical, emergency landing initiated");
+            logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.BATTERY_CRITICAL, "Battery critical");
             context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
-            navigationService.configureVerticalLanding(currentPosition);
-            context.setCurrentDestination(new Position(currentPosition, 0));
+            Position landingPosition = navigationService.configureVerticalLanding(currentPosition);
+            context.setCurrentDestination(landingPosition);
+            logService.info(
+                LogConstants.Component.BATTERY_HANDLER,
+                LogConstants.Event.EMERGENCY_LANDING,
+                "Emergency landing initiated at position: " + landingPosition
+            );
             return false;
         }
         

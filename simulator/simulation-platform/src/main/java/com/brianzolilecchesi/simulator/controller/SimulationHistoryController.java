@@ -1,6 +1,6 @@
 package com.brianzolilecchesi.simulator.controller;
 
-import java.util.Set;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brianzolilecchesi.simulator.dto.SimulationDTO;
-import com.brianzolilecchesi.simulator.dto.SimulationDetailsDTO;
+import com.brianzolilecchesi.simulator.dto.SimulationHistoryDTO;
 import com.brianzolilecchesi.simulator.service.SimulationHistoryService;
 
 @RestController
@@ -27,14 +27,14 @@ public class SimulationHistoryController {
     }
 
     @GetMapping
-    public ResponseEntity<Set<SimulationDTO>> getSimulationHistory() {
-        Set<SimulationDTO> history = simulationHistoryService.getSimulationHistory();
+    public ResponseEntity<List<SimulationDTO>> getSimulationHistory() {
+        List<SimulationDTO> history = simulationHistoryService.getSimulations();
         return ResponseEntity.ok(history);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SimulationDetailsDTO> getSimulationDetails(@PathVariable("id") final String id) {
-        SimulationDetailsDTO simulationDetails = simulationHistoryService.getSimulationDetails(id);
+    public ResponseEntity<SimulationHistoryDTO> getSimulationDetails(@PathVariable("id") final String id) {
+        SimulationHistoryDTO simulationDetails = simulationHistoryService.getSimulationHistoryById(id);
         return ResponseEntity.ok(simulationDetails);
     }
 
