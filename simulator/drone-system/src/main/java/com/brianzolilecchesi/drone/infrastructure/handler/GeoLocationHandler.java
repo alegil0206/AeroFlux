@@ -19,7 +19,6 @@ import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
-import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
 public class GeoLocationHandler implements StepHandler {
@@ -29,7 +28,6 @@ public class GeoLocationHandler implements StepHandler {
     private final GeoZoneService geoZoneService;
     private final WeatherService weatherService;
     private final LogService logService;
-    private final NavigationService navigationService;
     private final AuthorizationService authorizationService;
     private final GeoCalculator geoCalculator;
     
@@ -39,7 +37,6 @@ public class GeoLocationHandler implements StepHandler {
         this.geoZoneService = droneServices.getGeoZoneService();
         this.weatherService = droneServices.getWeatherService();
         this.logService = droneServices.getLogService();
-        this.navigationService = droneServices.getNavigationService();
         this.authorizationService = droneServices.getAuthorizationService();
         this.geoCalculator = new GeoCalculator();
     }
@@ -69,14 +66,14 @@ public class GeoLocationHandler implements StepHandler {
         List<RainCell> rainCellsToConsider = weatherService.getRainCells();
         Position currentPosition = flightController.getCurrentPosition();
 
-        boolean needsToAdapt = false;
+        boolean needsToLand = false;
         if (geoZonesToConsider.isEmpty() && rainCellsToConsider.isEmpty()) {
             return false;
         }
 
         for (GeoZone geoZone : geoZonesToConsider) {
             if (geoCalculator.isPointInZone(currentPosition, geoZone)) {
-                needsToAdapt = true;
+                needsToLand = true;
                 logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.GEOZONE_ENTERED, 
                     "Drone entered geo zone: " + geoZone.getId() + " at position: " + currentPosition);
             }
@@ -84,23 +81,19 @@ public class GeoLocationHandler implements StepHandler {
 
         for (RainCell rainCell : rainCellsToConsider) {
             if (geoCalculator.isPointInZone(currentPosition, rainCell)) {
-                needsToAdapt = true;
+                needsToLand = true;
                 logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.RAIN_CELL_ENTERED, 
                     "Drone entered rain cell at position: " + currentPosition);
             }
         }
 
-        if (!needsToAdapt) return false;
+        if (!needsToLand) return false;
 
         if (flightController.isOnGround()) {
             return true;
         }
 
-        context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
-        Position landingPosition = navigationService.configureVerticalLanding(currentPosition);
-        context.setCurrentDestination(landingPosition);
-        logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.EMERGENCY_LANDING, 
-            "Emergency landing initiated at position: " + landingPosition);
+        context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING_REQUEST);
 
         return false;
     }

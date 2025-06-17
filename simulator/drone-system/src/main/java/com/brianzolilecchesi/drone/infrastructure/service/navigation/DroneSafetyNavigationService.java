@@ -1,5 +1,6 @@
 package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
@@ -13,18 +14,28 @@ public class DroneSafetyNavigationService {
     private double VERTICAL_COLLISION_AVOIDANCE_THRESHOLD = 20.0;
     private double SELF_SEPARATION_THRESHOLD = 160.0 + 2 * HORIZONTAL_COLLISION_AVOIDANCE_THRESHOLD;
     
+    private List<NearbyDroneStatus> conflictingDrones = new ArrayList<>();
+
     public DroneSafetyNavigationService() {}
+
+    public List<NearbyDroneStatus> getConflictingDrones() {
+        return conflictingDrones;
+    }
+
+    public void setConflictingDrones(List<NearbyDroneStatus> conflictingDrones) {
+        this.conflictingDrones = conflictingDrones;
+    }
 
     public boolean hasPriority(NearbyDroneStatus droneStatus, NearbyDroneStatus otherDroneStatus) {
             if (droneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING) return true;
             if (droneStatus.getFlightMode() != DroneFlightMode.EMERGENCY_LANDING && otherDroneStatus.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) return false;
-        
-            if (droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && !otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return true;
-            if (!droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return false;
 
             if (droneStatus.getPosition().getAltitude() < otherDroneStatus.getPosition().getAltitude()) return true;
             if (droneStatus.getPosition().getAltitude() > otherDroneStatus.getPosition().getAltitude()) return false;
-        
+                
+            if (droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && !otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return true;
+            if (!droneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY) && otherDroneStatus.getOperationCategory().equals(DroneProperties.DRONE_CERTIFIED_OPERATION_CATEGORY)) return false;
+
             return droneStatus.getDroneId().compareTo(otherDroneStatus.getDroneId()) < 0;
     }
     

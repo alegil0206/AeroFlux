@@ -39,12 +39,11 @@ public class LogConstants {
         public static final String FLIGHT_PLAN_GENERATED = "FLIGHT_PLAN_GENERATED";
         public static final String FLIGHT_PLAN_FAILED = "FLIGHT_PLAN_FAILED";
         public static final String OPTIMIZING_FLIGHT_PLAN = "OPTIMIZING_FLIGHT_PLAN";
-        public static final String FLIGHT_PLAN_OPTIMIZED = "FLIGHT_PLAN_OPTIMIZED";
-        public static final String FLIGHT_PLAN_NOT_OPTIMIZED = "FLIGHT_PLAN_NOT_OPTIMIZED";
-        public static final String FLIGHT_PLAN_ADAPTED = "FLIGHT_PLAN_ADAPTED";
-        public static final String FLIGHT_PLAN_NOT_ADAPTED = "FLIGHT_PLAN_NOT_ADAPTED";
+        public static final String FLIGHT_PLAN_CANCELLED = "FLIGHT_PLAN_CANCELLED";
         public static final String ADAPT_FLIGHT_PLAN = "ADAPT_FLIGHT_PLAN";
-        public static final String SOURCE_DESTINATION_NOT_ACCESSIBLE = "SOURCE_DESTINATION_NOT_ACCESSIBLE";
+        public static final String DESTINATION_UNREACHABLE = "DESTINATION_UNREACHABLE";
+        public static final String REROUTE_FLIGHT = "REROUTE_FLIGHT";
+
 
         public static final String FETCHING = "FETCHING";
         public static final String FETCHED = "FETCHED";

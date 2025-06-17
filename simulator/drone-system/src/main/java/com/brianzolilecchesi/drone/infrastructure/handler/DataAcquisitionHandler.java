@@ -13,6 +13,7 @@ import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
+import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
 public class DataAcquisitionHandler implements StepHandler {
@@ -26,10 +27,14 @@ public class DataAcquisitionHandler implements StepHandler {
     private static final int AUTHORIZATION_UPDATE_INTERVAL = 25;
     private int lastAuthorizationUpdate = AUTHORIZATION_UPDATE_INTERVAL;
 
+    private static final int SUPPORT_POINTS_UPDATE_INTERVAL = 50;
+    private int lastSupportPointsUpdate = SUPPORT_POINTS_UPDATE_INTERVAL;
+
     private final DroneContext context;
     private final GeoZoneService geoZoneService;
     private final AuthorizationService authorizationService;
     private final WeatherService weatherService;
+    private final SupportPointService supportPointService;
     private final FlightController flightController;
 
     private Position lastConsideredDestination;
@@ -42,16 +47,17 @@ public class DataAcquisitionHandler implements StepHandler {
         this.authorizationService = droneServices.getAuthorizationService();
         this.weatherService = droneServices.getWeatherService();
         this.flightController = droneServices.getFlightController();
+        this.supportPointService = droneServices.getSupportPointService();
     }
 
     @Override
     public boolean handle() {
 
-        int currentStep = context.getStep();
-
         if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
             return false;
         }
+
+        int currentStep = context.getStep();
 
         DataStatus weatherStatus = weatherService.getRainCellsStatus();
         boolean shouldRefreshWeather =
@@ -63,6 +69,18 @@ public class DataAcquisitionHandler implements StepHandler {
             lastWeatherUpdate = currentStep;
         }
 
+        DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
+
+        boolean shouldRefreshSupportPoints =
+                supportPointStatus == DataStatus.NOT_REQUESTED ||
+                supportPointStatus == DataStatus.FAILED ||
+                currentStep - lastSupportPointsUpdate >= SUPPORT_POINTS_UPDATE_INTERVAL;
+
+        if(shouldRefreshSupportPoints) {            
+            supportPointService.fetchSupportPoints();
+            lastSupportPointsUpdate = currentStep;    
+        }
+ 
         DataStatus geoZonesStatus = geoZoneService.getGeoZonesStatus();
         boolean shouldRefreshGeoZones =
                 geoZonesStatus == DataStatus.NOT_REQUESTED ||

@@ -94,27 +94,23 @@ public class NavigationService  {
 		this.stepSize = stepSize;
 	}
 
-    	
-    public void generateFlightPlan(final Position start, final Position destination, List<GeoZone> geoZones, List<RainCell> rainCells) {
-
-		synchronized (this) {
-			if (flightPlanStatus == DataStatus.LOADING) {
-				return;
-			}
-		}
-
-		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.GENERATING_FLIGHT_PLAN, "Generating flight plan");
-		
+	public void generateFlightPlan(Position start, Position destination, List<GeoZone> geoZones, List<RainCell> rainCells, List<NearbyDroneStatus> nearbyDrones) {
 		int initialFlightPlanVersion;
+		int initialWaypointIndex;
+		List<Position> initialWaypoints;
 		
 		synchronized (this) {
+			initialWaypoints = new ArrayList<>(waypoints);
 			initialFlightPlanVersion = flightPlanVersion;
+			initialWaypointIndex = nextWaypointIndex - 1;
 			flightPlanStatus = DataStatus.LOADING;
 		}
 
+		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.GENERATING_FLIGHT_PLAN, "Generating flight plan: version " + (initialFlightPlanVersion + 1));
 		FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
 		calculatorService.getGeozoneService().add(geoZones);
 		calculatorService.getWeatherService().add(rainCells);
+		calculatorService.getDroneZoneService().add(nearbyDrones);
 
 		CompletableFuture.supplyAsync(() -> calculateFlightPlan(start, destination, calculatorService))
 		.thenApply(generatedFlightPlan -> {
@@ -124,90 +120,31 @@ public class NavigationService  {
 			return generatedFlightPlan;
 		})
 		.thenAccept(generatedFlightPlan -> {
-
-			List<Position> newFlightPlanPositions = FlightPlanRefiner
-					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
-			synchronized (this) {
-				newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
-				int actualFlightPlanVersion = flightPlanVersion;
-				if (initialFlightPlanVersion != actualFlightPlanVersion) {
-					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_GENERATED, "Flight plan generation cancelled: new flight plan version");
-					return;
-				}
-				flightPlanStatus = DataStatus.AVAILABLE;
-				waypoints = newFlightPlanPositions;
-				flightPlanVersion++;
-			}
-
-			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_GENERATED, "Flight plan generated: " + generatedFlightPlan.getReport());
-		})
-		.exceptionally(ex -> {
-			synchronized (this) {
-				flightPlanStatus = DataStatus.FAILED;
-			}
-			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan generation failed: " + ex.getMessage());
-			return null;
-		});
-	}
-
-	public void adaptFlightPlan(Position destination, List<GeoZone> geoZones, List<RainCell> rainCells) {
-		adaptFlightPlan(destination, geoZones, rainCells, null);
-	}
-
-	public void adaptFlightPlan(Position destination, List<GeoZone> geoZones, List<RainCell> rainCells, NearbyDroneStatus nearbyDroneStatus) {
-		int initialFlightPlanVersion;
-		int initialNextPositionIndex;
-		List<Position> initialPositions;
-		
-		synchronized (this) {
-			if (flightPlanStatus != DataStatus.AVAILABLE) {
-				return;
-			}
-			initialPositions = waypoints;
-			initialFlightPlanVersion = flightPlanVersion;
-			initialNextPositionIndex = nextWaypointIndex - 1;
-			flightPlanStatus = DataStatus.LOADING;
-		}
-
-		logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.ADAPT_FLIGHT_PLAN, "Adapting flight plan");
-		FlightPlanCalculatorFacade calculatorService = new FlightPlanCalculatorFacade();
-		calculatorService.getGeozoneService().add(geoZones);
-		calculatorService.getWeatherService().add(rainCells);
-		if (nearbyDroneStatus != null)
-			calculatorService.getDroneZoneService().add(nearbyDroneStatus);
-
-		CompletableFuture.supplyAsync(() -> calculateFlightPlan(initialPositions.get(initialNextPositionIndex), destination, calculatorService))
-		.thenApply(generatedFlightPlan -> {
-			if (!generatedFlightPlan.hasPath()) {
-				throw new IllegalStateException("Flight plan not found");
-			}
-			return generatedFlightPlan;
-		})
-		.thenAccept(generatedFlightPlan -> {
 			List<Position> newFlightPlanPositions = FlightPlanRefiner
 					.refine(generatedFlightPlan.getPathPositions(), stepSize);		
 
-			newFlightPlanPositions.addAll(0, initialPositions.subList(0, initialNextPositionIndex));
+			newFlightPlanPositions.addAll(0, initialWaypoints.subList(0, initialWaypointIndex));
 
 			synchronized (this) {
 				if (initialFlightPlanVersion != flightPlanVersion) {
-					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_ADAPTED, "Flight plan adaptation cancelled: new flight plan version");
+					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_CANCELLED, "Flight plan (" + flightPlanVersion + ") generation cancelled: new flight plan version " +  flightPlanVersion + " detected.");
 					return;
 				}
 
 				flightPlanStatus = DataStatus.AVAILABLE;
 				waypoints = newFlightPlanPositions;
 				flightPlanVersion++;
+
+				logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_GENERATED, "Flight plan (" + flightPlanVersion + ") generated: " + generatedFlightPlan.getReport());
 			}
 
-			logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_ADAPTED, "Flight plan adapted: " + generatedFlightPlan.getReport());
 		
 		}).exceptionally(
 			ex -> {
 				synchronized (this) {
 					flightPlanStatus = DataStatus.FAILED;
+					logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan (" + flightPlanVersion + ") generation failed: " + ex.getMessage());
 				}
-				logService.info(LogConstants.Component.NAVIGATION_SERVICE, LogConstants.Event.FLIGHT_PLAN_FAILED, "Flight plan adaptation failed: " + ex.getMessage());
 				return null;
 			}
 		);

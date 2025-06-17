@@ -31,6 +31,17 @@ public class DroneZoneNavigationService {
         return flightPlanCalculator.getCellGraphBuilder().getZones().add(droneZone);
     }
 
+    public boolean add(final List<NearbyDroneStatus> drones) {
+        assert drones != null;
+
+        boolean result = true;
+        for (NearbyDroneStatus zone : drones) {
+            result = result && add(zone);
+        }
+
+        return result;
+    }
+
     public void clear() {
 
         List<Zone> newZones = new ArrayList<>();

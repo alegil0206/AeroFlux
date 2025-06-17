@@ -1,6 +1,7 @@
 package com.brianzolilecchesi.drone.infrastructure.handler;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,15 +13,19 @@ import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
+import com.brianzolilecchesi.drone.domain.model.NearbyDroneStatus;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.model.RainCell;
+import com.brianzolilecchesi.drone.domain.model.SupportPoint;
 import com.brianzolilecchesi.drone.domain.navigation.GeoCalculator;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.DroneSafetyNavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
+import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
 public class FlightPlanningHandler implements StepHandler {
@@ -30,13 +35,16 @@ public class FlightPlanningHandler implements StepHandler {
     private final GeoZoneService geoZoneService;
     private final WeatherService weatherService;
     private final AuthorizationService authorizationService;
+    private final DroneSafetyNavigationService droneSafetyNavigationService;
+    private final SupportPointService supportPointService;
     private final FlightController flightController;
     private final GeoCalculator geoCalculator;
     private final LogService logService;
 
-    private List<GeoZone> geoZonesInFlightPlan = new ArrayList<>();
-    private List<RainCell> rainCellsInFlightPlan = new ArrayList<>();
-    private Position destinationInFlighPlan;
+    private List<GeoZone> lastGeoZonesConsidered = new ArrayList<>();
+    private List<RainCell> lastRainCellsConsidered = new ArrayList<>();
+    private List<NearbyDroneStatus> lastConflictingDronesConsidered = new ArrayList<>();
+    private Position lastDestinationConsidered;
 
     public FlightPlanningHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
@@ -44,11 +52,12 @@ public class FlightPlanningHandler implements StepHandler {
         this.geoZoneService = droneServices.getGeoZoneService();
         this.weatherService = droneServices.getWeatherService();
         this.authorizationService = droneServices.getAuthorizationService();
+        this.droneSafetyNavigationService = droneServices.getDroneSafetyNavigationService();
+        this.supportPointService = droneServices.getSupportPointService();
         this.flightController = droneServices.getFlightController();
-        this.destinationInFlighPlan = context.getCurrentDestination();
+        this.lastDestinationConsidered = context.getCurrentDestination();
         this.logService = droneServices.getLogService();
         this.geoCalculator = new GeoCalculator();
-
     }
 
     @Override
@@ -58,102 +67,171 @@ public class FlightPlanningHandler implements StepHandler {
             return false;
         }
 
-        DataStatus status = navigationService.getFlightPlanStatus();
-
-        if (status == DataStatus.LOADING) {
-            if (flightController.isOnGround())
-                return true; 
-            else 
-                return false;
+        if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING_REQUEST) {
+            Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
+            context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
+            logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.EMERGENCY_LANDING,
+                            "Emergency landing at " + landingPosition);
+            context.setCurrentDestination(landingPosition);
+            return false;
         }
 
-        boolean dataAvailable = geoZoneService.getGeoZonesStatus() == DataStatus.AVAILABLE &&
+        boolean envDataAvailable = geoZoneService.getGeoZonesStatus() == DataStatus.AVAILABLE &&
             weatherService.getRainCellsStatus() == DataStatus.AVAILABLE &&
-            authorizationService.getAuthorizationsStatus() == DataStatus.AVAILABLE;
+            authorizationService.getAuthorizationsStatus() == DataStatus.AVAILABLE &&
+            supportPointService.getSupportPointsStatus() == DataStatus.AVAILABLE;
 
-        if (dataAvailable) {
+        if (!envDataAvailable) {
+            flightController.hover();
+            return true;
+        }
+
+        Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();
+        Map<String, Authorization> authorizations = authorizationService.getAuthorizations();
+
+        List<GeoZone> geoZonesToConsider = new ArrayList<>();
+        for (Entry<String, GeoZone> entry : geoZones.entrySet()) {
+            String geoZoneId = entry.getKey();
+            GeoZone geoZone = entry.getValue();
+            if (geoZone.isActive()) {
+                Authorization auth = authorizations.get(geoZoneId);
+                if (auth == null || !auth.isGranted()) {
+                    geoZonesToConsider.add(geoZone);
+                }
+            }
+        }
+        List<RainCell> rainCellsToConsider = weatherService.getRainCells();
+        List<NearbyDroneStatus> conflictingDrones = droneSafetyNavigationService.getConflictingDrones();
         
-            Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();
-            Map<String, Authorization> authorizations = authorizationService.getAuthorizations();
 
-            List<GeoZone> geoZonesToConsider = new ArrayList<>();
-            for (Entry<String, GeoZone> entry : geoZones.entrySet()) {
-                String geoZoneId = entry.getKey();
-                GeoZone geoZone = entry.getValue();
-                if (geoZone.isActive()) {
-                    Authorization auth = authorizations.get(geoZoneId);
-                    if (auth == null || !auth.isGranted()) {
-                        geoZonesToConsider.add(geoZone);
+
+        if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST) {
+
+            List<Object> zones = new ArrayList<>();
+            zones.addAll(geoZonesToConsider);
+            zones.addAll(rainCellsToConsider);
+            DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
+
+            if(supportPointStatus != DataStatus.AVAILABLE) {
+                if (!flightController.isOnGround())
+                    flightController.hover();
+                return true;
+            }
+
+            context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
+            
+            List<SupportPoint> supportPoints = new ArrayList<>();
+            supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));
+            supportPoints.add(new SupportPoint("Source Point", "Source Point", context.getDroneProperties().getSource()));
+            supportPoints.addAll(supportPointService.getSupportPoints());
+
+            Iterator<SupportPoint> iterator = supportPoints.iterator();
+            while (iterator.hasNext()) {
+                SupportPoint supportPoint = iterator.next();
+                if (geoCalculator.isPointInZone(new Position(supportPoint.getCoordinate(), 0), zones)) {
+                    iterator.remove();
+                }
+            }
+
+            SupportPoint closestSupportPoint = supportPointService.getClosestSupportPoint(flightController.getCurrentPosition(), supportPoints);
+            
+            if (closestSupportPoint == null) {
+
+                Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
+                context.setCurrentDestination(landingPosition);
+                logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
+                            "No available Support Point found: landing at " + landingPosition);
+                return false;
+            } 
+
+            logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.REROUTE_FLIGHT,
+                            "Rerouting flight to closest support point: " + closestSupportPoint.getName());
+
+            Position closestSupportPointPosition = new Position(closestSupportPoint.getCoordinate(), 0);
+            if(context.getCurrentDestination().equals(closestSupportPointPosition)) return false;
+            
+            context.setCurrentDestination(closestSupportPointPosition);
+        }
+
+        DataStatus flightPlanStatus = navigationService.getFlightPlanStatus();
+
+        boolean needToAdaptFlightPlan = 
+            !(lastGeoZonesConsidered.equals(geoZonesToConsider) &&
+            lastRainCellsConsidered.equals(rainCellsToConsider) &&
+            lastDestinationConsidered.equals(context.getCurrentDestination()) &&
+            (conflictingDrones.isEmpty() || lastConflictingDronesConsidered.equals(conflictingDrones)) );
+
+        if (flightPlanStatus == DataStatus.NOT_REQUESTED ||
+            flightPlanStatus == DataStatus.FAILED ||
+            needToAdaptFlightPlan) {
+
+            List<Object> zones = new ArrayList<>();
+            zones.addAll(geoZonesToConsider);
+            zones.addAll(rainCellsToConsider);
+
+            if (geoCalculator.isPointInZone(context.getCurrentDestination(), zones)) {
+                logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
+                            "Destination in conflict zone");
+
+                DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
+
+                if(supportPointStatus != DataStatus.AVAILABLE) {
+                    if (!flightController.isOnGround())
+                        flightController.hover();
+                    return true;
+                }
+                
+                context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
+
+                List<SupportPoint> supportPoints = new ArrayList<>();
+                supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));
+                supportPoints.add(new SupportPoint("Source Point", "Source Point", context.getDroneProperties().getSource()));
+                supportPoints.addAll(supportPointService.getSupportPoints());
+
+                Iterator<SupportPoint> iterator = supportPoints.iterator();
+                while (iterator.hasNext()) {
+                    SupportPoint supportPoint = iterator.next();
+                    if (geoCalculator.isPointInZone(new Position(supportPoint.getCoordinate(), 0), zones)) {
+                        iterator.remove();
                     }
                 }
-            }
-            List<RainCell> rainCellsToConsider = weatherService.getRainCells();
 
-            if (status == DataStatus.AVAILABLE) {
-                boolean needToAdaptFlightPlan = 
-                    !(geoZonesInFlightPlan.equals(geoZonesToConsider) &&
-                    rainCellsInFlightPlan.equals(rainCellsToConsider) &&
-                    destinationInFlighPlan.equals(context.getCurrentDestination()));
+                SupportPoint closestSupportPoint = supportPointService.getClosestSupportPoint(context.getCurrentDestination(), supportPoints);
+                
+                if (closestSupportPoint == null) {
 
-                if (needToAdaptFlightPlan) {
-/*                    if (isSourceOrDestinationInConflictZone(geoZonesToConsider, rainCellsToConsider)) {
-                        logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.SOURCE_DESTINATION_NOT_ACCESSIBLE,
-                                    "Source or destination in conflict zone");
-                        if (!flightController.isOnGround())
-                            flightController.hover();
-                        return true;
-                    }*/
-                    navigationService.adaptFlightPlan(
-                        context.getCurrentDestination(),
-                        geoZonesToConsider,
-                        rainCellsToConsider
-                    );
-                    geoZonesInFlightPlan = geoZonesToConsider;
-                    rainCellsInFlightPlan = rainCellsToConsider;
-                    destinationInFlighPlan = context.getCurrentDestination();
+                    Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
+                    context.setCurrentDestination(landingPosition);
+                    logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
+                                "No available alternative destination found: landing at " + landingPosition);
+                    return false;
                 }
-                return false;
+
+                logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.REROUTE_FLIGHT,
+                                "Rerouting flight to closest support point: " + closestSupportPoint.getName());
+
+                Position closestSupportPointPosition = new Position(closestSupportPoint.getCoordinate(), 0);
+                if(context.getCurrentDestination().equals(closestSupportPointPosition)) return false;
+                
+                context.setCurrentDestination(closestSupportPointPosition);
+
             }
-            
-            if (status == DataStatus.NOT_REQUESTED) {
-/*                if (isSourceOrDestinationInConflictZone(geoZonesToConsider, rainCellsToConsider)) {
-                    logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.SOURCE_DESTINATION_NOT_ACCESSIBLE,
-                                "Source or destination in conflict zone");
-                    return true;
-                }*/
-                navigationService.generateFlightPlan(
-                    new Position(context.getDroneProperties().getSource(), 0),
-                    context.getCurrentDestination(),
-                    geoZonesToConsider,
-                    rainCellsToConsider
-                );
-                geoZonesInFlightPlan = geoZonesToConsider;
-                rainCellsInFlightPlan = rainCellsToConsider;
-                destinationInFlighPlan = context.getCurrentDestination();
-            }
+            navigationService.generateFlightPlan(
+                flightController.getCurrentPosition(),
+                context.getCurrentDestination(),
+                geoZonesToConsider,
+                rainCellsToConsider,
+                conflictingDrones
+            );
+            lastGeoZonesConsidered = geoZonesToConsider;
+            lastRainCellsConsidered = rainCellsToConsider;
+            lastConflictingDronesConsidered = conflictingDrones;
+            lastDestinationConsidered = context.getCurrentDestination();
         }
-        return true;
-    }
-
-    private boolean isSourceOrDestinationInConflictZone(List<GeoZone> geoZones, List<RainCell> rainCells) {
-        Position source = flightController.getCurrentPosition();
-        Position destination = context.getCurrentDestination();
-
-        for (GeoZone geoZone : geoZoneService.getGeoZones().values()) {
-            if (geoCalculator.isPointInZone(source, geoZone) || geoCalculator.isPointInZone(destination, geoZone)) {
-                return true;
-            }
-        }
-
-        for (RainCell rainCell : weatherService.getRainCells()) {
-            if (geoCalculator.isPointInZone(source, rainCell) || geoCalculator.isPointInZone(destination, rainCell)) {
-                return true;
-            }
-        }
-
         return false;
+                
     }
-    
+        
 }
 
 

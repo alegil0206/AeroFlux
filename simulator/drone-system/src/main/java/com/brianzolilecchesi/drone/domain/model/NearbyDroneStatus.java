@@ -67,4 +67,28 @@ public class NearbyDroneStatus {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NearbyDroneStatus)) return false;
+
+        NearbyDroneStatus that = (NearbyDroneStatus) o;
+
+        if (!droneId.equals(that.droneId)) return false;
+        if (!operationCategory.equals(that.operationCategory)) return false;
+        if (flightMode != that.flightMode) return false;
+        if (!position.equals(that.position)) return false;
+        return nextPositions.equals(that.nextPositions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = droneId.hashCode();
+        result = 31 * result + operationCategory.hashCode();
+        result = 31 * result + flightMode.hashCode();
+        result = 31 * result + position.hashCode();
+        result = 31 * result + nextPositions.hashCode();
+        return result;
+    }
+
 }
