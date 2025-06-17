@@ -11,7 +11,7 @@ import com.brianzolilecchesi.drone.domain.model.LogEntry;
 public class LogService {
     private final String systemId;
     private final List<LogEntry> logEntries = new ArrayList<>();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
     public LogService(String systemId) {
         this.systemId = systemId;

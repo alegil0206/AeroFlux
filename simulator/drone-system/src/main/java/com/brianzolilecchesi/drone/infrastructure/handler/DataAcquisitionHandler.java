@@ -13,6 +13,7 @@ import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
 import com.brianzolilecchesi.drone.infrastructure.service.DroneServiceFacade;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.GeoZoneService;
+import com.brianzolilecchesi.drone.infrastructure.service.navigation.NavigationService;
 import com.brianzolilecchesi.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService;
 
@@ -36,6 +37,7 @@ public class DataAcquisitionHandler implements StepHandler {
     private final WeatherService weatherService;
     private final SupportPointService supportPointService;
     private final FlightController flightController;
+    private final NavigationService navigationService;
 
     private Position lastConsideredDestination;
     private Map<String, GeoZone> lastConsideredGeoZones = new HashMap<>();
@@ -48,6 +50,7 @@ public class DataAcquisitionHandler implements StepHandler {
         this.weatherService = droneServices.getWeatherService();
         this.flightController = droneServices.getFlightController();
         this.supportPointService = droneServices.getSupportPointService();
+        this.navigationService = droneServices.getNavigationService();
     }
 
     @Override
@@ -95,16 +98,20 @@ public class DataAcquisitionHandler implements StepHandler {
             return false;
         }
 
+        Position destination = navigationService.getCurrentDestination() != null ? 
+                navigationService.getCurrentDestination() :
+                new Position(context.getDroneProperties().getDestination(), 0);
+
         boolean shouldRequestNewAuthorizations =
-                !(context.getCurrentDestination().equals(lastConsideredDestination) &&
+                !(destination.equals(lastConsideredDestination) &&
                 geoZoneService.getGeoZones().equals(lastConsideredGeoZones));
         if (shouldRequestNewAuthorizations) {
             authorizationService.requestLinearPathAuthorizations(
                 context.getDroneProperties().getId(),
                 flightController.getCurrentPosition(),
-                context.getCurrentDestination(),
+                destination,
                 geoZoneService.getGeoZones());
-            lastConsideredDestination = context.getCurrentDestination();
+            lastConsideredDestination = destination;
             lastConsideredGeoZones = geoZoneService.getGeoZones();
         }
 

@@ -34,11 +34,11 @@ const ExecutionControls = () => {
         Stop
       </Button>
       <FormControl>
-        <InputLabel id="execution-speed-label">Execution Speed</InputLabel>
+        <InputLabel id="execution-speed-label">Speed</InputLabel>
         <Select
           labelId="execution-speed-label"
           value={localSpeed}
-          label="Execution Speed"
+          label="Speed"
           onChange={(e) => setLocalSpeed(e.target.value)}
           disabled={!["STOPPED", "unknown"].includes(executionState)}
         >

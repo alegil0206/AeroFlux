@@ -127,13 +127,7 @@ function HomeSection() {
           <FullMap drones={ dronesWithStatus } geoZones={geoZones} weather={weather} supportPoints={supportPoints}/>
         </Grid>
         <Grid size={{ xs: 12, lg: 5 }}>
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-            Execution Controls
-          </Typography>  
           <ExecutionControls />
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-            Execution Logs
-          </Typography>
           <LogViewer logs={logs} />
         </Grid>
       </Grid>

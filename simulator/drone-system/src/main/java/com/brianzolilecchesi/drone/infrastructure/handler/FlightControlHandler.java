@@ -40,7 +40,7 @@ public class FlightControlHandler implements StepHandler {
             flightController.hover();
         }
 
-        if (navigationService.hasReached(flightController.getCurrentPosition(), context.getDroneProperties().getDestination()) &&
+        if (navigationService.hasReached(flightController.getCurrentPosition(), new Position(context.getDroneProperties().getDestination(), 0)) &&
             flightController.isOnGround()) {
             
             logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Destination reached, powering off");
@@ -49,10 +49,10 @@ public class FlightControlHandler implements StepHandler {
             return true;
         }
 
-        if (navigationService.hasReached(flightController.getCurrentPosition(), context.getCurrentDestination()) && 
+        if (navigationService.hasReached(flightController.getCurrentPosition(), navigationService.getCurrentDestination()) && 
             flightController.isOnGround()) {
 
-            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Reached current destination: " + context.getCurrentDestination() + ", powering off");
+            logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.DESTINATION_REACHED, "Reached current destination: " + navigationService.getCurrentDestination() + ", powering off");
             flightController.powerOff();
              
             return true;

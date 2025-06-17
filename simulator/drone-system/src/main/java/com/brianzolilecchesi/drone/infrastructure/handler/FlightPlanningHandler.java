@@ -55,9 +55,11 @@ public class FlightPlanningHandler implements StepHandler {
         this.droneSafetyNavigationService = droneServices.getDroneSafetyNavigationService();
         this.supportPointService = droneServices.getSupportPointService();
         this.flightController = droneServices.getFlightController();
-        this.lastDestinationConsidered = context.getCurrentDestination();
         this.logService = droneServices.getLogService();
         this.geoCalculator = new GeoCalculator();
+        this.lastDestinationConsidered = new Position(
+            ctx.getDroneProperties().getDestination(), 0
+        );
     }
 
     @Override
@@ -72,7 +74,7 @@ public class FlightPlanningHandler implements StepHandler {
             context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
             logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.EMERGENCY_LANDING,
                             "Emergency landing at " + landingPosition);
-            context.setCurrentDestination(landingPosition);
+            lastDestinationConsidered = landingPosition;
             return false;
         }
 
@@ -102,14 +104,14 @@ public class FlightPlanningHandler implements StepHandler {
         }
         List<RainCell> rainCellsToConsider = weatherService.getRainCells();
         List<NearbyDroneStatus> conflictingDrones = droneSafetyNavigationService.getConflictingDrones();
-        
+        List<Object> zones = new ArrayList<>();
+        zones.addAll(geoZonesToConsider);
+        zones.addAll(rainCellsToConsider);        
 
+        Position actualDestination = lastDestinationConsidered;
 
-        if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST) {
+        if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST || geoCalculator.isPointInZone(actualDestination, zones)) {
 
-            List<Object> zones = new ArrayList<>();
-            zones.addAll(geoZonesToConsider);
-            zones.addAll(rainCellsToConsider);
             DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
 
             if(supportPointStatus != DataStatus.AVAILABLE) {
@@ -118,7 +120,6 @@ public class FlightPlanningHandler implements StepHandler {
                 return true;
             }
 
-            context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
             
             List<SupportPoint> supportPoints = new ArrayList<>();
             supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));
@@ -133,24 +134,27 @@ public class FlightPlanningHandler implements StepHandler {
                 }
             }
 
-            SupportPoint closestSupportPoint = supportPointService.getClosestSupportPoint(flightController.getCurrentPosition(), supportPoints);
+            SupportPoint selectedSupportPoint;
             
-            if (closestSupportPoint == null) {
+            if(context.getFlightMode() == DroneFlightMode.LANDING_REQUEST) {
+                selectedSupportPoint = supportPointService.getClosestSupportPoint(flightController.getCurrentPosition(), supportPoints);
+            } else {
+                selectedSupportPoint = supportPointService.getClosestSupportPoint(actualDestination, supportPoints);
+            }
+            
+            context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
 
+            if (selectedSupportPoint == null) {
                 Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
-                context.setCurrentDestination(landingPosition);
+                lastDestinationConsidered = landingPosition;
                 logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
                             "No available Support Point found: landing at " + landingPosition);
                 return false;
-            } 
-
+            }
             logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.REROUTE_FLIGHT,
-                            "Rerouting flight to closest support point: " + closestSupportPoint.getName());
+                            "Rerouting flight to closest support point: " + selectedSupportPoint.getName());
 
-            Position closestSupportPointPosition = new Position(closestSupportPoint.getCoordinate(), 0);
-            if(context.getCurrentDestination().equals(closestSupportPointPosition)) return false;
-            
-            context.setCurrentDestination(closestSupportPointPosition);
+            actualDestination = new Position(selectedSupportPoint.getCoordinate(), 0);
         }
 
         DataStatus flightPlanStatus = navigationService.getFlightPlanStatus();
@@ -158,67 +162,16 @@ public class FlightPlanningHandler implements StepHandler {
         boolean needToAdaptFlightPlan = 
             !(lastGeoZonesConsidered.equals(geoZonesToConsider) &&
             lastRainCellsConsidered.equals(rainCellsToConsider) &&
-            lastDestinationConsidered.equals(context.getCurrentDestination()) &&
+            lastDestinationConsidered.equals(actualDestination) &&
             (conflictingDrones.isEmpty() || lastConflictingDronesConsidered.equals(conflictingDrones)) );
 
         if (flightPlanStatus == DataStatus.NOT_REQUESTED ||
             flightPlanStatus == DataStatus.FAILED ||
             needToAdaptFlightPlan) {
 
-            List<Object> zones = new ArrayList<>();
-            zones.addAll(geoZonesToConsider);
-            zones.addAll(rainCellsToConsider);
-
-            if (geoCalculator.isPointInZone(context.getCurrentDestination(), zones)) {
-                logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
-                            "Destination in conflict zone");
-
-                DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
-
-                if(supportPointStatus != DataStatus.AVAILABLE) {
-                    if (!flightController.isOnGround())
-                        flightController.hover();
-                    return true;
-                }
-                
-                context.setFlightMode(DroneFlightMode.REROUTE_FLIGHT);
-
-                List<SupportPoint> supportPoints = new ArrayList<>();
-                supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));
-                supportPoints.add(new SupportPoint("Source Point", "Source Point", context.getDroneProperties().getSource()));
-                supportPoints.addAll(supportPointService.getSupportPoints());
-
-                Iterator<SupportPoint> iterator = supportPoints.iterator();
-                while (iterator.hasNext()) {
-                    SupportPoint supportPoint = iterator.next();
-                    if (geoCalculator.isPointInZone(new Position(supportPoint.getCoordinate(), 0), zones)) {
-                        iterator.remove();
-                    }
-                }
-
-                SupportPoint closestSupportPoint = supportPointService.getClosestSupportPoint(context.getCurrentDestination(), supportPoints);
-                
-                if (closestSupportPoint == null) {
-
-                    Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
-                    context.setCurrentDestination(landingPosition);
-                    logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
-                                "No available alternative destination found: landing at " + landingPosition);
-                    return false;
-                }
-
-                logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.REROUTE_FLIGHT,
-                                "Rerouting flight to closest support point: " + closestSupportPoint.getName());
-
-                Position closestSupportPointPosition = new Position(closestSupportPoint.getCoordinate(), 0);
-                if(context.getCurrentDestination().equals(closestSupportPointPosition)) return false;
-                
-                context.setCurrentDestination(closestSupportPointPosition);
-
-            }
             navigationService.generateFlightPlan(
                 flightController.getCurrentPosition(),
-                context.getCurrentDestination(),
+                actualDestination,
                 geoZonesToConsider,
                 rainCellsToConsider,
                 conflictingDrones
@@ -226,7 +179,7 @@ public class FlightPlanningHandler implements StepHandler {
             lastGeoZonesConsidered = geoZonesToConsider;
             lastRainCellsConsidered = rainCellsToConsider;
             lastConflictingDronesConsidered = conflictingDrones;
-            lastDestinationConsidered = context.getCurrentDestination();
+            lastDestinationConsidered = actualDestination;
         }
         return false;
                 

@@ -15,11 +15,11 @@ import {
 export default function WeatherSettingsCard({ weatherSettings, onSave }) {
   const [errors, setErrors] = useState({});
   const [settings, setSettings] = useState({
-    windDirection: NaN,
-    windIntensity: NaN,
-    minClusters: NaN,
-    maxClusters: NaN,
-    maxClusterRadius: NaN,
+    windDirection: '',
+    windIntensity: '',
+    minClusters: '',
+    maxClusters: '',
+    maxClusterRadius: '',
   });
 
   useEffect(() => {

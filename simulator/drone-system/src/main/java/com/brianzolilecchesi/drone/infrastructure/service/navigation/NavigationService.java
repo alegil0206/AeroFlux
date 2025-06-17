@@ -1,7 +1,6 @@
 package com.brianzolilecchesi.drone.infrastructure.service.navigation;
 
 import com.brianzolilecchesi.drone.domain.dto.FlightPlanDTO;
-import com.brianzolilecchesi.drone.domain.model.Coordinate;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
@@ -22,7 +21,7 @@ import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class NavigationService  {
 
-	private static final double GRID_EXPANSION_METERS = 1000.0;
+	private static final double GRID_EXPANSION_METERS = 5000.0;
 	
 	public static final double INITIAL_CELL_WIDTH = 160.0; //320
 	public static final List<Double> ALTITUDE_LEVELS = List.of(20.0, 40.0, 60.0, 80.0, 100.0, 120.0);
@@ -180,15 +179,15 @@ public class NavigationService  {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return false;
 		}
-		return currentPosition.distance(destination) < stepSize;
-    }
-
-	public synchronized boolean hasReached(Coordinate currentPosition, Coordinate destination) {
-		if (waypoints == null || waypoints.isEmpty()) {
+		if (currentPosition == null || destination == null) {
 			return false;
 		}
-		return currentPosition.distance(destination) < stepSize;
-	}
+		
+		if (currentPosition.equals(destination)) {
+			return true;
+		}
+		return false;
+    }
 
 	public synchronized double getFlightDistanceToEnd() {
 		if (waypoints == null || waypoints.isEmpty()) {
@@ -258,6 +257,13 @@ public class NavigationService  {
 		int lastIndex = Math.min(nextWaypointIndex + (int)(INITIAL_CELL_WIDTH / stepSize), waypoints.size());
 
 		return waypoints.subList(nextWaypointIndex, lastIndex);
+	}
+
+	public synchronized Position getCurrentDestination() {
+		if (waypoints == null || waypoints.isEmpty()) {
+			return null;
+		}
+		return waypoints.getLast();
 	}
 
 	public synchronized FlightPlanDTO getFlightPlan() {

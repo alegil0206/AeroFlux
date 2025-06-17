@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class LogService {
     private final SimpMessagingTemplate messagingTemplate;
     private final List<LogEntry> logEntries = new ArrayList<>();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
 
     public LogService(SimpMessagingTemplate messagingTemplate) {

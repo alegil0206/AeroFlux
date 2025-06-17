@@ -105,22 +105,22 @@ export default function GeoZoneDetailsForm({ geoZone, errors, handleChange, hand
       <FormControl fullWidth margin="normal" error={!!errors.altitude_limit_inferior}>
         <InputLabel>Min Altitude Level</InputLabel>
         <Select value={geoZone.altitude_limit_inferior} name="altitude_limit_inferior" onChange={(e) => handleChange(e.target.name, e.target.value)} >
-          <MenuItem value="0">L0 - 0 m</MenuItem>
-          <MenuItem value="25">L1 - 25 m</MenuItem>
-          <MenuItem value="45">L2 - 45 m</MenuItem>
-          <MenuItem value="60">L3 - 60 m</MenuItem>
-          <MenuItem value="120">L4 - 120 m</MenuItem>
+          <MenuItem value={0}>L0 - 0 m</MenuItem>
+          <MenuItem value={25}>L1 - 25 m</MenuItem>
+          <MenuItem value={45}>L2 - 45 m</MenuItem>
+          <MenuItem value={60}>L3 - 60 m</MenuItem>
+          <MenuItem value={120}>L4 - 120 m</MenuItem>
         </Select>
         <FormHelperText>{errors.altitude_limit_inferior}</FormHelperText>
       </FormControl>
       <FormControl fullWidth margin="normal" error={!!errors.altitude_limit_superior}>
         <InputLabel>Max Altitude Level</InputLabel>
         <Select value={geoZone.altitude_limit_superior} name="altitude_limit_superior" onChange={(e) => handleChange(e.target.name, e.target.value)} >
-          <MenuItem value="0">L0 - 0 m</MenuItem>
-          <MenuItem value="25">L1 - 25 m</MenuItem>
-          <MenuItem value="45">L2 - 45 m</MenuItem>
-          <MenuItem value="60">L3 - 60 m</MenuItem>
-          <MenuItem value="120">L4 - 120 m</MenuItem>
+          <MenuItem value={0}>L0 - 0 m</MenuItem>
+          <MenuItem value={25}>L1 - 25 m</MenuItem>
+          <MenuItem value={45}>L2 - 45 m</MenuItem>
+          <MenuItem value={60}>L3 - 60 m</MenuItem>
+          <MenuItem value={120}>L4 - 120 m</MenuItem>
         </Select>
         <FormHelperText>{errors.altitude_limit_superior}</FormHelperText>
       </FormControl>

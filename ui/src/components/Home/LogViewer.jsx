@@ -83,7 +83,7 @@ const LogViewer = ({logs}) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column',
-      width: "100%", height: 'calc(100vh - 200px)' }}>
+      width: "100%", height: 'calc(100vh - 100px)' }}>
 
       <DataGrid
         getRowHeight={() => 'auto'}

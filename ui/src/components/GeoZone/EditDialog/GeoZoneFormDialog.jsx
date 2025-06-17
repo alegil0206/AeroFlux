@@ -36,8 +36,8 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
     category: '',
     type: 'CIRCULAR',
     ...defaultGeoZoneArea,
-    altitude_limit_inferior: '',
-    altitude_limit_superior: '',
+    altitude_limit_inferior: NaN,
+    altitude_limit_superior: NaN,
   });
 
   const [geoZone, setGeoZone] = useState(getDefaultGeoZone());
@@ -74,10 +74,10 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
     if (!geoZone.name) newErrors.name = 'Name is required.';
     if (!geoZone.category) newErrors.category = 'Category is required.';
     if (!geoZone.type) newErrors.type = 'Type is required.';
-    if (!geoZone.altitude_limit_inferior) newErrors.altitude_limit_inferior = 'Altitude Limit Inferior is required.';
-    if (!geoZone.altitude_limit_superior) newErrors.altitude_limit_superior = 'Altitude Limit Superior is required.';
+    if (isNaN(geoZone.altitude_limit_inferior)) newErrors.altitude_limit_inferior = 'Altitude Limit Inferior is required.';
+    if (isNaN(geoZone.altitude_limit_superior)) newErrors.altitude_limit_superior = 'Altitude Limit Superior is required.';
 
-    if (parseFloat(geoZone.altitude_limit_inferior) >= parseFloat(geoZone.altitude_limit_superior)) {
+    if (geoZone.altitude_limit_inferior >= geoZone.altitude_limit_superior) {
       newErrors.altitude_limit_inferior = 'Altitude Limit Inferior must be less than Altitude Limit Superior.';
       newErrors.altitude_limit_superior = 'Altitude Limit Superior must be greater than Altitude Limit Inferior.';
     }
@@ -149,6 +149,18 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
 GeoZoneFormDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
-  initialData: PropTypes.object,
+  initialData: {
+    id: PropTypes.string,
+    name: PropTypes.string,
+    status: PropTypes.string,
+    category: PropTypes.string,
+    type: PropTypes.string,
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+    radius: PropTypes.number,
+    altitude_limit_inferior: PropTypes.number,
+    altitude_limit_superior: PropTypes.number,
+    coordinates: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
+  },
   open: PropTypes.bool.isRequired,
 };

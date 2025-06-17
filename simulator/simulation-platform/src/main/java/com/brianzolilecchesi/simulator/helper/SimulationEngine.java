@@ -35,7 +35,7 @@ public class SimulationEngine {
     @Async
     public void runSimulationLoop(List<DroneSystem> drones) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
         String startTime = java.time.LocalDateTime.now().format(formatter);
 
         Map<DroneProperties, List<DroneStatus>> droneStatusMap = new HashMap<>();
