@@ -39,7 +39,7 @@ export default function HistorySelector({ historyList, onSelectHistory }) {
             >
                 Previous
             </Button>
-            <FormControl fullWidth sx={{ mb: 2 }}>
+            <FormControl fullWidth sx={{ mb: 1 }}>
                 <InputLabel id="select-drone-label">Select Simulation</InputLabel>
                 <Select
                     labelId="select-drone-label"

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
@@ -66,7 +66,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     {
       field: 'droneId',
       headerName: 'Drone ID',
-      flex: 0.5,
+      flex: 1,
       renderCell: (params) => (
         <Tooltip title={`Drone ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -76,7 +76,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     {
       field: 'droneName',
       headerName: 'Drone Name',
-      flex: 2,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Drone Name: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -85,8 +85,8 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     },
     {
       field: 'operationCategory',
-      headerName: 'Operation Category',
-      flex: 1.5,
+      headerName: 'Operation',
+      flex: 1,
       renderCell: (params) => (
         <Tooltip title={`Operation Category: ${params.value}`} arrow>
           {renderOperationCategory(params.value)}
@@ -96,7 +96,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     {
       field: 'geoZoneId',
       headerName: 'Geozone ID',
-      flex: 0.5,
+      flex: 1,
       renderCell: (params) => (
         <Tooltip title={`Geozone ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -106,7 +106,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     {
       field: 'geoZoneName',
       headerName: 'Geozone Name',
-      flex: 2,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Geozone Name: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -115,14 +115,14 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     },
     {
       field: 'geoZoneCategory',
-      headerName: 'Geozone Category',
+      headerName: 'Ctegory',
       flex: 1,
       renderCell: (params) => renderAuthorizationCategory(params.value),
     },
     {
       field: 'status',
       headerName: 'Status',
-      flex: 1.5,
+      flex: 1,
       renderCell: (params) => (
         <Tooltip title={`Authorization Status: ${params.value}`} arrow>
           {renderAuthorizationStatus(params.value)}
@@ -152,7 +152,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     {
       field: 'reason',
       headerName: 'Annotation',
-      flex: 3,
+      flex: 2.5,
       renderCell: (params) => (
         <Tooltip title={`Annotation: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -161,7 +161,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
     },
     {
       field: 'actions',
-      headerName: ' ',
+      headerName: 'Actions',
       sortable: false,
       renderCell: (params) => (
         <div style={{ display: 'flex'}}>
@@ -186,6 +186,8 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
   return (
     <DataGrid
       autoHeight
+      disableRowSelectionOnClick
+      slots={{ toolbar: GridToolbar }}
       getRowHeight={() => 'auto'}
       rows={rows}
       columns={columns}
@@ -194,9 +196,26 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       }
       initialState={{
         pagination: { paginationModel: { pageSize: 10 } },
+        columns: {
+          columnVisibilityModel: {
+            id: false,
+            droneId: true,
+            droneName: true,
+            operationCategory: true,
+            geoZoneId: true,
+            geoZoneName: true,
+            geoZoneCategory: true,
+            status: true,
+            createdAt: true,
+            expiresAt: true,
+            reason: false,
+            actions: true,
+          },
+        },        
       }}
       pageSizeOptions={[10, 20, 50]}
-      density="compact"
+
+
       sx={{
         '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': {
           py: 1,

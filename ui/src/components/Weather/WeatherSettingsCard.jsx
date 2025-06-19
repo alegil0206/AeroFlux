@@ -65,7 +65,7 @@ export default function WeatherSettingsCard({ weatherSettings, onSave }) {
     <Card variant="outlined" 
     sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}>
       <CardContent>
-        <Typography variant="h6" component="div" sx={{ mb: 2 }}>
+        <Typography variant="h6" component="h2">
           Weather Settings
         </Typography>
        

@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 
 export default function GeoZoneActivationCard({ data, onToggleStatus }) {
   
-  const renderAuthorizationCategory = (category) => {
+  const renderGeozoneCategory = (category) => {
     const colors = {
       EXCLUDED: 'error',
       RESTRICTED: 'warning',
@@ -15,7 +15,7 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
 
     return (
       <Tooltip title={`Category: ${category}`} arrow>
-        <Chip label={" "} color={colors[category]} size="small" />
+        <Chip label={category} color={colors[category]} size="small" />
       </Tooltip>
     );
   };
@@ -24,7 +24,7 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
     {
       field: 'id',
       headerName: 'ID',
-      flex: 1,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`GeoZone ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -43,9 +43,9 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
     },
     {
       field: 'category',
-      headerName: 'Cat.',
+      headerName: 'Category',
       flex: 1,
-      renderCell: (params) => renderAuthorizationCategory(params.value),
+      renderCell: (params) => renderGeozoneCategory(params.value),
     },
     {
       field: 'status',
@@ -84,8 +84,6 @@ export default function GeoZoneActivationCard({ data, onToggleStatus }) {
       }}
       pageSizeOptions={[10, 20, 50]}
       disableColumnResize
-      density="compact"
-      sx={{ mt: 2}}
     />
   );
 }

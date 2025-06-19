@@ -13,7 +13,7 @@ export default function DroneDrawMap({ drone, handleChange }) {
   return (
     <Card
     variant="outlined"
-    sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
+    sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1, width: '100%', height: '100%', minHeight: 300 }}
     >
       <Map
         initialViewState={ initialViewState }
@@ -21,7 +21,7 @@ export default function DroneDrawMap({ drone, handleChange }) {
         maxPitch={ maxPitch }
         sky={ sky }
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-        style={{ width: '100%', height: '40vh' }}
+        style={{ width: '100%', height: '100%' }}
       >
         <Marker
           latitude={drone.source.latitude}

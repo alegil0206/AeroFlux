@@ -101,7 +101,6 @@ export default function DronesPositionCard({ data }) {
       }}
       pageSizeOptions={[10, 20, 50]}
       disableColumnResize
-      density="compact"
     />
   );
 }

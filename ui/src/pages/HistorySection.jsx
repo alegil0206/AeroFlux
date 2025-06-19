@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Box, Grid, Typography, Snackbar, Alert } from "@mui/material";
 import LogViewer from "../components/Home/LogViewer";
 import HistorySelector from "../components/History/HistorySelector";
+import MinDistanceChart from "../components/History/MinDistanceChart";
 
 function HistorySection() {
     const {
@@ -11,7 +12,6 @@ function HistorySection() {
         fetchHistoryList,
         fetchHistoryDetails,
         historyDetails,
-        loading,
         error,
     } = useHistory();
 
@@ -44,13 +44,14 @@ function HistorySection() {
     }, [selectedHistory]);
 
     return (
-        <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
+        <Box sx={{ width: '100%' }}>
 
             <HistorySelector historyList={historyList} onSelectHistory={setSelectedHistory} />
 
             {historyDetails && (
                 <div>
-                    <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+                    <MinDistanceChart simulation={historyDetails} />
+                    <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
                         Execution Logs
                     </Typography>
                     <LogViewer logs={historyDetails.logs} />

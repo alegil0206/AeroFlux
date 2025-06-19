@@ -64,13 +64,13 @@ function GeoZoneDrawMap({ geoZone, handleChange }) {
   return (
     <Card
     variant="outlined"
-    sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1 }}
+    sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flexGrow: 1, width: '100%', height: '100%', minHeight: 300 }}
     >
       <Map
       initialViewState={ initialViewState }
       mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
       maxBounds={ mapBounds }
-      style={{ width: '100%', height: 'calc(40vh)' }}
+      style={{ width: '100%', height: '100%' }}
     >
       <FullscreenControl position="top-right" />
       <NavigationControl position="top-right" />

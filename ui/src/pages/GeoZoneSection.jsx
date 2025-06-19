@@ -113,26 +113,32 @@ function GeoZoneSection() {
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
+    <Box sx={{ width: '100%' }}>
       {/* Cards */}
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid size={{ xs: 12, lg: 7 }}>
           <GeoZonesMap geoZones={ geoZones } supportPoints={ supportPoints }/>
         </Grid>
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', gap: 1}}>
-            <Button variant="contained" fullWidth onClick={() => setIsGeoZoneFormDialogOpen(true)}>
-              Add New GeoZone
-            </Button>
-            <Button variant="contained" fullWidth onClick={() => setIsSupportPointFormDialogOpen(true)}>
-              Add New Support Point
-            </Button>
-          </Box>
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Grid container spacing={1}>
+            <Grid size={{ xs: 12, sm: 6, lg: 12, xl: 6 }}>
+              <Button variant="contained" fullWidth onClick={() => setIsGeoZoneFormDialogOpen(true)}>
+                Add New GeoZone
+              </Button>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, lg: 12, xl: 6 }}>
+             <Button variant="contained" fullWidth onClick={() => setIsSupportPointFormDialogOpen(true)}>
+                Add New Support Point
+              </Button>
+            </Grid> 
+          </Grid>
+          <br></br>
+          <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
             GeoZone Activation
-          </Typography>            
+          </Typography>
           <GeoZoneActivationCard data={geoZones} onToggleStatus={handleToggleStatus} />
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+          <br></br>
+          <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
             Support Points
           </Typography>  
           <SupportPointDataGrid data={supportPoints} openEditDialog={ (supportPoint) => {
@@ -144,7 +150,7 @@ function GeoZoneSection() {
       </Grid>
 
       {/* Details Section */}
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+      <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
         GeoZones Details
       </Typography>
       <GeoZoneDataGrid data={geoZones} openEditDialog={ (geoZone) => {

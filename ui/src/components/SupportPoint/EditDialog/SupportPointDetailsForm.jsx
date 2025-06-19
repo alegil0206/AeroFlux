@@ -1,14 +1,9 @@
 import {
     TextField,
-    Select,
-    MenuItem,
     FormControl,
-    InputLabel,
     Grid2 as Grid,
     FormHelperText,
-    Typography,
-    FormControlLabel,
-    Checkbox
+    Typography
   } from '@mui/material';
   import PropTypes from 'prop-types';
 
@@ -23,13 +18,10 @@ export default function SupportPointDetailsForm({ supportPoint, errors, handleCh
                     value={supportPoint.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     fullWidth
-                    margin="normal"
                 />
                 <FormHelperText>{errors.name}</FormHelperText>
-            </FormControl>
-
-            <Typography component="h3" variant="h6">Position</Typography>
-            <Grid container columns={12} spacing={2} sx={{ mb: (theme) => theme.spacing(2) }}>
+            </FormControl>  
+            <Grid container columns={12} spacing={{ xs : 0, md : 1}} sx = {{ mb : 1 }}>   
                 <Grid size={{ xs: 12, md: 6 }}>
                     <FormControl fullWidth margin="normal" error={!!errors.latitude}>
                         <TextField
@@ -39,7 +31,6 @@ export default function SupportPointDetailsForm({ supportPoint, errors, handleCh
                             value={supportPoint.latitude}
                             onChange={(e) => handleChange('latitude', parseFloat(e.target.value))}
                             fullWidth
-                            margin="normal"
                         />
                         <FormHelperText>{errors.latitude}</FormHelperText>
                     </FormControl>
@@ -53,7 +44,6 @@ export default function SupportPointDetailsForm({ supportPoint, errors, handleCh
                             value={supportPoint.longitude}
                             onChange={(e) => handleChange('longitude', parseFloat(e.target.value))}
                             fullWidth
-                            margin="normal"
                         />
                         <FormHelperText>{errors.longitude}</FormHelperText>
                     </FormControl>

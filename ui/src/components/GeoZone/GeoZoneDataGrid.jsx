@@ -21,7 +21,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
     );
   };
 
-  const renderAuthorizationCategory = (category) => {
+  const renderGeozoneCategory = (category) => {
     const colors = {
       EXCLUDED: 'error',
       RESTRICTED: 'warning',
@@ -86,7 +86,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       field: 'category',
       headerName: 'Category',
       flex: 1,
-      renderCell: (params) => renderAuthorizationCategory(params.value),
+      renderCell: (params) => renderGeozoneCategory(params.value),
     },
     {
       field: 'altitude_level_limit_inferior',

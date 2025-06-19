@@ -4,8 +4,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
+  Button
 } from '@mui/material';
+import Grid from "@mui/material/Grid2";
 import PropTypes from 'prop-types';
 import DroneDetailsForm from './DroneDetailsForm';
 import DroneDrawMap from './DroneDrawMap';
@@ -84,18 +85,24 @@ export default function DroneFormDialog({ onClose, onSave, initialData = null, o
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>{initialData ? 'Edit Drone' : 'Add New Drone'}</DialogTitle>
       <DialogContent>
-        <DroneDetailsForm
-          drone={drone}
-          errors={errors}
-          handleChange={handleChange}
-        />
-        <DroneDrawMap
-          drone={drone}
-          handleChange={handleChange}
-        />
+        <Grid container spacing={2} columns={12}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <DroneDetailsForm
+              drone={drone}
+              errors={errors}
+              handleChange={handleChange}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <DroneDrawMap
+              drone={drone}
+              handleChange={handleChange}
+            />
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

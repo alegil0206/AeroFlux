@@ -80,8 +80,8 @@ function SettingsSection() {
     ];
 
     return (
-        <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
-            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+        <Box sx={{ width: "100%" }}>
+            <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
                 Microservices Settings
             </Typography>
             <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }} >
@@ -114,7 +114,7 @@ function SettingsSection() {
                     </Grid>
                 ))}
             </Grid>
-            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+            <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
                 Map Settings 
             </Typography>
             <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }} >

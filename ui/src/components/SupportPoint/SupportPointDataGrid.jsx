@@ -11,7 +11,7 @@ export default function SupportPointDataGrid({ data, openEditDialog, onDelete })
         {
             field: 'id',
             headerName: 'ID',
-            flex: 1,
+            flex: 1.5,
             renderCell: (params) => (
                 <Tooltip title={`ID: ${params.value}`} arrow>
                     <span>{params.value}</span>
@@ -29,28 +29,23 @@ export default function SupportPointDataGrid({ data, openEditDialog, onDelete })
             ),
         },
         {
-            field: 'latitude',
-            headerName: 'Latitude',
-            flex: 1,
-            renderCell: (params) => (
-              <Tooltip title={`Latitude: ${params.value}`} arrow>
-                <span>{params.value.toFixed(3)}</span>
-              </Tooltip>
-            ),
-          },
-          {
-            field: 'longitude',
-            headerName: 'Longitude',
-            flex: 1,
-            renderCell: (params) => (
-              <Tooltip title={`Longitude: ${params.value}`} arrow>
-                <span>{params.value.toFixed(3)}</span>
-              </Tooltip>
-            ),
-          },
+          field: 'position',
+          headerName: 'Position',
+          flex: 3,
+          renderCell: (params) => (
+            <Tooltip
+              title={`Lat: ${params.row.latitude}, Long: ${params.row.longitude}`}
+              arrow
+            >
+              <span>
+                {`${params.row.latitude.toFixed(6)}, ${params.row.longitude.toFixed(6)}`}
+              </span>
+            </Tooltip>
+          ),
+        },
         {
             field: 'action',
-            headerName: ' ',
+            headerName: 'Actions',
             sortable: false,
             renderCell: (params) => (
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -92,7 +87,6 @@ export default function SupportPointDataGrid({ data, openEditDialog, onDelete })
           }}
           pageSizeOptions={[10, 20, 50]}
           disableColumnResize
-          density="compact"
         />
     );
 }

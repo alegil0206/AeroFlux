@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
@@ -7,7 +7,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PenIcon from '@mui/icons-material/Edit';
 
 export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
-  // Funzione per il rendering della categoria operativa
   const renderOperationCategory = (category) => {
     const colors = {
       CERTIFIED: 'error',
@@ -21,7 +20,6 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
     );
   };
 
-  // Definizione delle colonne
   const columns = [
     {
       field: 'id',
@@ -36,7 +34,7 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
     {
       field: 'name',
       headerName: 'Name',
-      flex: 2,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Name: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -45,14 +43,54 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
     },
     {
       field: 'operation_category',
-      headerName: 'Operation Category',
-      flex: 2,
+      headerName: 'Operation',
+      flex: 1.5,
       renderCell: (params) => renderOperationCategory(params.value),
+    },
+    {
+      field: 'source',
+      headerName: 'Source Coordinates',
+      flex: 3,
+      renderCell: (params) => (
+        <Tooltip
+          title={`Lat: ${params.row.source.latitude}, Long: ${params.row.source.longitude}`}
+          arrow
+        >
+          <span>
+            {`${params.row.source.latitude}, ${params.row.source.longitude}`}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: 'destination',
+      headerName: 'Destination Coordinates',
+      flex: 3,
+      renderCell: (params) => (
+        <Tooltip
+          title={`Lat: ${params.row.destination.latitude}, Long: ${params.row.destination.longitude}`}
+          arrow
+        >
+          <span>
+            {`${params.row.destination.latitude}, ${params.row.destination.longitude}`}
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: 'battery',
+      headerName: 'Battery (mAh)',
+      flex: 1,
+      renderCell: (params) => (
+        <Tooltip title={`Battery Capacity: ${params.value} mAh`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
     },
     {
       field: 'plan_definition_timestamp',
       headerName: 'Plan Definition Date',
-      flex: 2,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip
           title={`Plan Date: ${new Date(params.value).toLocaleString()}`}
@@ -65,7 +103,7 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
     {
       field: 'owner',
       headerName: 'Owner',
-      flex: 2,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Owner: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -73,11 +111,21 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       ),
     },
     {
+      field: 'model',
+      headerName: 'Model',
+      flex: 1.5,
+      renderCell: (params) => (
+        <Tooltip title={`Model: ${params.value}`} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
       field: 'actions',
-      headerName: ' ',
+      headerName: 'Actions',
       sortable: false,
       renderCell: (params) => (
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title="Edit" arrow>
             <Button
               size="small"
@@ -93,7 +141,7 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
               size="small"
               color="secondary"
               onClick={() => onDelete(params.row.id)}
-              style={{ minWidth: 'auto', padding: '4px' }} // Riduce il padding del bottone
+              style={{ minWidth: 'auto', padding: '4px' }}
             >
               <DeleteIcon />
             </Button>
@@ -107,6 +155,8 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
   return (
     <DataGrid
       autoHeight
+      disableRowSelectionOnClick
+      slots={{ toolbar: GridToolbar }}
       getRowHeight={() => 'auto'}
       rows={data}
       columns={columns}
@@ -115,9 +165,23 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       }
       initialState={{
         pagination: { paginationModel: { pageSize: 20 } },
+        columns: {
+          columnVisibilityModel: {
+            id: true,
+            name: true,
+            model: false,
+            operation_category: true,
+            plan_definition_timestamp: false,
+            owner: false,
+            actions: true,
+            source: true,
+            destination: true,
+            battery: true,
+          },
+        },
       }}
       pageSizeOptions={[10, 20, 50]}
-      density="compact"
+
       sx={{
         '&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell': {
           py: 1,
@@ -128,7 +192,8 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
         '&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell': {
           py: '22px',
         },
-      }}    />
+      }}
+  />
   );
 }
 
@@ -141,6 +206,14 @@ DronesDataGrid.propTypes = {
       operation_category: PropTypes.string.isRequired,
       plan_definition_timestamp: PropTypes.string.isRequired,
       owner: PropTypes.string.isRequired,
+      source: PropTypes.shape({
+        latitude: PropTypes.number.isRequired,
+        longitude: PropTypes.number.isRequired,
+      }).isRequired,
+      destination: PropTypes.shape({
+        latitude: PropTypes.number.isRequired,
+        longitude: PropTypes.number.isRequired,
+      }).isRequired,
     })
   ).isRequired,
   openEditDialog: PropTypes.func.isRequired,

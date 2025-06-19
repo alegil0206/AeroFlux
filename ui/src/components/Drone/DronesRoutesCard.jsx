@@ -7,7 +7,7 @@ export default function DronesRoutesCard({ data }) {
     {
       field: 'id',
       headerName: 'ID',
-      flex: 1,
+      flex: 1.5,
       renderCell: (params) => (
         <Tooltip title={`Drone ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -34,7 +34,7 @@ export default function DronesRoutesCard({ data }) {
           arrow
         >
           <span>
-            {`(${params.row.source.latitude.toFixed(3)}, ${params.row.source.longitude.toFixed(3)})`}
+            {`${params.row.source.latitude.toFixed(6)}, ${params.row.source.longitude.toFixed(6)}`}
           </span>
         </Tooltip>
       ),
@@ -49,7 +49,7 @@ export default function DronesRoutesCard({ data }) {
           arrow
         >
           <span>
-            {`(${params.row.destination.latitude.toFixed(3)}, ${params.row.destination.longitude.toFixed(3)})`}
+            {`${params.row.destination.latitude.toFixed(6)}, ${params.row.destination.longitude.toFixed(6)}`}
           </span>
         </Tooltip>
       ),
@@ -69,7 +69,6 @@ export default function DronesRoutesCard({ data }) {
       }}
       pageSizeOptions={[10, 20, 50]}
       disableColumnResize
-      density="compact"
     />
   );
 }

@@ -119,7 +119,7 @@ function HomeSection() {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
+    <Box sx={{ width: '100%' }}>
       {/* Cards */}
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}
       >
@@ -134,20 +134,20 @@ function HomeSection() {
 
       <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
         <Grid size={{ xs: 12, lg: 6}}>
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+      <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
             Drones Positions
           </Typography>
           <DronesPositionsCard data={dronesWithStatus} />
         </Grid>
           <Grid size={{ xs: 12, lg: 6 }}>
-          <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+          <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
             GeoZones Activation
           </Typography>
           <GeoZoneActivationCard data={geoZones} onToggleStatus={handleToggleStatus} />
         </Grid>
       </Grid>
 
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
+      <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
         Authorization Requests
       </Typography>
       <DronesAuthorizationDataGrid drones={drones} geoZones={geoZones} authorization={authorization} onRevoke={handleRevoke} />

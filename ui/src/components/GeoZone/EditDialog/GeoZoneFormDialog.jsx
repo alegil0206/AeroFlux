@@ -9,6 +9,7 @@ import {
 import PropTypes from 'prop-types';
 import GeoZoneDetailsForm from './GeoZoneDetailsForm';
 import GeoZoneDrawMap from './GeoZoneDrawMap';
+import Grid from "@mui/material/Grid2";
 
 import { useMapSettings } from '../../../hooks/useMapSettings';
 
@@ -126,13 +127,19 @@ export default function GeoZoneFormDialog({ onClose, onSave, initialData = null,
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth="lg"
       fullWidth
     >
       <DialogTitle>{initialData ? 'Edit GeoZone' : 'Add New GeoZone'}</DialogTitle>
       <DialogContent>
-        <GeoZoneDetailsForm geoZone={geoZone} errors={errors} handleChange={handleChange} handleTypeChange={handleTypeChange} />
-        <GeoZoneDrawMap geoZone={geoZone} handleChange={handleChange} />
+        <Grid container spacing={2} columns={12}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <GeoZoneDetailsForm geoZone={geoZone} errors={errors} handleChange={handleChange} handleTypeChange={handleTypeChange} />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <GeoZoneDrawMap geoZone={geoZone} handleChange={handleChange} />
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

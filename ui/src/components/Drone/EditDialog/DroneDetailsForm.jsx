@@ -77,7 +77,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
           <FormHelperText>{errors.battery}</FormHelperText>
       </FormControl>
 
-      <Grid container columns={12} >
+      <Grid container columns={12} sx={{ mb : 1 }}>
         {[
           { key: 'safe_landing', label: 'Safe Landing' },
           { key: 'collision_avoidance', label: 'Collision Avoidance' },
@@ -85,7 +85,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
           { key: 'auto_authorization', label: 'Auto Authorization' },
           { key: 'battery_management', label: 'Flight Autonomy Management' },
         ].map(({ key, label }) => (
-          <Grid size={{ xs: 12, md: 6 }} key={key}>
+          <Grid size={{ xs: 12, sm: 6 }} key={key}>
             <FormControlLabel
               control={
                 <Checkbox
@@ -106,7 +106,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
 
 
       <Typography component="h3" variant="h6">Source Position</Typography>
-      <Grid container columns={12} spacing={2} sx={{ mb: (theme) => theme.spacing(2) }}>
+      <Grid container columns={12} spacing={{ xs : 0, md : 1}} sx={{ mb: 1 }}>   
         <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             label="Latitude"
@@ -134,7 +134,7 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
       </Grid>
 
       <Typography component="h3" variant="h6">Destination Position</Typography>
-      <Grid container columns={12} spacing={2} sx={{ mb: (theme) => theme.spacing(2) }}>
+      <Grid container columns={12} spacing={{ xs : 0, md : 1}}>   
         <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             label="Latitude"

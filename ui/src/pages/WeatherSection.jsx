@@ -61,15 +61,15 @@ function WeatherSection() {
   }
 
   return (
-    <Box sx={{ width: "100%", maxWidth: { sm: "100%", md: "1700px" } }}>
+    <Box sx={{ width: "100%" }}>
       <Grid container spacing={1} columns={12}>
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid size={{ xs: 12, lg: 7 }}>
           <WeatherMap
             weatherData={weather}
           />
         </Grid>
         
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid size={{ xs: 12, lg: 5 }}>
           <WeatherSettingsCard weatherSettings = {weatherConfig} onSave = {handleEditConfig} />
         </Grid>          
 
