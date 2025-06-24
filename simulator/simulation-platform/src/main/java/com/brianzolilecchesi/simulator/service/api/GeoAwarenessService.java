@@ -16,7 +16,7 @@ public class GeoAwarenessService extends AbstractMicroservice {
 
     @Override
     public String getServiceName() {
-        return "geo_awareness";
+        return "GEO_AWARENESS";
     }
 
     @Override

@@ -21,7 +21,7 @@ public class DroneIdentificationService extends AbstractMicroservice {
 
     @Override
     public String getServiceName() {
-        return "drone_identification";
+        return "DRONE_IDENTIFICATION";
     }
 
     @Override

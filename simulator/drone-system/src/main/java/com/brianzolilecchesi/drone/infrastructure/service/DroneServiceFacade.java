@@ -1,8 +1,16 @@
 package com.brianzolilecchesi.drone.infrastructure.service;
 
+import java.util.Map;
+
+import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
+import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessGateway;
+import com.brianzolilecchesi.drone.domain.integration.WeatherGateway;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.infrastructure.component.HardwareAbstractionLayer;
 import com.brianzolilecchesi.drone.infrastructure.controller.FlightController;
+import com.brianzolilecchesi.drone.infrastructure.integration.GeoAuthorizationRestClient;
+import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
+import com.brianzolilecchesi.drone.infrastructure.integration.WeatherServiceRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.authorization.AuthorizationService;
 import com.brianzolilecchesi.drone.infrastructure.service.battery.BatteryService;
 import com.brianzolilecchesi.drone.infrastructure.service.communication.CommunicationService;
@@ -28,7 +36,8 @@ public class DroneServiceFacade {
     
     public DroneServiceFacade(
             DroneContext context,
-            HardwareAbstractionLayer hardwareAbstractionLayer
+            HardwareAbstractionLayer hardwareAbstractionLayer,
+            Map<String, String> microservicesUrlsMap
             ){
         logService = new LogService(context.getDroneProperties().getId());
         batteryService = new BatteryService(hardwareAbstractionLayer.getBattery(), logService);
@@ -36,10 +45,14 @@ public class DroneServiceFacade {
         navigationService = new NavigationService(logService);
         flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
         droneSafetyNavigationService = new DroneSafetyNavigationService();
-        geoZoneService = new GeoZoneService(logService);
-        weatherService = new WeatherService(logService);
-        authorizationService= new AuthorizationService(logService);
-        supportPointService = new SupportPointService(logService);
+
+        WeatherGateway weatherServiceRestClient = new WeatherServiceRestClient(microservicesUrlsMap.get("WEATHER"));
+        GeoAuthorizationGateway geoAuthorizationRestClient = new GeoAuthorizationRestClient(microservicesUrlsMap.get("GEO_AUTHORIZATION"));
+        GeoAwarenessGateway geoAwarenessRestClient = new GeoAwarenessRestClient(microservicesUrlsMap.get("GEO_AWARENESS"));
+        geoZoneService = new GeoZoneService(logService, geoAwarenessRestClient);
+        weatherService = new WeatherService(logService, weatherServiceRestClient);
+        authorizationService= new AuthorizationService(logService, geoAuthorizationRestClient);
+        supportPointService = new SupportPointService(logService, geoAwarenessRestClient);
     }
 
     public LogService getLogService() {

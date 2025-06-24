@@ -17,22 +17,23 @@ import org.springframework.web.client.RestTemplate;
 
 public class GeoAwarenessRestClient implements GeoAwarenessGateway {
 
-    private static final String geozone_api_url = "http://api.uspace.local/geo-awareness";
+    private final String geozoneApiUrl;
     private final RestTemplate restTemplate;
 
-    public GeoAwarenessRestClient() {
-        this.restTemplate = new RestTemplate();
+    public GeoAwarenessRestClient(String geozoneApiUrl) {
+        this(new RestTemplate(), geozoneApiUrl);
     }
-    
-    public GeoAwarenessRestClient(RestTemplate restTemplate) {
+
+    public GeoAwarenessRestClient(RestTemplate restTemplate, String geozoneApiUrl) {
         this.restTemplate = restTemplate;
+        this.geozoneApiUrl = geozoneApiUrl;
     }
 
     @Override
     public List<GeoZoneDTO> getGeoZones() throws ExternalServiceException {
         try{
             ResponseEntity<List<GeoZoneDTO>> response = restTemplate.exchange(
-                geozone_api_url + "/geozone",
+                geozoneApiUrl + "/geozone",
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<GeoZoneDTO>>() {}
@@ -47,7 +48,7 @@ public class GeoAwarenessRestClient implements GeoAwarenessGateway {
     public List<SupportPointDTO> getSupportPoints() throws ExternalServiceException {
         try{
             ResponseEntity<List<SupportPointDTO>> response = restTemplate.exchange(
-                geozone_api_url + "/support-point",
+                geozoneApiUrl + "/support-point",
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<SupportPointDTO>>() {}

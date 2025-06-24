@@ -12,8 +12,8 @@ export const useWeather = () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.weather) throw new Error('Weather service is not available');
-            const response = await fetch(`${services.weather}/weather/rain-cell`);
+            if (!services.WEATHER) throw new Error('Weather service is not available');
+            const response = await fetch(`${services.WEATHER}/weather/rain-cell`);
             if (!response.ok) throw new Error(`Failed to fetch Weather: ${response.statusText}`);
             const data = await response.json();
             setWeather(data);
@@ -23,14 +23,14 @@ export const useWeather = () => {
         finally {
             setLoading(false);
         }
-    }, [services.weather]);
+    }, [services.WEATHER]);
 
     const fetchWeatherConfig = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.weather) throw new Error('Weather service is not available');
-            const response = await fetch(`${services.weather}/weather/config`);
+            if (!services.WEATHER) throw new Error('Weather service is not available');
+            const response = await fetch(`${services.WEATHER}/weather/config`);
             if (!response.ok) throw new Error(`Failed to fetch Weather Config: ${response.statusText}`);
             const data = await response.json();
             setWeatherConfig(data);
@@ -40,14 +40,14 @@ export const useWeather = () => {
         finally {
             setLoading(false);
         }
-    }, [services.weather]);
+    }, [services.WEATHER]);
 
     const updateWeatherConfig = useCallback(async (config) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.weather) throw new Error('Weather service is not available');
-            const response = await fetch(`${services.weather}/weather/config`, {
+            if (!services.WEATHER) throw new Error('Weather service is not available');
+            const response = await fetch(`${services.WEATHER}/weather/config`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config),
@@ -61,7 +61,7 @@ export const useWeather = () => {
         finally {
             setLoading(false);
         }
-    }, [services.weather]);
+    }, [services.WEATHER]);
 
     return { 
         weather,

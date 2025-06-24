@@ -2,6 +2,8 @@ package com.brianzolilecchesi.drone;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.DroneProperties;
 import com.brianzolilecchesi.drone.domain.model.DroneStatus;
@@ -30,11 +32,12 @@ public class DroneSystem {
     
     public DroneSystem(
             DroneProperties droneProperties,
-            HardwareAbstractionLayer hardwareAbstractionLayer
+            HardwareAbstractionLayer hardwareAbstractionLayer,
+            Map<String, String> microservicesUrlsMap
             ) {
         this.context = new DroneContext(droneProperties);
         this.hardwareAbstractionLayer = hardwareAbstractionLayer;
-        this.droneServices = new DroneServiceFacade(context, hardwareAbstractionLayer);
+        this.droneServices = new DroneServiceFacade(context, hardwareAbstractionLayer, microservicesUrlsMap);
         this.stepHandlers = List.of(
                 new BatteryConsumptionHandler(context, droneServices),
                 new DataAcquisitionHandler(context, droneServices),

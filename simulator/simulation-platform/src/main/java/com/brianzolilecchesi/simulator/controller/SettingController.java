@@ -45,7 +45,7 @@ public class SettingController {
 
     @GetMapping("/service")
     public ResponseEntity<List<ServiceEndpointDTO>> getAllServices() {
-        return ResponseEntity.ok(microserviceRegistryService.getAllServices());
+        return ResponseEntity.ok(microserviceRegistryService.getServices());
     }
 
     @PutMapping("/service/{serviceName}")

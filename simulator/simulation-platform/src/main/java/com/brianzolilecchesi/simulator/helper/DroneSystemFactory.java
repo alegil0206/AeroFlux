@@ -3,6 +3,7 @@ package com.brianzolilecchesi.simulator.helper;
 import com.brianzolilecchesi.drone.DroneSystem;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedBattery;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedRadio;
+import com.brianzolilecchesi.simulator.service.MicroserviceRegistryService;
 import com.brianzolilecchesi.simulator.service.api.DroneIdentificationService;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedGPS;
 import com.brianzolilecchesi.simulator.model.drone.SimulatedMotor;
@@ -16,6 +17,7 @@ import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -23,9 +25,11 @@ import org.springframework.stereotype.Component;
 public class DroneSystemFactory {
 
     private final DroneIdentificationService droneIdentificationService;
+    private final MicroserviceRegistryService microservicesRegistryService;
 
-    public DroneSystemFactory(DroneIdentificationService droneIdentificationService) {
+    public DroneSystemFactory(DroneIdentificationService droneIdentificationService, MicroserviceRegistryService microservicesRegistryService) {
         this.droneIdentificationService = droneIdentificationService;
+        this.microservicesRegistryService = microservicesRegistryService;
     }
 
     public List<DroneSystem> createDrones() {
@@ -70,7 +74,9 @@ public class DroneSystemFactory {
                 motor
             );
 
-            DroneSystem drone = new DroneSystem(droneProperties, hardwareAbstractionLayer);
+            Map<String, String> microservicesUrlsMap = microservicesRegistryService.getServiceUrls();
+
+            DroneSystem drone = new DroneSystem(droneProperties, hardwareAbstractionLayer, microservicesUrlsMap);
             drone.powerOn();
             drones.add(drone);
         }

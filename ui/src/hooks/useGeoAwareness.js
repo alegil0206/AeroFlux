@@ -12,8 +12,8 @@ export const useGeoAwareness = () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/geozone`);
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/geozone`);
             if (!response.ok) throw new Error(`Failed to fetch Geo Zones: ${response.statusText}`);
             const data = await response.json();
             setGeoZones(data);
@@ -23,14 +23,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const addGeoZone = useCallback(async (geoZone) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/geozone`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/geozone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(geoZone),
@@ -46,14 +46,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const updateGeoZone = useCallback(async (geoZone) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/geozone/${geoZone.id}`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/geozone/${geoZone.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(geoZone),
@@ -67,14 +67,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const deleteGeoZone = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/geozone/${id}`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/geozone/${id}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting Geo Zone ${id}: ${response.statusText}`);
@@ -86,14 +86,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const deleteAllGeoZones = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/geozone`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/geozone`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting all Geo Zones: ${response.statusText}`);
@@ -105,15 +105,15 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
 
     const fetchSupportPoints = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/support-point`);
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/support-point`);
             if (!response.ok) throw new Error(`Failed to fetch Support Points: ${response.statusText}`);
             const data = await response.json();
             setSupportPoints(data);
@@ -123,14 +123,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const updateSupportPoint = useCallback(async (supportPoint) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/support-point/${supportPoint.id}`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/support-point/${supportPoint.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(supportPoint),
@@ -144,14 +144,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const addSupportPoint = useCallback(async (supportPoint) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/support-point`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/support-point`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(supportPoint),
@@ -167,14 +167,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const deleteSupportPoint = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/support-point/${id}`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/support-point/${id}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting Support Point ${id}: ${response.statusText}`);
@@ -186,14 +186,14 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     const deleteAllSupportPoints = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_awareness) throw new Error('Geo Awareness service is not available');
-            const response = await fetch(`${services.geo_awareness}/support-point`, {
+            if (!services.GEO_AWARENESS) throw new Error('Geo Awareness service is not available');
+            const response = await fetch(`${services.GEO_AWARENESS}/support-point`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting all Support Points: ${response.statusText}`);
@@ -205,7 +205,7 @@ export const useGeoAwareness = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_awareness]);
+    }, [services.GEO_AWARENESS]);
 
     return {
         geoZones,

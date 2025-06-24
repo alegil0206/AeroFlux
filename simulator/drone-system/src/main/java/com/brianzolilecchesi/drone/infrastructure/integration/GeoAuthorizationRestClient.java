@@ -19,15 +19,16 @@ import org.springframework.web.client.RestTemplate;
 
 
 public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
-    private static final String authorizationApiUrl = "http://api.uspace.local/geo-authorization";
+    private final String authorizationApiUrl;
     private final RestTemplate restTemplate;
 
-    public GeoAuthorizationRestClient() {
-        this.restTemplate = new RestTemplate();
+    public GeoAuthorizationRestClient(String authorizationApiUrl) {
+        this(new RestTemplate(), authorizationApiUrl);
     }
 
-    public GeoAuthorizationRestClient(RestTemplate restTemplate) {
+    public GeoAuthorizationRestClient(RestTemplate restTemplate, String authorizationApiUrl) {
         this.restTemplate = restTemplate;
+        this.authorizationApiUrl = authorizationApiUrl;
     }
 
     @Override

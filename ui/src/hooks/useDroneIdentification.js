@@ -11,8 +11,8 @@ export const useDroneIdentification = () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.drone_identification) throw new Error('Drone Identification service is not available');
-            const response = await fetch(`${services.drone_identification}/drone`);
+            if (!services.DRONE_IDENTIFICATION) throw new Error('Drone Identification service is not available');
+            const response = await fetch(`${services.DRONE_IDENTIFICATION}/drone`);
             if (!response.ok) throw new Error(`Failed to fetch Drone Identification: ${response.statusText}`);
             const data = await response.json();
             setDrones(data);
@@ -22,14 +22,14 @@ export const useDroneIdentification = () => {
         finally {
             setLoading(false);
         }
-    }, [services.drone_identification]);
+    }, [services.DRONE_IDENTIFICATION]);
 
     const addDrone = useCallback(async (drone) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.drone_identification) throw new Error('Drone Identification service is not available');
-            const response = await fetch(`${services.drone_identification}/drone`, {
+            if (!services.DRONE_IDENTIFICATION) throw new Error('Drone Identification service is not available');
+            const response = await fetch(`${services.DRONE_IDENTIFICATION}/drone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(drone),
@@ -45,14 +45,14 @@ export const useDroneIdentification = () => {
         finally {
             setLoading(false);
         }
-    }, [services.drone_identification]);
+    }, [services.DRONE_IDENTIFICATION]);
 
     const updateDrone = useCallback(async (drone) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.drone_identification) throw new Error('Drone Identification service is not available');
-            const response = await fetch(`${services.drone_identification}/drone/${drone.id}`, {
+            if (!services.DRONE_IDENTIFICATION) throw new Error('Drone Identification service is not available');
+            const response = await fetch(`${services.DRONE_IDENTIFICATION}/drone/${drone.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(drone),
@@ -66,14 +66,14 @@ export const useDroneIdentification = () => {
         finally {
             setLoading(false);
         }
-    }, [services.drone_identification]);
+    }, [services.DRONE_IDENTIFICATION]);
 
     const deleteDrone = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.drone_identification) throw new Error('Drone Identification service is not available');
-            const response = await fetch(`${services.drone_identification}/drone/${id}`, {
+            if (!services.DRONE_IDENTIFICATION) throw new Error('Drone Identification service is not available');
+            const response = await fetch(`${services.DRONE_IDENTIFICATION}/drone/${id}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting Drone: ${response.statusText}`);
@@ -86,14 +86,14 @@ export const useDroneIdentification = () => {
         finally {
             setLoading(false);
         }
-    }, [services.drone_identification]);
+    }, [services.DRONE_IDENTIFICATION]);
 
     const deleteAllDrones = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.drone_identification) throw new Error('Drone Identification service is not available');
-            const response = await fetch(`${services.drone_identification}/drone`, {
+            if (!services.DRONE_IDENTIFICATION) throw new Error('Drone Identification service is not available');
+            const response = await fetch(`${services.DRONE_IDENTIFICATION}/drone`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting Drones: ${response.statusText}`);
@@ -105,7 +105,7 @@ export const useDroneIdentification = () => {
         finally {
             setLoading(false);
         }
-    }, [services.drone_identification]);
+    }, [services.DRONE_IDENTIFICATION]);
 
     return {
         drones,

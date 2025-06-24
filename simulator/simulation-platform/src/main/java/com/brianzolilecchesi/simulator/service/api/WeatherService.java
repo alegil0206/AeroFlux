@@ -16,7 +16,7 @@ public class WeatherService extends AbstractMicroservice {
 
     @Override
     public String getServiceName() {
-        return "weather";
+        return "WEATHER";
     }
 
     @Override

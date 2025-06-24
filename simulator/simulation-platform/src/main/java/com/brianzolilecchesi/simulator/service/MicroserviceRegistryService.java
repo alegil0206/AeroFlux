@@ -19,7 +19,7 @@ public class MicroserviceRegistryService {
         handlers.forEach(handler -> serviceHandlers.put(handler.getServiceName(), handler));
     }
 
-    public List<ServiceEndpointDTO> getAllServices() {
+    public List<ServiceEndpointDTO> getServices() {
         List<ServiceEndpointDTO> dtoList = new ArrayList<>();
         for (String serviceName : serviceHandlers.keySet()) {
             dtoList.add(new ServiceEndpointDTO(serviceName, serviceHandlers.get(serviceName).getServiceUrl()));
@@ -29,6 +29,14 @@ public class MicroserviceRegistryService {
 
     public Map<String, AbstractMicroservice> getServiceHandlers() {
         return serviceHandlers;
+    }
+
+    public Map<String, String> getServiceUrls() {
+        Map<String, String> urls = new HashMap<>();
+        for (Map.Entry<String, AbstractMicroservice> entry : serviceHandlers.entrySet()) {
+            urls.put(entry.getKey(), entry.getValue().getServiceUrl());
+        }
+        return urls;
     }
 
     public void updateServiceUrl(String serviceName, String newUrl) {

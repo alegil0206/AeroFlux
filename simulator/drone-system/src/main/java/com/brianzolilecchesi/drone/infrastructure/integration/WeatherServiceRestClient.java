@@ -13,13 +13,14 @@ import org.springframework.web.client.RestTemplate;
 
 public class WeatherServiceRestClient implements WeatherGateway {
     private final RestTemplate restTemplate;
-    private final String weatherApiUrl = "http://api.uspace.local/weather/weather";
+    private final String weatherApiUrl;
 
-    public WeatherServiceRestClient() {
-        this.restTemplate = new RestTemplate();
+    public WeatherServiceRestClient(String weatherApiUrl) {
+        this(new RestTemplate(), weatherApiUrl);
     }
 
-    public WeatherServiceRestClient(RestTemplate restTemplate) {
+    public WeatherServiceRestClient(RestTemplate restTemplate, String weatherApiUrl) {
+        this.weatherApiUrl = weatherApiUrl;
         this.restTemplate = restTemplate;
     }
 
@@ -27,7 +28,7 @@ public class WeatherServiceRestClient implements WeatherGateway {
     public List<RainCellDTO> getWeather() throws ExternalServiceException {
         try {
             ResponseEntity<RainCellDTO[]> response = restTemplate.exchange(
-                weatherApiUrl + "/rain-cell",
+                weatherApiUrl + "/weather/rain-cell",
                 HttpMethod.GET,
                 null,
                 RainCellDTO[].class

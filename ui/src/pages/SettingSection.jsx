@@ -73,10 +73,10 @@ function SettingsSection() {
     };
 
     const data = [
-        { element: "Drone Identification", key: "drone_identification", dropFunction: deleteAllDrones },
-        { element: "Geo Awareness", key: "geo_awareness", dropFunction: () => { deleteAllGeoZones(); deleteAllSupportPoints(); } },
-        { element: "Geo Authorization", key: "geo_authorization", dropFunction: deleteAllAuthorizations },
-        { element: "Weather", key: "weather", dropFunction: null }
+        { element: "Drone Identification", key: "DRONE_IDENTIFICATION", dropFunction: deleteAllDrones },
+        { element: "Geo Awareness", key: "GEO_AWARENESS", dropFunction: () => { deleteAllGeoZones(); deleteAllSupportPoints(); } },
+        { element: "Geo Authorization", key: "GEO_AUTHORIZATION", dropFunction: deleteAllAuthorizations },
+        { element: "Weather", key: "WEATHER", dropFunction: null }
     ];
 
     return (

@@ -2,7 +2,6 @@ package com.brianzolilecchesi.drone.infrastructure.service.geozone;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
-import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.geozone.registry.GeoZoneRegistry;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
@@ -22,8 +21,8 @@ public class GeoZoneService {
     private final GeoZoneRegistry geoZoneRegistry;
     private DataStatus geoZonesStatus = DataStatus.NOT_REQUESTED;
 
-    public GeoZoneService(LogService logService) {
-        this.restApiGateway = new GeoAwarenessRestClient();
+    public GeoZoneService(LogService logService, GeoAwarenessGateway restApiGateway) {
+        this.restApiGateway = restApiGateway;
         this.geoZoneRegistry = new GeoZoneRegistry();
         this.logService = logService;
     }

@@ -11,7 +11,6 @@ import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.Position;
 import com.brianzolilecchesi.drone.domain.model.SupportPoint;
-import com.brianzolilecchesi.drone.infrastructure.integration.GeoAwarenessRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class SupportPointService {
@@ -21,9 +20,9 @@ public class SupportPointService {
     private List<SupportPoint> supportPoints;
     private DataStatus supportPointsStatus = DataStatus.NOT_REQUESTED;
 
-    public SupportPointService(LogService logService) {
+    public SupportPointService(LogService logService, GeoAwarenessGateway geoAwarenessGateway) {
         this.logService = logService;
-        this.geoAwarenessGateway = new GeoAwarenessRestClient();
+        this.geoAwarenessGateway = geoAwarenessGateway;
         this.supportPoints = new ArrayList<>();
     }
 

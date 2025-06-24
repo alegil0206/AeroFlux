@@ -11,8 +11,8 @@ export const useGeoAuthorization = () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_authorization) throw new Error('Geo Authorization service is not available');
-            const response = await fetch(`${services.geo_authorization}/authorization`);
+            if (!services.GEO_AUTHORIZATION) throw new Error('Geo Authorization service is not available');
+            const response = await fetch(`${services.GEO_AUTHORIZATION}/authorization`);
             if (!response.ok) throw new Error(`Failed to fetch Geo Authorization: ${response.statusText}`);
             const data = await response.json();
             setAuthorization(data);
@@ -22,14 +22,14 @@ export const useGeoAuthorization = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_authorization]);
+    }, [services.GEO_AUTHORIZATION]);
 
     const addAuthorization = useCallback(async (authorizationData) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_authorization) throw new Error('Geo Authorization service is not available');
-            const response = await fetch(`${services.geo_authorization}/authorization`, {
+            if (!services.GEO_AUTHORIZATION) throw new Error('Geo Authorization service is not available');
+            const response = await fetch(`${services.GEO_AUTHORIZATION}/authorization`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(authorizationData),
@@ -46,14 +46,14 @@ export const useGeoAuthorization = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_authorization]);
+    }, [services.GEO_AUTHORIZATION]);
 
     const revokeAuthorization = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_authorization) throw new Error('Geo Authorization service is not available');
-            const response = await fetch(`${services.geo_authorization}/authorization/revoked/${id}`, {
+            if (!services.GEO_AUTHORIZATION) throw new Error('Geo Authorization service is not available');
+            const response = await fetch(`${services.GEO_AUTHORIZATION}/authorization/revoked/${id}`, {
                 method: 'POST',
             });
             if (!response.ok) throw new Error(`Error deleting Geo Authorization ${id}: ${response.statusText}`);
@@ -65,14 +65,14 @@ export const useGeoAuthorization = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_authorization]);
+    }, [services.GEO_AUTHORIZATION]);
 
     const deleteAllAuthorizations = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!services.geo_authorization) throw new Error('Geo Authorization service is not available');
-            const response = await fetch(`${services.geo_authorization}/authorization`, {
+            if (!services.GEO_AUTHORIZATION) throw new Error('Geo Authorization service is not available');
+            const response = await fetch(`${services.GEO_AUTHORIZATION}/authorization`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error(`Error deleting Geo Authorizations: ${response.statusText}`);
@@ -84,7 +84,7 @@ export const useGeoAuthorization = () => {
         finally {
             setLoading(false);
         }
-    }, [services.geo_authorization]);
+    }, [services.GEO_AUTHORIZATION]);
 
     return {
         authorization,

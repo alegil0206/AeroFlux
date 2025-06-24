@@ -11,7 +11,6 @@ import com.brianzolilecchesi.drone.domain.integration.WeatherGateway;
 import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.LogConstants;
 import com.brianzolilecchesi.drone.domain.model.RainCell;
-import com.brianzolilecchesi.drone.infrastructure.integration.WeatherServiceRestClient;
 import com.brianzolilecchesi.drone.infrastructure.service.log.LogService;
 
 public class WeatherService {
@@ -22,8 +21,8 @@ public class WeatherService {
     private List<RainCell> rainCells = Collections.emptyList();
     private DataStatus rainCellsStatus = DataStatus.NOT_REQUESTED;
 
-    public WeatherService(LogService logService) {
-        this.restApiGateway = new WeatherServiceRestClient();
+    public WeatherService(LogService logService, WeatherGateway restApiGateway) {
+        this.restApiGateway = restApiGateway;
         this.logService = logService;
     }
 
