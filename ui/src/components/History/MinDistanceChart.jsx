@@ -89,7 +89,7 @@ const MinDistanceChart = ({ simulation }) => {
       yAxis={[{ label: 'Minimum Distance (m)', scaleType: 'log', min: 1 }]}
       sx={{
         [`& .${axisClasses.left} .${axisClasses.label}`]: {
-          transform: 'translateX(-15px)',
+          transform: 'translateX(-12px)',
         },
       }}
     />

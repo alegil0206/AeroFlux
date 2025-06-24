@@ -48,7 +48,7 @@ const BatteryLevelChart = ({ simulation }) => {
       ]}
       sx={{
         [`& .${axisClasses.left} .${axisClasses.label}`]: {
-          transform: 'translateX(-15px)',
+          transform: 'translateX(-12px)',
         },
       }}
     />

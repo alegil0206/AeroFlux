@@ -6,7 +6,8 @@ const relevantEvents = new Set([
   "GEOZONE_ENTERED",
   "BATTERY_CRITICAL",
   "RAIN_CELL_ENTERED",
-  "INSUFFICIENT_BATTERY"
+  "INSUFFICIENT_BATTERY",
+  "UNSAFE_FLIGHT"
 ]);
 
 function extractReasonFromLogs(drone) {

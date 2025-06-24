@@ -29,4 +29,28 @@ public class RainCell {
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        RainCell rainCell = (RainCell) obj;
+        if (coordinates.size() != rainCell.coordinates.size()) return false;
+        for (int i = 0; i < coordinates.size(); i++) {
+            double[] thisCoord = coordinates.get(i);
+            double[] otherCoord = rainCell.coordinates.get(i);
+            if (thisCoord.length != otherCoord.length) return false;
+            for (int j = 0; j < thisCoord.length; j++) {
+                if (Double.compare(thisCoord[j], otherCoord[j]) != 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return coordinates.hashCode();
+    }
+
 }

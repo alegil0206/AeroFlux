@@ -20,11 +20,7 @@ public class GeoAwarenessRestClient implements GeoAwarenessGateway {
     private final String geozoneApiUrl;
     private final RestTemplate restTemplate;
 
-    public GeoAwarenessRestClient(String geozoneApiUrl) {
-        this(new RestTemplate(), geozoneApiUrl);
-    }
-
-    public GeoAwarenessRestClient(RestTemplate restTemplate, String geozoneApiUrl) {
+    public GeoAwarenessRestClient(String geozoneApiUrl, RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.geozoneApiUrl = geozoneApiUrl;
     }

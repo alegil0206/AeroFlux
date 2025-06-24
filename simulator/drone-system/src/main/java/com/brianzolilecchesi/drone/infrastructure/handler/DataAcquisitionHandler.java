@@ -19,16 +19,16 @@ import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService
 
 public class DataAcquisitionHandler implements StepHandler {
 
-    private static final int GEOZONES_UPDATE_INTERVAL = 25;
+    private static final int GEOZONES_UPDATE_INTERVAL = 30;
     private int lastGeoZoneUpdate = GEOZONES_UPDATE_INTERVAL;
 
-    private static final int WEATHER_UPDATE_INTERVAL = 25;
+    private static final int WEATHER_UPDATE_INTERVAL = 60;
     private int lastWeatherUpdate = WEATHER_UPDATE_INTERVAL;
 
-    private static final int AUTHORIZATION_UPDATE_INTERVAL = 25;
+    private static final int AUTHORIZATION_UPDATE_INTERVAL = 30;
     private int lastAuthorizationUpdate = AUTHORIZATION_UPDATE_INTERVAL;
 
-    private static final int SUPPORT_POINTS_UPDATE_INTERVAL = 50;
+    private static final int SUPPORT_POINTS_UPDATE_INTERVAL = 120;
     private int lastSupportPointsUpdate = SUPPORT_POINTS_UPDATE_INTERVAL;
 
     private final DroneContext context;

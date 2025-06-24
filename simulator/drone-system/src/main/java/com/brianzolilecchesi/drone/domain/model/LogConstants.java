@@ -49,6 +49,7 @@ public class LogConstants {
         public static final String FETCHED = "FETCHED";
         public static final String FETCH_FAILED = "FETCH_FAILED";
         public static final String HOVERING = "HOVERING";
+        public static final String WAITING = "WAITING";
         public static final String MOVING = "MOVING";
         public static final String EMERGENCY_LANDING = "EMERGENCY_LANDING";
         public static final String LANDING = "LANDING";
@@ -64,6 +65,7 @@ public class LogConstants {
 
         public static final String GEOZONE_ENTERED = "GEOZONE_ENTERED";
         public static final String RAIN_CELL_ENTERED = "RAIN_CELL_ENTERED";
+        public static final String UNSAFE_FLIGHT = "UNSAFE_FLIGHT";
     }
 
     public static class Level {

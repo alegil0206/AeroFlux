@@ -110,7 +110,7 @@ function HistorySection() {
                                 <StatCard data={{ title: "Number of Flights", value: historyDetails.drones.length }} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
-                                <StatCard data={{ title: "Duration (s)", value: historyDetails.duration }} />
+                                <StatCard data={{ title: "Duration (min)", value: (historyDetails.duration / 60) }} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
                                 <StatCard data={{ title: "Execution Speed", value: `${historyDetails.executionSpeed}x` }} />

@@ -22,11 +22,7 @@ public class GeoAuthorizationRestClient implements GeoAuthorizationGateway {
     private final String authorizationApiUrl;
     private final RestTemplate restTemplate;
 
-    public GeoAuthorizationRestClient(String authorizationApiUrl) {
-        this(new RestTemplate(), authorizationApiUrl);
-    }
-
-    public GeoAuthorizationRestClient(RestTemplate restTemplate, String authorizationApiUrl) {
+    public GeoAuthorizationRestClient(String authorizationApiUrl, RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.authorizationApiUrl = authorizationApiUrl;
     }

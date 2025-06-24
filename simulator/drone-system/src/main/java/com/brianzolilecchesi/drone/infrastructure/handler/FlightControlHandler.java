@@ -37,7 +37,11 @@ public class FlightControlHandler implements StepHandler {
             if (nextPosition != null)
                 flightController.moveTo(nextPosition);
         } else {
-            flightController.hover();
+            if (flightController.isOnGround()) {
+                logService.info(LogConstants.Component.FLIGHT_CONTROL_HANDLER, LogConstants.Event.WAITING, "Waiting on ground");
+            } else {
+                flightController.hover();
+            }
         }
 
         if (navigationService.hasReached(flightController.getCurrentPosition(), new Position(context.getDroneProperties().getDestination(), 0)) &&

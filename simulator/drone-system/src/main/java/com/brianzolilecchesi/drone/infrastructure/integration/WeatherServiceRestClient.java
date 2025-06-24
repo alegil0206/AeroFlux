@@ -15,11 +15,7 @@ public class WeatherServiceRestClient implements WeatherGateway {
     private final RestTemplate restTemplate;
     private final String weatherApiUrl;
 
-    public WeatherServiceRestClient(String weatherApiUrl) {
-        this(new RestTemplate(), weatherApiUrl);
-    }
-
-    public WeatherServiceRestClient(RestTemplate restTemplate, String weatherApiUrl) {
+    public WeatherServiceRestClient(String weatherApiUrl, RestTemplate restTemplate) {
         this.weatherApiUrl = weatherApiUrl;
         this.restTemplate = restTemplate;
     }

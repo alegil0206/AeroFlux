@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import com.brianzolilecchesi.drone.domain.handler.StepHandler;
 import com.brianzolilecchesi.drone.domain.model.Authorization;
+import com.brianzolilecchesi.drone.domain.model.DataStatus;
 import com.brianzolilecchesi.drone.domain.model.DroneContext;
 import com.brianzolilecchesi.drone.domain.model.DroneFlightMode;
 import com.brianzolilecchesi.drone.domain.model.GeoZone;
@@ -23,6 +24,8 @@ import com.brianzolilecchesi.drone.infrastructure.service.weather.WeatherService
 
 public class GeoLocationHandler implements StepHandler {
 
+    private static final int UNAVAILABLE_DATA_TOLERANCE = 30;
+
     private final DroneContext context;
     private final FlightController flightController;
     private final GeoZoneService geoZoneService;
@@ -30,7 +33,8 @@ public class GeoLocationHandler implements StepHandler {
     private final LogService logService;
     private final AuthorizationService authorizationService;
     private final GeoCalculator geoCalculator;
-    
+    private int unavailableDataToleranceCounter = UNAVAILABLE_DATA_TOLERANCE;
+
     public GeoLocationHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
         this.flightController = droneServices.getFlightController();
@@ -47,6 +51,21 @@ public class GeoLocationHandler implements StepHandler {
 
         if (context.getFlightMode() == DroneFlightMode.EMERGENCY_LANDING) {
             return false;
+        }
+
+        if (!flightController.isOnGround() && 
+                (geoZoneService.getGeoZonesStatus() != DataStatus.AVAILABLE || 
+                weatherService.getRainCellsStatus() != DataStatus.AVAILABLE ||
+                authorizationService.getAuthorizationsStatus() != DataStatus.AVAILABLE)
+        ) {
+            unavailableDataToleranceCounter--;
+            if (unavailableDataToleranceCounter <= 0) {
+                logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.UNSAFE_FLIGHT, 
+                    "Environment data not available, emergency landing requested");
+                context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING_REQUEST);
+            }
+        } else {
+            unavailableDataToleranceCounter = UNAVAILABLE_DATA_TOLERANCE;
         }
 
         Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();

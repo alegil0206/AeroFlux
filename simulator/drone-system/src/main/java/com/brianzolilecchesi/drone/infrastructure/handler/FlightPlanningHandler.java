@@ -83,10 +83,7 @@ public class FlightPlanningHandler implements StepHandler {
             authorizationService.getAuthorizationsStatus() == DataStatus.AVAILABLE &&
             supportPointService.getSupportPointsStatus() == DataStatus.AVAILABLE;
 
-        if (!envDataAvailable) {
-            flightController.hover();
-            return true;
-        }
+        if (!envDataAvailable) return false;
 
         Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();
         Map<String, Authorization> authorizations = authorizationService.getAuthorizations();
@@ -114,12 +111,7 @@ public class FlightPlanningHandler implements StepHandler {
 
             DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
 
-            if(supportPointStatus != DataStatus.AVAILABLE) {
-                if (!flightController.isOnGround())
-                    flightController.hover();
-                return true;
-            }
-
+            if(supportPointStatus != DataStatus.AVAILABLE) return false;
             
             List<SupportPoint> supportPoints = new ArrayList<>();
             supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));

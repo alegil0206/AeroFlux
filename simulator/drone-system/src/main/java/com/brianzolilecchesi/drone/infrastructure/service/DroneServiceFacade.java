@@ -2,6 +2,9 @@ package com.brianzolilecchesi.drone.infrastructure.service;
 
 import java.util.Map;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
 import com.brianzolilecchesi.drone.domain.integration.GeoAuthorizationGateway;
 import com.brianzolilecchesi.drone.domain.integration.GeoAwarenessGateway;
 import com.brianzolilecchesi.drone.domain.integration.WeatherGateway;
@@ -46,9 +49,9 @@ public class DroneServiceFacade {
         flightController = new FlightController(hardwareAbstractionLayer.getMotor(), hardwareAbstractionLayer.getGps(), hardwareAbstractionLayer.getAltimeter(), logService);
         droneSafetyNavigationService = new DroneSafetyNavigationService();
 
-        WeatherGateway weatherServiceRestClient = new WeatherServiceRestClient(microservicesUrlsMap.get("WEATHER"));
-        GeoAuthorizationGateway geoAuthorizationRestClient = new GeoAuthorizationRestClient(microservicesUrlsMap.get("GEO_AUTHORIZATION"));
-        GeoAwarenessGateway geoAwarenessRestClient = new GeoAwarenessRestClient(microservicesUrlsMap.get("GEO_AWARENESS"));
+        WeatherGateway weatherServiceRestClient = new WeatherServiceRestClient(microservicesUrlsMap.get("WEATHER"), createRestTemplateWithTimeout());
+        GeoAuthorizationGateway geoAuthorizationRestClient = new GeoAuthorizationRestClient(microservicesUrlsMap.get("GEO_AUTHORIZATION"), createRestTemplateWithTimeout());
+        GeoAwarenessGateway geoAwarenessRestClient = new GeoAwarenessRestClient(microservicesUrlsMap.get("GEO_AWARENESS"), createRestTemplateWithTimeout());
         geoZoneService = new GeoZoneService(logService, geoAwarenessRestClient);
         weatherService = new WeatherService(logService, weatherServiceRestClient);
         authorizationService= new AuthorizationService(logService, geoAuthorizationRestClient);
@@ -93,5 +96,13 @@ public class DroneServiceFacade {
 
     public SupportPointService getSupportPointService() {
         return supportPointService;
+    }
+
+    private static RestTemplate createRestTemplateWithTimeout() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
+
+        return new RestTemplate(factory);
     }
 }
