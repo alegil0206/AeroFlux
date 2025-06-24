@@ -37,6 +37,7 @@ public class SimulationEngine {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
         String startTime = java.time.LocalDateTime.now().format(formatter);
+        Long startTimeMillis = System.currentTimeMillis();
 
         Map<DroneProperties, List<DroneStatus>> droneStatusMap = new HashMap<>();
         for (DroneSystem drone : drones) {
@@ -70,7 +71,9 @@ public class SimulationEngine {
             }
         }
 
+        long elapsedTime = (System.currentTimeMillis() - startTimeMillis) / 1000;
+
         logService.info(Constants.Service.SIMULATOR_SERVICE, Constants.Event.SIMULATION_COMPLETED, "Simulation completed");
-        simulationHistoryService.saveSimulationDetails(startTime, droneStatusMap);
+        simulationHistoryService.saveSimulationDetails(startTime, elapsedTime, simulationStatus.getExecutionSpeed(), droneStatusMap);
     }
 }

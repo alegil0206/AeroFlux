@@ -11,12 +11,16 @@ public class SimulationHistory {
     
     private String simulationId;
     private String startTime;
+    private long duration;
+    private int executionSpeed;
     private List<LogEntry> logs;
     private Map<DroneProperties, List<DroneStatus>> droneStatusMap;
 
-    public SimulationHistory(String simulationId, String startTime, List<LogEntry> logs, Map<DroneProperties, List<DroneStatus>> droneStatusMap) {
+    public SimulationHistory(String simulationId, String startTime, long duration, int executionSpeed, List<LogEntry> logs, Map<DroneProperties, List<DroneStatus>> droneStatusMap) {
         this.simulationId = simulationId;
         this.startTime = startTime;
+        this.duration = duration;
+        this.executionSpeed = executionSpeed;
         this.logs = logs;
         this.droneStatusMap = droneStatusMap;
     }
@@ -51,6 +55,22 @@ public class SimulationHistory {
 
     public void setDroneStatusMap(Map<DroneProperties, List<DroneStatus>> droneStatusMap) {
         this.droneStatusMap = droneStatusMap;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public int getExecutionSpeed() {
+        return executionSpeed;
+    }
+
+    public void setExecutionSpeed(int executionSpeed) {
+        this.executionSpeed = executionSpeed;
     }
 
 }

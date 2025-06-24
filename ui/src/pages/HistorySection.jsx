@@ -1,10 +1,17 @@
 import { useHistory } from "../hooks/useHistory";
-
 import { useEffect, useState } from "react";
-import { Box, Grid, Typography, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Snackbar, Alert } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import LogViewer from "../components/Home/LogViewer";
 import HistorySelector from "../components/History/HistorySelector";
 import MinDistanceChart from "../components/History/MinDistanceChart";
+import FlightOutcomeCharts from "../components/History/FlightOutcomeCharts";
+import DownloadJsonButton from "../components/History/DownloadJsonButton";
+import FlightOutcomeDataGrid from "../components/History/FlightOutcomeDataGrid";
+import BatteryLevelChart from "../components/History/BatteryLevelChart";
+import HistoryMap from "../components/History/HistoryMap";
+import StatCard from "../components/History/StatCard";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function HistorySection() {
     const {
@@ -12,6 +19,7 @@ function HistorySection() {
         fetchHistoryList,
         fetchHistoryDetails,
         historyDetails,
+        loading,
         error,
     } = useHistory();
 
@@ -48,14 +56,102 @@ function HistorySection() {
 
             <HistorySelector historyList={historyList} onSelectHistory={setSelectedHistory} />
 
+            {!selectedHistory && (
+                <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100vh",
+                }}
+                >
+                <Typography variant="body1" color="textSecondary">
+                    Use the dropdown above to select a simulation history or run a new simulation.
+                </Typography>
+                </Box>
+            )}
+
+            { loading && (
+                <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100vh",
+                    flexDirection: "column",
+                }}
+                >
+                <CircularProgress />
+                <Typography variant="body1" color="textSecondary">
+                    Loading simulation details...
+                </Typography>
+                </Box>
+            )}
+
+
             {historyDetails && (
-                <div>
-                    <MinDistanceChart simulation={historyDetails} />
-                    <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
-                        Execution Logs
-                    </Typography>
-                    <LogViewer logs={historyDetails.logs} />
-                </div>
+            <>
+                <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+                    <Grid size={{ xs: 12, lg: 7 }}>
+                        <HistoryMap simulation={historyDetails} />
+                    </Grid>
+                    <Grid size={{ xs: 12, lg: 5 }}>
+                        <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+                            <Grid size={{ xs: 12 }}>
+                                <DownloadJsonButton data={historyDetails} />
+                            </Grid>  
+                            <Grid size={{ xs: 12, md: 6, lg: 12, xl: 6 }}>
+                                <StatCard data={{ title: "Simulation ID", value: historyDetails.id }} />
+                            </Grid>                          
+                            <Grid size={{ xs: 12, md: 6, lg: 12, xl: 6 }}>
+                                <StatCard data={{ title: "Execution Date", value: `${new Date(historyDetails.date).toLocaleString()}` }} />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
+                                <StatCard data={{ title: "Number of Flights", value: historyDetails.drones.length }} />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
+                                <StatCard data={{ title: "Duration (s)", value: historyDetails.duration }} />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
+                                <StatCard data={{ title: "Execution Speed", value: `${historyDetails.executionSpeed}x` }} />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid container spacing={1} columns={12} sx={{ mb: (theme) => theme.spacing(2) }}>
+                    <Grid size={{ xs: 12 }}>
+                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
+                            Flight Outcomes
+                        </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, lg: 7 }}>
+                        <FlightOutcomeDataGrid simulation={historyDetails} />
+                    </Grid>
+                    <Grid size={{ xs: 12, lg: 5 }}>
+                        <FlightOutcomeCharts simulation={historyDetails} />
+                    </Grid>                    
+                    <Grid size={{ xs: 12 }}>
+                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
+                            Minimum Distance Chart
+                        </Typography>
+                        <MinDistanceChart simulation={historyDetails} />
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
+                            Battery Levels
+                        </Typography>
+                        <BatteryLevelChart simulation={historyDetails} />
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
+                            Execution Logs
+                        </Typography>
+                        <LogViewer logs={historyDetails.logs} />
+                    </Grid>
+                </Grid>
+            </>
             )}
 
             <Snackbar

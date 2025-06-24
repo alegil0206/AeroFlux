@@ -1,5 +1,6 @@
 import React from 'react';
 import { LineChart } from '@mui/x-charts';
+import { axisClasses } from '@mui/x-charts/ChartsAxis';
 
 const MinDistanceChart = ({ simulation }) => {
   function haversineDistance(coord1, coord2) {
@@ -18,10 +19,7 @@ const MinDistanceChart = ({ simulation }) => {
 
   function computeMinDistances(simulation) {
     const { drones } = simulation;
-
-    // Calcola la lunghezza massima
     const maxSteps = Math.max(...drones.map(d => d.positions.length));
-
     const results = {};
 
     drones.forEach((drone, index) => {
@@ -29,17 +27,21 @@ const MinDistanceChart = ({ simulation }) => {
       results[droneId] = [];
 
       for (let t = 0; t < maxSteps; t++) {
-        // Se il drone ha meno posizioni, usa l'ultima
-        const currentPos = drone.positions[Math.min(t, drone.positions.length - 1)].position;
+        if (t >= drone.positions.length) {
+          results[droneId].push({ time: t, distance: null });
+          continue;
+        }
+
+        const currentPos = drone.positions[t].position;
 
         const distances = drones
-          .filter((_, i) => i !== index)
+          .filter((_, i) => i !== index && t < drones[i].positions.length)
           .map(other => {
-            const otherPos = other.positions[Math.min(t, other.positions.length - 1)].position;
+            const otherPos = other.positions[t].position;
             return haversineDistance(currentPos, otherPos);
           });
 
-        const minDist = distances.length > 0 ? Math.min(...distances) : 0;
+        const minDist = distances.length > 0 ? Math.min(...distances) : null;
         results[droneId].push({ time: t, distance: minDist });
       }
     });
@@ -49,29 +51,47 @@ const MinDistanceChart = ({ simulation }) => {
 
   const data = computeMinDistances(simulation);
 
-  const series = Object.entries(data).map(([droneId, values]) => ({
+  const rawSeries = Object.entries(data).map(([droneId, values]) => ({
     id: droneId,
     label: droneId,
     data: values.map(p => p.distance),
     showMark: false
   }));
 
+  const lastValidIndex = rawSeries[0].data.map((_, i) => i)
+    .reverse()
+    .find(i => rawSeries.some(s => s.data[i] != null));
+
+  const truncatedSeries = rawSeries.map(s => ({
+    ...s,
+    data: s.data.slice(0, lastValidIndex + 1)
+  }));
+
+  const xData = Array.from({ length: lastValidIndex + 1 }, (_, i) => i);
+
   const xAxis = [
     {
       id: 'time',
-      data: data[Object.keys(data)[0]].map(p => p.time),
+      data: xData,
       scaleType: 'linear',
       label: 'Step',
+      min: 0,
+      max: lastValidIndex
     },
   ];
 
   return (
     <LineChart
+      slotProps={{ legend: { hidden: true } }}
       xAxis={xAxis}
-      series={series}
+      series={truncatedSeries}
       height={400}
-      width={800}
-      yAxis={[{ label: 'Minimum Distance (m)', scaleType: 'log', min: 1, }]}
+      yAxis={[{ label: 'Minimum Distance (m)', scaleType: 'log', min: 1 }]}
+      sx={{
+        [`& .${axisClasses.left} .${axisClasses.label}`]: {
+          transform: 'translateX(-15px)',
+        },
+      }}
     />
   );
 };

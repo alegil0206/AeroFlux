@@ -13,7 +13,6 @@ export const SettingProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [mainService, setMainService] = useState(null);
 
-  // Funzione per recuperare le coordinate
   const fetchCoordinates = async () => {
     try {
       const response = await fetch(`http://${mainService}/setting/coordinates`);
@@ -25,7 +24,6 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
-  // Funzione per recuperare i servizi
   const fetchServices = async () => {
     try {
       const response = await fetch(`http://${mainService}/setting/service`);

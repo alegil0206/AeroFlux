@@ -47,6 +47,8 @@ public class SimulationHistoryService {
         SimulationHistoryDTO simulationHistoryDTO = new SimulationHistoryDTO(
             simulationId,
             simulationHistory.getStartTime(),
+            simulationHistory.getDuration(),
+            simulationHistory.getExecutionSpeed(),
             simulationHistory.getLogs().stream().map(LogDTO::new).toList(),
             simulationHistory.getDroneStatusMap().entrySet().stream()
                 .map(entry -> new DroneHistoryDTO(
@@ -58,10 +60,10 @@ public class SimulationHistoryService {
         return simulationHistoryDTO;
     }
 
-    public synchronized void saveSimulationDetails(String startTime, Map<DroneProperties, List<DroneStatus>> droneStatusMap) {
+    public synchronized void saveSimulationDetails(String startTime, long duration, int executionSpeed, Map<DroneProperties, List<DroneStatus>> droneStatusMap) {
         String simulationId = prefix_id + simulationCounter++;
         List<LogEntry> logs = logService.getAndClearLogEntries();
-        SimulationHistory simulation = new SimulationHistory(simulationId, startTime, logs, droneStatusMap);
+        SimulationHistory simulation = new SimulationHistory(simulationId, startTime, duration, executionSpeed, logs, droneStatusMap);
         simulationHistory.put(simulationId, simulation);
     }
 

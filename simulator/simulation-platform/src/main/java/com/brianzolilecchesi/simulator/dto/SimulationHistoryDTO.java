@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SimulationHistoryDTO extends SimulationDTO {
 
+    private long duration;
+    private int executionSpeed;
     private List<LogDTO> logs;
     private List<DroneHistoryDTO> drones;
 
@@ -14,9 +16,13 @@ public class SimulationHistoryDTO extends SimulationDTO {
     public SimulationHistoryDTO(
             @JsonProperty("id") String simulationId,
             @JsonProperty("date") String simulationDate,
+            @JsonProperty("duration") long duration,
+            @JsonProperty("executionSpeed") int executionSpeed,
             @JsonProperty("logs") List<LogDTO> logs,
             @JsonProperty("drones") List<DroneHistoryDTO> drones) {
         super(simulationId, simulationDate);
+        this.duration = duration;
+        this.executionSpeed = executionSpeed;
         this.logs = logs;
         this.drones = drones;
     }
@@ -35,6 +41,22 @@ public class SimulationHistoryDTO extends SimulationDTO {
 
     public void setDrones(List<DroneHistoryDTO> drones) {
         this.drones = drones;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public int getExecutionSpeed() {
+        return executionSpeed;
+    }
+
+    public void setExecutionSpeed(int executionSpeed) {
+        this.executionSpeed = executionSpeed;
     }
     
 }

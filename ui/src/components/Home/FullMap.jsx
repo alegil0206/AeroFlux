@@ -278,7 +278,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
             type="line"
             paint={{
               'line-color': ['get', 'color'],
-              'line-width': 2,
+              'line-width': 3,
             }}
           />
         </Source>
