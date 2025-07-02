@@ -56,7 +56,7 @@ const primaryListItems = [
 ];
 
 const secondaryListItems = [
-  { text: 'About', path: 'https://github.com/alegil0206/U-space',  icon: <InfoRoundedIcon /> }
+  { text: 'About', path: 'https://github.com/alegil0206/AeroFlux',  icon: <InfoRoundedIcon /> }
 ];
 
 export default function Dashboard(props) {

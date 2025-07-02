@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
@@ -7,7 +7,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PenIcon from '@mui/icons-material/Edit';
 
 export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
-  // Funzione per il rendering dello stato
   const renderStatus = (status) => {
     const colors = {
       'ACTIVE': 'success',
@@ -44,12 +43,12 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
     return 'Shape information not available';
   };
 
-  // Definizione delle colonne
   const columns = [
     {
       field: 'id',
       headerName: 'ID',
       flex: 1,
+      hideable: false,
       renderCell: (params) => (
         <Tooltip title={`GeoZone ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -92,6 +91,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       field: 'altitude_level_limit_inferior',
       headerName: 'Altitude Level Limit Inferior',
       flex: 1,
+      valueGetter: (value, row) => `${row.altitude_level_limit_inferior} - ${row.altitude_limit_inferior} m`,
       renderCell: (params) => (
         <Tooltip title={`Altitude Level: ${params.row.altitude_level_limit_inferior} - Altitude: ${params.row.altitude_limit_inferior} m`} arrow>
           <span>{`${params.row.altitude_level_limit_inferior} - ${params.row.altitude_limit_inferior} m`}</span>
@@ -102,6 +102,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       field: 'altitude_level_limit_superior',
       headerName: 'Altitude Level Limit Superior',
       flex: 1,
+      valueGetter: (value, row) => `${row.altitude_level_limit_superior} - ${row.altitude_limit_superior} m`,
       renderCell: (params) => (
         <Tooltip title={`Altitude Level: ${params.row.altitude_level_limit_superior} - Altitude: ${params.row.altitude_limit_superior} m`} arrow>
           <span>{`${params.row.altitude_level_limit_superior} - ${params.row.altitude_limit_superior} m`}</span>
@@ -112,6 +113,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       field: 'shape_description',
       headerName: 'Description',
       flex: 3,
+      valueGetter: (value, row) => renderShapeDescription(row),
       renderCell: (params) => (
         <Tooltip title={renderShapeDescription(params.row)} arrow>
           <span>{renderShapeDescription(params.row)}</span>
@@ -120,7 +122,7 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
     },
     {
       field: 'actions',
-      headerName: ' ',
+      headerName: 'Actions',
       sortable: false,
       renderCell: (params) => (
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -152,6 +154,9 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
   return (
     <DataGrid
       autoHeight
+      disableRowSelectionOnClick
+      slots={{ toolbar: GridToolbar }}
+      slotProps={{ toolbar: { csvOptions: { allColumns: true } } }}
       getRowHeight={() => 'auto'}
       rows={data}
       columns={columns}
@@ -160,6 +165,19 @@ export default function GeoZoneDataGrid({ data, openEditDialog, onDelete }) {
       }
       initialState={{
         pagination: { paginationModel: { pageSize: 20 } },
+        columns: {
+          columnVisibilityModel: {
+            id: true,
+            name: true,
+            status: true,
+            type: true,
+            category: true,
+            altitude_level_limit_inferior: true,
+            altitude_level_limit_superior: true,
+            shape_description: false,
+            actions: true,
+          },
+        },
       }}
       pageSizeOptions={[10, 20, 50]}
       density="compact"

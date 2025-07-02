@@ -18,14 +18,13 @@ import PublicIcon from '@mui/icons-material/Public';
 
 export default function LoadingSection( { logo } ) {
 
-    const { connectToMainService, error } = useSettings();
+    const { error } = useSettings();
 
     const [tempEndpoint, setTempEndpoint] = useState("api.uspace.local/simulator");
     const [isConnecting, setIsConnecting] = useState(false);
 
     const handleButtonClick = async () => {
         setIsConnecting(true);
-        await connectToMainService(tempEndpoint);
         setIsConnecting(false);
     }
 

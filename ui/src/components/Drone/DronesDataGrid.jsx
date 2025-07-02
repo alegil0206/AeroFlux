@@ -25,6 +25,7 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       field: 'id',
       headerName: 'ID',
       flex: 1,
+      hideable: false,
       renderCell: (params) => (
         <Tooltip title={`ID: ${params.value}`} arrow>
           <span>{params.value}</span>
@@ -51,6 +52,9 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       field: 'source',
       headerName: 'Source Coordinates',
       flex: 3,
+      valueGetter: (value, row) => { 
+        return `${row.source.latitude}, ${row.source.longitude}`
+      },
       renderCell: (params) => (
         <Tooltip
           title={`Lat: ${params.row.source.latitude}, Long: ${params.row.source.longitude}`}
@@ -66,6 +70,9 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       field: 'destination',
       headerName: 'Destination Coordinates',
       flex: 3,
+      valueGetter: (value, row) => {
+        return `${row.destination.latitude}, ${row.destination.longitude}`
+      },
       renderCell: (params) => (
         <Tooltip
           title={`Lat: ${params.row.destination.latitude}, Long: ${params.row.destination.longitude}`}
@@ -157,6 +164,7 @@ export default function DronesDataGrid({ data, openEditDialog, onDelete }) {
       autoHeight
       disableRowSelectionOnClick
       slots={{ toolbar: GridToolbar }}
+      slotProps={{ toolbar: { csvOptions: { allColumns: true } } }}
       getRowHeight={() => 'auto'}
       rows={data}
       columns={columns}

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -13,27 +12,9 @@ function ButtonField(props) {
     label,
     id,
     disabled,
-    InputProps: { ref } = {}, 
-    inputProps: { 'aria-label': ariaLabel } = {} 
+    InputProps: { ref } = {},
+    inputProps: { 'aria-label': ariaLabel } = {},
   } = props;
-
-  ButtonField.propTypes = {
-    /**
-     * If `true`, the component is disabled.
-     * @default false
-     */
-    disabled: PropTypes.bool,
-    id: PropTypes.string,
-    inputProps: PropTypes.shape({
-      'aria-label': PropTypes.string,
-    }),
-    InputProps: PropTypes.shape({
-      endAdornment: PropTypes.node,
-      startAdornment: PropTypes.node,
-    }),
-    label: PropTypes.node,
-    setOpen: PropTypes.func,
-  };  
 
   return (
     <Button
@@ -53,12 +34,13 @@ function ButtonField(props) {
 }
 
 export default function DateTimeView() {
-  const [value, setValue] = useState(dayjs());  // Inizializza con la data e ora correnti
+  const [now, setNow] = useState(dayjs()); // aggiorna il testo del bottone
   const [open, setOpen] = useState(false);
+  const [calendarValue, setCalendarValue] = useState(dayjs()); // usato solo nel calendario
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setValue(dayjs()); 
+      setNow(dayjs());
     }, 1000);
     return () => clearInterval(intervalId);
   }, []);
@@ -66,17 +48,15 @@ export default function DateTimeView() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DatePicker
-        value={value}
-        label={value.format('MMM DD, YYYY HH:mm:ss')}
-        onChange={() => {}}
-        slots={{ field: ButtonField }}
-        slotProps={{
-          field: { setOpen },
-        }}
+        value={calendarValue}
+        onChange={(newValue) => setCalendarValue(newValue)} // non fa nulla davvero
+        label={now.format('MMM DD, YYYY HH:mm:ss')}
         open={open}
-        onClose={() => setOpen(false)}
         onOpen={() => setOpen(true)}
-        readOnly 
+        onClose={() => setOpen(false)}
+        readOnly
+        slots={{ field: ButtonField }}
+        slotProps={{ field: { setOpen } }}
       />
     </LocalizationProvider>
   );

@@ -8,12 +8,18 @@ services:
       - "8085:8080"
     networks:
       - uspace-network
+    volumes:
+        - simulator-data:/data
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
       retries: 3
       start_period: 30s
     restart: "on-failure:3"
+
+volumes:
+  simulator-data:
+    driver: local
 
 networks:
   uspace-network:

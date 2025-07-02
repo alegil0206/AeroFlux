@@ -1,6 +1,9 @@
 import React from 'react';
 import { LineChart } from '@mui/x-charts';
 import { axisClasses } from '@mui/x-charts/ChartsAxis';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 
 const MinDistanceChart = ({ simulation }) => {
   function haversineDistance(coord1, coord2) {
@@ -81,18 +84,25 @@ const MinDistanceChart = ({ simulation }) => {
   ];
 
   return (
-    <LineChart
-      slotProps={{ legend: { hidden: true } }}
-      xAxis={xAxis}
-      series={truncatedSeries}
-      height={400}
-      yAxis={[{ label: 'Minimum Distance (m)', scaleType: 'log', min: 1 }]}
-      sx={{
-        [`& .${axisClasses.left} .${axisClasses.label}`]: {
-          transform: 'translateX(-12px)',
-        },
-      }}
-    />
+    <Card variant="outlined" sx={{ width: '100%' }}>
+      <CardContent>
+        <Typography component="h2" variant="h6">
+          Minimum Distance Between Drones Over Time
+        </Typography>
+        <LineChart
+          slotProps={{ legend: { hidden: true } }}
+          xAxis={xAxis}
+          series={truncatedSeries}
+          height={400}
+          yAxis={[{ label: 'Minimum Distance (m)', scaleType: 'log', min: 1 }]}
+          sx={{
+            [`& .${axisClasses.left} .${axisClasses.label}`]: {
+              transform: 'translateX(-12px)',
+            },
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 };
 

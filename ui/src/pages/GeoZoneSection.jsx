@@ -8,6 +8,7 @@ import GeoZoneFormDialog from '../components/GeoZone/EditDialog/GeoZoneFormDialo
 import GeoZonesMap from '../components/GeoZone/GeoZonesMap';
 import SupportPointDataGrid from '../components/SupportPoint/SupportPointDataGrid';
 import SupportPointFormDialog from '../components/SupportPoint/EditDialog/SupportPointFormDialog';
+import Copyright from '../internals/components/Copyright';
 
 import { useGeoAwareness } from '../hooks/useGeoAwareness';
 
@@ -185,7 +186,8 @@ function GeoZoneSection() {
         <Alert severity={alertMessage?.type} onClose={closeSnackbar} variant="filled">
           {alertMessage?.text}
         </Alert>
-      </Snackbar>      
+      </Snackbar>
+      <Copyright sx={{ my: 4 }} />    
     </Box>
   );
 }

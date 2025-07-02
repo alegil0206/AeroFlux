@@ -21,7 +21,7 @@ const ExecutionControls = () => {
 
   return (
     <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between" }}>
-      <Button onClick={() => sendCommand("start", { execution_speed: localSpeed})} disabled={executionState === "RUNNING"} startIcon={<PlayArrowIcon />} variant="contained">
+      <Button onClick={() => sendCommand("start", { execution_speed: localSpeed})} disabled={executionState === "RUNNING" || executionState === "UNKNOWN"} startIcon={<PlayArrowIcon />} variant="contained">
         Start
       </Button>
       <Button onClick={() => sendCommand("pause")} disabled={executionState !== "RUNNING"} startIcon={<PauseIcon />} variant="contained">
@@ -30,7 +30,7 @@ const ExecutionControls = () => {
       <Button onClick={() => sendCommand("resume")} disabled={executionState !== "PAUSED"} startIcon={<RestartAltIcon />} variant="contained">
         Resume
       </Button>
-      <Button onClick={() => sendCommand("stop")} disabled={executionState === "STOPPED"} startIcon={<StopIcon />} variant="contained">
+      <Button onClick={() => sendCommand("stop")} disabled={executionState === "STOPPED" || executionState === "UNKNOWN"} startIcon={<StopIcon />} variant="contained">
         Stop
       </Button>
       <FormControl>

@@ -7,6 +7,7 @@ import DronesAuthorizationDataGrid from "../components/Authorization/DronesAutho
 import FullMap from "../components/Home/FullMap";
 import LogViewer from "../components/Home/LogViewer";
 import ExecutionControls from "../components/Home/ExecutionControls";
+import Copyright from '../internals/components/Copyright';
 
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
@@ -162,7 +163,7 @@ function HomeSection() {
           {alertMessage?.text}
         </Alert>
       </Snackbar>    
-  
+      <Copyright sx={{ my: 4 }} />
     </Box>
   );
 }

@@ -188,6 +188,7 @@ export default function DronesAuthorizationDataGrid({ authorization, onRevoke, d
       autoHeight
       disableRowSelectionOnClick
       slots={{ toolbar: GridToolbar }}
+      slotProps={{ toolbar: { csvOptions: { allColumns: true } } }}
       getRowHeight={() => 'auto'}
       rows={rows}
       columns={columns}

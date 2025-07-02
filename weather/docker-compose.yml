@@ -8,6 +8,8 @@ services:
       - "8084:8080"
     networks:
       - uspace-network
+    volumes:
+      - weather-data:/data
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -18,3 +20,7 @@ services:
 networks:
   uspace-network:
     driver: bridge
+
+volumes:
+  weather-data:
+    driver: local

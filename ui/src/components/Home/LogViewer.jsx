@@ -89,6 +89,7 @@ const LogViewer = ({logs}) => {
         getRowHeight={() => 'auto'}
         disableRowSelectionOnClick
         slots={{ toolbar: GridToolbar }}
+        slotProps={{ toolbar: { csvOptions: { allColumns: true } } }}
         rows={rows} 
         columns={columns}
         getRowClassName={(params) =>

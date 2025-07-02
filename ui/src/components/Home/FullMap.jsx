@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Map, { NavigationControl, FullscreenControl, ScaleControl, Marker, Popup, Source, Layer } from '@vis.gl/react-maplibre';
 import PropTypes from 'prop-types';
 import DronePin from '../Pin/DronePin';
@@ -19,6 +19,7 @@ import { useMapSettings } from '../../hooks/useMapSettings';
 
 function FullMap({ drones, geoZones, weather, supportPoints }) {
   const [popupInfo, setPopupInfo] = useState(null);
+  const lastSelectedId = useRef(null);
 
   const { initialViewState, mapBounds, maxPitch, sky } = useMapSettings();
   const routePolygonGeoJSON = useMemo(() => ({
@@ -105,6 +106,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
+          lastSelectedId.current = drone.id;
           setPopupInfo({ type: 'drone', data: drone });
         }}
       >
@@ -117,7 +119,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
   useEffect(() => {
     if (popupInfo && popupInfo.type === 'drone') {
       const updatedDrone = drones.find(d => d.id === popupInfo.data.id);
-      if (updatedDrone) {
+      if (updatedDrone && lastSelectedId.current === updatedDrone.id) {
         setPopupInfo({
           type: 'drone',
           data: updatedDrone,
@@ -135,6 +137,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
+          lastSelectedId.current = `marker-${drone.id}-source`;
           setPopupInfo({ type: 'source', data: drone });
         }}
       >
@@ -153,6 +156,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
+          lastSelectedId.current = `marker-${drone.id}-destination`;
           setPopupInfo({ type: 'destination', data: drone });
         }}
       >
@@ -171,6 +175,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
+          lastSelectedId.current = `marker-${point.id}-support`;
           setPopupInfo({ type: 'support', data: point });
         }
         }
@@ -226,6 +231,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
         sky={ sky }
         style={{ width: '100%', height: 'calc(100vh - 77px)' }}
         canvasContextAttributes={{antialias: true}}
+        onClick={() => { setPopupInfo(null); lastSelectedId.current = null; } }
       >
         <FullscreenControl position="top-right" />
         <NavigationControl position="top-right" visualizePitch={true} />
@@ -291,6 +297,7 @@ function FullMap({ drones, geoZones, weather, supportPoints }) {
 
         {popupInfo && (
           <Popup
+            key ={`${popupInfo.type}-${popupInfo.data.id || popupInfo.data.status?.id}`}
             longitude={
               popupInfo.type === 'drone'
                 ? popupInfo.data.status.position.longitude

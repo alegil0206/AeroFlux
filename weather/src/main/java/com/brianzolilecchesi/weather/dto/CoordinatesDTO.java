@@ -9,6 +9,8 @@ public class CoordinatesDTO {
         this.longitude = longitude;
     }
 
+    public CoordinatesDTO() {}
+
     public double getLatitude() { return latitude; }
     public void setLatitude(double latitude) { this.latitude = latitude; }
     public double getLongitude() { return longitude; }

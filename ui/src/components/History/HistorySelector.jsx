@@ -37,7 +37,7 @@ export default function HistorySelector({ historyList, onSelectHistory }) {
                 disabled={selectedIndex === 0 || historyList.length < 1}
                 startIcon={<ArrowBackIosIcon />}
             >
-                Previous
+                Next
             </Button>
             <FormControl fullWidth sx={{ mb: 1 }}>
                 <InputLabel id="select-drone-label">Select Simulation</InputLabel>
@@ -60,7 +60,7 @@ export default function HistorySelector({ historyList, onSelectHistory }) {
                 disabled={selectedIndex === historyList.length - 1 || historyList.length < 1}
                 endIcon={<ArrowForwardIosIcon />}
             >
-                Next
+                Previous
             </Button>
         </Box>
     );

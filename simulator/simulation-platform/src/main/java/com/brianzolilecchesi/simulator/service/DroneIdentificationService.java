@@ -1,4 +1,4 @@
-package com.brianzolilecchesi.simulator.service.api;
+package com.brianzolilecchesi.simulator.service;
 
 import java.util.List;
 
@@ -10,31 +10,18 @@ import org.springframework.web.client.RestTemplate;
 import com.brianzolilecchesi.simulator.dto.DronePropertiesDTO;
 
 @Service
-public class DroneIdentificationService extends AbstractMicroservice {
+public class DroneIdentificationService {
     
     private final RestTemplate restTemplate;
+    private final MicroserviceRegistryService microserviceRegistryService;
 
-    public DroneIdentificationService() {
-        super("http://api.uspace.local/drone-identification");
+    public DroneIdentificationService(MicroserviceRegistryService microserviceRegistryService) {
         this.restTemplate = new RestTemplate();
-    }
-
-    @Override
-    public String getServiceName() {
-        return "DRONE_IDENTIFICATION";
-    }
-
-    @Override
-    public void resetMicroservice() {
-        try {
-            restTemplate.delete(serviceUrl + "/drone");
-            System.out.println("All drones deleted from Drone Identification Service.");
-        } catch (Exception e) {
-            System.err.println("Error notifying drone_identification: " + e.getMessage());
-        }
+        this.microserviceRegistryService = microserviceRegistryService;
     }
 
     public List<DronePropertiesDTO> getDrones() {
+        String serviceUrl = microserviceRegistryService.getServiceUrls().get("DRONE_IDENTIFICATION");
         return restTemplate.exchange(serviceUrl + "/drone", 
                                      HttpMethod.GET, 
                                      null, 

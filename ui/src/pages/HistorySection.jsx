@@ -12,6 +12,7 @@ import BatteryLevelChart from "../components/History/BatteryLevelChart";
 import HistoryMap from "../components/History/HistoryMap";
 import StatCard from "../components/History/StatCard";
 import CircularProgress from "@mui/material/CircularProgress";
+import Copyright from '../internals/components/Copyright';
 
 function HistorySection() {
     const {
@@ -110,7 +111,7 @@ function HistorySection() {
                                 <StatCard data={{ title: "Number of Flights", value: historyDetails.drones.length }} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
-                                <StatCard data={{ title: "Duration (min)", value: (historyDetails.duration / 60) }} />
+                                <StatCard data={{ title: "Duration (min)", value: (historyDetails.duration / 60).toFixed(0) }} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4, lg: 6 }}>
                                 <StatCard data={{ title: "Execution Speed", value: `${historyDetails.executionSpeed}x` }} />
@@ -131,16 +132,10 @@ function HistorySection() {
                         <FlightOutcomeCharts simulation={historyDetails} />
                     </Grid>                    
                     <Grid size={{ xs: 12 }}>
-                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
-                            Minimum Distance Chart
-                        </Typography>
                         <MinDistanceChart simulation={historyDetails} />
                     </Grid>
 
                     <Grid size={{ xs: 12 }}>
-                        <Typography component="h2" variant="h6" sx={{ mb: 1 }}>
-                            Battery Levels
-                        </Typography>
                         <BatteryLevelChart simulation={historyDetails} />
                     </Grid>
 
@@ -164,7 +159,7 @@ function HistorySection() {
                     {alertMessage?.text}
                 </Alert>
             </Snackbar>
-
+            <Copyright sx={{ my: 4 }} />
         </Box>
     );
 }

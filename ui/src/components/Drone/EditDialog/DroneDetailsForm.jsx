@@ -79,7 +79,6 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
 
       <Grid container columns={12} sx={{ mb : 1 }}>
         {[
-          { key: 'safe_landing', label: 'Safe Landing' },
           { key: 'collision_avoidance', label: 'Collision Avoidance' },
           { key: 'geo_awareness', label: 'Geo Awareness' },
           { key: 'auto_authorization', label: 'Auto Authorization' },
@@ -90,12 +89,14 @@ export default function DroneDetailsForm({ drone, errors, handleChange }) {
               control={
                 <Checkbox
                   checked={drone.adaptive_capabilities[key]}
+                  disabled
                   onChange={(e) =>
                     handleChange('adaptive_capabilities', {
                       ...drone.adaptive_capabilities,
                       [key]: e.target.checked,
                     })
-                  }                
+                  }
+                              
                 />
               }
               label={label}

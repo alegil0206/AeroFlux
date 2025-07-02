@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import DronesAuthorizationDataGrid from "../components/Authorization/DronesAuthorizationDataGrid";
 import AuthorizationRequestCard from "../components/Authorization/AuthorizationRequestCard";
 import AuthorizationMap from "../components/Authorization/AuthorizationMap";
+import Copyright from '../internals/components/Copyright';
 
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
@@ -110,7 +111,7 @@ function AuthorizationSection() {
           {alertMessage?.text}
         </Alert>
       </Snackbar>    
-  
+      <Copyright sx={{ my: 4 }} />
     </Box>
   );
 }

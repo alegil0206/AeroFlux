@@ -1,6 +1,9 @@
 import React from "react";
 import { LineChart } from "@mui/x-charts";
 import { axisClasses } from '@mui/x-charts/ChartsAxis';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 
 
 const BatteryLevelChart = ({ simulation }) => {
@@ -34,24 +37,33 @@ const BatteryLevelChart = ({ simulation }) => {
   ];
 
   return (
-    <LineChart
-      slotProps={{ legend: { hidden: true } }}
-      xAxis={xAxis}
-      series={series}
-      height={400}
-      yAxis={[
-        {
-          label: "Battery Level (mAh)",
-          min: 1,
-          scaleType: "log",
-        },
-      ]}
-      sx={{
-        [`& .${axisClasses.left} .${axisClasses.label}`]: {
-          transform: 'translateX(-12px)',
-        },
-      }}
-    />
+    <Card variant="outlined" sx={{ width: '100%' }}>
+      <CardContent>
+        <Typography component="h2" variant="h6">
+          Battery Level Over Time
+        </Typography>
+
+        <LineChart
+          slotProps={{ legend: { hidden: true } }}
+          margin={{ top: 10}}
+          xAxis={xAxis}
+          series={series}
+          height={400}
+          yAxis={[
+            {
+              label: "Battery Level (mAh)",
+              min: 1,
+              scaleType: "log",
+            },
+          ]}
+          sx={{
+            [`& .${axisClasses.left} .${axisClasses.label}`]: {
+              transform: 'translateX(-12px)',
+            },
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 };
 

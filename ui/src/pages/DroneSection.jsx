@@ -6,6 +6,7 @@ import DronesMap from "../components/Drone/DronesMap";
 import DronesDataGrid from "../components/Drone/DronesDataGrid";
 import DronesRoutesCard from "../components/Drone/DronesRoutesCard";
 import DronesFormDialog from "../components/Drone/EditDialog/DroneFormDialog";
+import Copyright from '../internals/components/Copyright';
 
 import { useDroneIdentification } from "../hooks/useDroneIdentification";
 
@@ -108,6 +109,7 @@ function DroneSection() {
           {alertMessage?.text}
         </Alert>
       </Snackbar>
+      <Copyright sx={{ my: 4 }} />
     </Box>
   );
 }

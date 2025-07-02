@@ -11,9 +11,10 @@ import { useDroneIdentification } from "../hooks/useDroneIdentification";
 import { useGeoAwareness } from "../hooks/useGeoAwareness";
 import { useGeoAuthorization } from "../hooks/useGeoAuthorization";
 import SettingMap from "../components/Setting/SettingMap";
+import Copyright from "../internals/components/Copyright";
 
 function SettingsSection() {
-    const { coordinates, services, error: settingError, updateCoordinates, updateServiceUrl, fetchSettings } = useSettings();
+    const { coordinates, services, error: settingError, updateCoordinates, updateServiceUrl } = useSettings();
     
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState(null);
@@ -55,10 +56,15 @@ function SettingsSection() {
     };
 
     const handleSaveCoordinates = async () => {
-        const responseOk = await updateCoordinates(tempCoordinates);
-        if (responseOk)
-            showSnackbar("success", "Map coordinates updated successfully");
-        fetchSettings();
+        const updateOk = await updateCoordinates(tempCoordinates);
+        const dronesOk = await deleteAllDrones();
+        const geoZonesOk = await deleteAllGeoZones();
+        const supportPointsOk = await deleteAllSupportPoints();
+        const authorizationsOk = await deleteAllAuthorizations();
+
+        if (updateOk && dronesOk && geoZonesOk && supportPointsOk && authorizationsOk) {
+            showSnackbar("success", "Map coordinates and all microservices data reset successfully");
+        }
     };
 
     const handleEndpointChange = (key, value) => {
@@ -69,14 +75,14 @@ function SettingsSection() {
         const responseOk = await updateServiceUrl(key, tempEndpoints[key]);
         if (responseOk)
             showSnackbar("success", `${key} endpoint updated successfully`);
-        fetchSettings();
     };
 
     const data = [
         { element: "Drone Identification", key: "DRONE_IDENTIFICATION", dropFunction: deleteAllDrones },
         { element: "Geo Awareness", key: "GEO_AWARENESS", dropFunction: () => { deleteAllGeoZones(); deleteAllSupportPoints(); } },
         { element: "Geo Authorization", key: "GEO_AUTHORIZATION", dropFunction: deleteAllAuthorizations },
-        { element: "Weather", key: "WEATHER", dropFunction: null }
+        { element: "Weather", key: "WEATHER", dropFunction: null },
+        { element: "Simulator", key: "SIMULATOR", dropFunction: null }
     ];
 
     return (
@@ -167,6 +173,7 @@ function SettingsSection() {
                     {alertMessage?.text}
                 </Alert>
             </Snackbar>
+            <Copyright sx={{ my: 4 }} />
         </Box>
     );
 }

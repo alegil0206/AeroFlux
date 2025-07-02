@@ -2,25 +2,69 @@ package com.brianzolilecchesi.weather.service;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.brianzolilecchesi.weather.dto.CoordinatesDTO;
 import com.brianzolilecchesi.weather.model.GridCell;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class GridService {
 
     private static final int GRID_SIZE = 120;
     private static final double CELL_SIZE_METERS = 500.0; 
-    private static final double EARTH_RADIUS = 6378137.0; 
+    private static final double EARTH_RADIUS = 6378137.0;
 
+    private static final File storageFile = new File("/data/center.json");
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
     private GridCell[][] gridCells;
-    private double centerLat = 45.476592;
-    private double centerLon = 9.219752;
+    private double centerLat;
+    private double centerLon;
 
     public GridService() {
         this.gridCells = new GridCell[GRID_SIZE][GRID_SIZE];
+    }
+
+    @PostConstruct
+    private void init() {
+        loadCenterCoordinates();
         generateGrid();
+    }
+
+    private void loadCenterCoordinates() {
+        if (storageFile.exists()) {
+            try {
+                CoordinatesDTO dto = objectMapper.readValue(storageFile, CoordinatesDTO.class);
+                centerLat = dto.getLatitude();
+                centerLon = dto.getLongitude();
+            } catch (IOException e) {
+                e.printStackTrace();
+                setDefaultCenter();
+            }
+        } else {
+            setDefaultCenter();
+            saveCenterCoordinates();
+        }
+    }
+
+        private void setDefaultCenter() {
+        centerLat = 45.476592;
+        centerLon = 9.219752;
+    }
+
+    private void saveCenterCoordinates() {
+        try {
+            CoordinatesDTO dto = new CoordinatesDTO(centerLat, centerLon);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(storageFile, dto);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void generateGrid() {
@@ -59,6 +103,7 @@ public class GridService {
     public synchronized void updateGridCenter(double newLat, double newLon) {
         this.centerLat = newLat;
         this.centerLon = newLon;
+        saveCenterCoordinates();
         this.gridCells = new GridCell[GRID_SIZE][GRID_SIZE];
         generateGrid();
     }

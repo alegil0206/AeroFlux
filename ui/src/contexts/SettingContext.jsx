@@ -7,47 +7,25 @@ export const useSettings = () => {
 };
 
 export const SettingProvider = ({ children }) => {
-  const [coordinates, setCoordinates] = useState(null);
-  const [services, setServices] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const defaultCoordinates = {
+    latitude: 45.476592,
+    longitude: 9.219752,
+  };
+
+  const defaultService = {
+    DRONE_IDENTIFICATION: "http://api.uspace.local/drone-identification",
+    GEO_AUTHORIZATION: "http://api.uspace.local/geo-authorization",
+    GEO_AWARENESS: "http://api.uspace.local/geo-awareness",
+    WEATHER: "http://api.uspace.local/weather",
+    SIMULATOR: "http://api.uspace.local/simulator"
+  };
+
+  const [coordinates, setCoordinates] = useState(defaultCoordinates);
+  const [services, setServices] = useState(defaultService);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [mainService, setMainService] = useState(null);
 
-  const fetchCoordinates = async () => {
-    try {
-      const response = await fetch(`http://${mainService}/setting/coordinates`);
-      if (!response.ok) throw new Error('Failed to fetch coordinates');
-      const data = await response.json();
-      setCoordinates(data);
-    } catch (error) {
-      setError(error);
-    }
-  };
-
-  const fetchServices = async () => {
-    try {
-      const response = await fetch(`http://${mainService}/setting/service`);
-      if (!response.ok) throw new Error('Failed to fetch services');
-      const data = await response.json();
-      const services = data.reduce((acc, service) => {
-        acc[service.name] = service.url;
-        return acc;
-      }, {});
-      setServices(services);
-    } catch (error) {
-      setError(error);
-    }
-  };
-
-  const fetchSettings = async () => {
-    setError(null);
-    await Promise.all([fetchCoordinates(), fetchServices()]);
-  };
-
-  useEffect(() => {
-    if (mainService)
-      fetchSettings();
-  }, [mainService]);
 
   useEffect(() => {
     if (coordinates && services) setLoading(false);
@@ -56,7 +34,7 @@ export const SettingProvider = ({ children }) => {
   const updateCoordinates = async (newCoordinates) => {
     setError(null);
     try {
-      const response = await fetch(`http://${mainService}/setting/coordinates`, {
+      const response = await fetch(`${services.WEATHER}/setting/coordinates`, {
         method: 'PUT',
         body: JSON.stringify(newCoordinates),
         headers: {
@@ -64,6 +42,7 @@ export const SettingProvider = ({ children }) => {
         },
       });
       if (!response.ok) throw new Error('Failed to update coordinates');
+      setCoordinates(newCoordinates);
       return true;
     } catch (error) {
       setError(error);
@@ -73,10 +52,14 @@ export const SettingProvider = ({ children }) => {
 
   const updateServiceUrl = async (serviceName, newUrl) => {
     try {
-      const response = await fetch(`http://${mainService}/setting/service/${serviceName}?newUrl=${encodeURIComponent(newUrl)}`, {
+      const response = await fetch(`${services.SIMULATOR}/setting/service/${serviceName}?newUrl=${encodeURIComponent(newUrl)}`, {
         method: 'PUT',
       });
       if (!response.ok) throw new Error('Failed to update service URL');
+      setServices((prevServices) => ({
+        ...prevServices,
+        [serviceName]: newUrl,
+      }));
       return true;
     } catch (error) {
       setError(error);
@@ -84,15 +67,8 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
-  const connectToMainService = async (mainServiceUrl) => {
-    if (mainServiceUrl === mainService)
-      fetchSettings();
-    else
-      setMainService(mainServiceUrl);
-  };
-
   return (
-    <SettingContext.Provider value={{ mainService, connectToMainService, coordinates, services, loading, error, updateCoordinates, updateServiceUrl, fetchSettings }}>
+    <SettingContext.Provider value={{ coordinates, services, loading, error, updateCoordinates, updateServiceUrl }}>
       {children}
     </SettingContext.Provider>
   );

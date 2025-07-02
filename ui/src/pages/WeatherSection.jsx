@@ -6,6 +6,7 @@ import WeatherSettingsCard from "../components/Weather/WeatherSettingsCard";
 import { Snackbar, Alert } from "@mui/material";
 
 import { useWeather } from "../hooks/useWeather";
+import Copyright from "../internals/components/Copyright";
 
 function WeatherSection() {
 
@@ -85,6 +86,7 @@ function WeatherSection() {
           {alertMessage?.text}
         </Alert>
       </Snackbar>
+     <Copyright sx={{ my: 4 }} />  
     </Box>
   );
 }
