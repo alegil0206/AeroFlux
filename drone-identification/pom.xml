@@ -8,13 +8,13 @@
         <version>3.4.1</version>
         <relativePath/>
     </parent>
-    <groupId>com.brianzolilecchesi</groupId>
+    <groupId>com.aeroflux</groupId>
     <artifactId>drone-identification</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Drone identification</name>
     <description>Drone identification service for the u-space project</description>
 
-    <url>https://gitlab.com/u-space_lecco_brianza/drone-identification</url>
+    <url>https://github.com/alegil0206/AeroFlux/drone-identification</url>
 
     <licenses>
         <license>
@@ -23,25 +23,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <developers>
-        <developer>
-            <id>iFoxz</id>
-            <name>Mattia Volpato</name>
-            <email>m.volpato4@campus.unimib.it</email>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:git@gitlab.com:u-space_lecco_brianza/drone-identification.git</connection>
-        <developerConnection>scm:git:ssh://git@gitlab.com:u-space_lecco_brianza/drone-identification.git</developerConnection>
-        <url>https://gitlab.com/u-space_lecco_brianza/drone-identification</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <properties>
         <java.version>21</java.version>

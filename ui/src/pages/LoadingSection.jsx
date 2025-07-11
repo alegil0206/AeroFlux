@@ -20,7 +20,7 @@ export default function LoadingSection( { logo } ) {
 
     const { error } = useSettings();
 
-    const [tempEndpoint, setTempEndpoint] = useState("api.uspace.local/simulator");
+    const [tempEndpoint, setTempEndpoint] = useState("aeroflux.local");
     const [isConnecting, setIsConnecting] = useState(false);
 
     const handleButtonClick = async () => {

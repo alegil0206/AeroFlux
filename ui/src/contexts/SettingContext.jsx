@@ -14,11 +14,11 @@ export const SettingProvider = ({ children }) => {
   };
 
   const defaultService = {
-    DRONE_IDENTIFICATION: "http://api.uspace.local/drone-identification",
-    GEO_AUTHORIZATION: "http://api.uspace.local/geo-authorization",
-    GEO_AWARENESS: "http://api.uspace.local/geo-awareness",
-    WEATHER: "http://api.uspace.local/weather",
-    SIMULATOR: "http://api.uspace.local/simulator"
+    DRONE_IDENTIFICATION: "http://uspace.aeroflux/drone-identification",
+    GEO_AUTHORIZATION: "http://uspace.aeroflux/geo-authorization",
+    GEO_AWARENESS: "http://uspace.aeroflux/geo-awareness",
+    WEATHER: "http://uspace.aeroflux/weather",
+    SIMULATOR: "http://simulator.aeroflux"
   };
 
   const [coordinates, setCoordinates] = useState(defaultCoordinates);

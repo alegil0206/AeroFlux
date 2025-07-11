@@ -8,13 +8,13 @@
 		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.brianzolilecchesi</groupId>
+	<groupId>com.aeroflux</groupId>
 	<artifactId>weather</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Weather</name>
 	<description>Service to handle weather conditions for the u-space project</description>
 	
-	<url>https://gitlab.com/u-space_lecco_brianza/weather</url>
+	<url>https://github.com/alegil0206/AeroFlux/weather</url>
 	
 	<licenses>
 	  <license>
@@ -23,25 +23,6 @@
 	    <distribution>repo</distribution>
 	  </license>
 	</licenses>
-	
-	<developers>
-	  <developer>
-	    <id>iFoxz</id>
-	    <name>Mattia Volpato</name>
-	    <email>m.volpato4@campus.unimib.it</email>
-	    <roles>
-	      <role>Developer</role>
-	    </roles>
-	    <timezone>+1</timezone>
-	  </developer>
-	</developers>
-	
-	<scm>
-	  <connection>scm:git:git@gitlab.com:u-space_lecco_brianza/weather.git</connection>
-	  <developerConnection>scm:git:ssh://git@gitlab.com:u-space_lecco_brianza/weather.git</developerConnection>
-	  <url>https://gitlab.com/u-space_lecco_brianza/weather</url>
-	  <tag>HEAD</tag>
-	</scm>
 	
 	<properties>
 		<java.version>21</java.version>

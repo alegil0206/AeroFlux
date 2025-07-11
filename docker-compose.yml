@@ -9,7 +9,7 @@ services:
     ports:
       - "8161:8161"    # Porta per la console web di ActiveMQ
     networks:
-      - uspace-network
+      - aeroflux-network
     restart: "always"
 
 # Geo-awareness
@@ -19,7 +19,7 @@ services:
     volumes:
       - geo-awareness-mongo-data:/data/db
     networks:
-      - uspace-network
+      - aeroflux-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -44,7 +44,7 @@ services:
       ALTITUDE_COLLECTION: ${GEOAWARENESS_ALTITUDE_COLLECTION}
     command: ["python", "mongo_init.py"]
     networks:
-      - uspace-network
+      - aeroflux-network
     restart: "on-failure:3"
 
   geo-awareness:
@@ -69,7 +69,7 @@ services:
     ports:
       - "8083:8080"
     networks:
-      - uspace-network
+      - aeroflux-network
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -86,7 +86,7 @@ services:
       POSTGRES_PASSWORD: ${GEOAUTHORIZATION_DB_PASSWORD}
       POSTGRES_DB: ${GEOAUTHORIZATION_DB_NAME}
     networks:
-      - uspace-network
+      - aeroflux-network
     volumes:
       - geo-authorization-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -123,7 +123,7 @@ services:
     ports:
       - "8082:8080"
     networks:
-      - uspace-network
+      - aeroflux-network
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -138,7 +138,7 @@ services:
     volumes:
       - drone-identification-mongo-data:/data/db
     networks:
-      - uspace-network
+      - aeroflux-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -160,7 +160,7 @@ services:
       OPERATION_CATEGORY_COLLECTION: ${DRONEIDENTIFICATION_OPERATION_CATEGORY_COLLECTION}
     command: ["python", "mongo_init.py"]
     networks:
-      - uspace-network
+      - aeroflux-network
     restart: "on-failure:3"
 
   drone-identification:
@@ -185,7 +185,7 @@ services:
     ports:
       - "8081:8080"
     networks:
-      - uspace-network
+      - aeroflux-network
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -201,7 +201,7 @@ services:
     ports:
       - "8084:8080"
     networks:
-      - uspace-network
+      - aeroflux-network
     volumes:
       - weather-data:/data
     healthcheck:
@@ -215,11 +215,11 @@ services:
   ui:
     build:
       context: ./ui
-    container_name: uspace-ui
+    container_name: aeroflux-ui
     ports:
       - "5000:80"
     networks:
-      - uspace-network
+      - aeroflux-network
     depends_on:
       - geo-awareness
       - geo-authorization
@@ -235,7 +235,7 @@ services:
     ports:
       - "8085:8080"
     networks:
-      - uspace-network
+      - aeroflux-network
     volumes:
       - simulator-data:/data
     healthcheck:
@@ -250,7 +250,7 @@ services:
   ingress:
     build:
       context: .
-    container_name: uspace-ingress
+    container_name: aeroflux-ingress
     environment:
       DRONE_IDENTIFICATION_CONTAINER_URL: ${DRONE_IDENTIFICATION_CONTAINER_URL}
       GEOZONE_CONTAINER_URL: ${GEOZONE_CONTAINER_URL}
@@ -261,10 +261,11 @@ services:
     ports:
       - "80:80"
     networks:
-      uspace-network:
+      aeroflux-network:
         aliases:
-          - api.uspace.local
-          - uspace.local
+          - uspace.aeroflux
+          - simulator.aeroflux
+          - aeroflux
 
     depends_on:
       - geo-awareness
@@ -286,5 +287,5 @@ volumes:
     driver: local
 
 networks:
-  uspace-network:
+  aeroflux-network:
     driver: bridge

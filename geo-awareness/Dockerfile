@@ -1,6 +1,5 @@
 # Stage di build: usa Maven per compilare l'applicazione
 FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
-LABEL maintainer="Volpato Mattia"
 
 WORKDIR /build
 
