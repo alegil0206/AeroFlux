@@ -21,17 +21,9 @@ import FactCheckIcon from '@mui/icons-material/FactCheck';
 import PublicIcon from '@mui/icons-material/Public';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { useSettings } from './contexts/SettingContext'; 
-
-const xThemeComponents = {
-  ...chartsCustomizations,
-  ...dataGridCustomizations,
-  ...datePickersCustomizations,
-  ...treeViewCustomizations,
-};
+import { useSettings } from './contexts/SettingContext';
 
 import DroneSection from './pages/DroneSection';
 import GeoZoneSection from './pages/GeoZoneSection';
@@ -42,8 +34,16 @@ import AuthorizationSection from './pages/AuthorizationSection';
 import SettingSection from './pages/SettingSection';
 import LoadingSection from './pages/LoadingSection';
 
+import dayLogoImage from './assets/logo_ex_without_background.png';
+import nightLogoImage from './assets/night_logo_ex_without_background.png';
+import { useTheme } from '@mui/material/styles';
 
-import logoImage from './assets/logo.png';
+const xThemeComponents = {
+  ...chartsCustomizations,
+  ...dataGridCustomizations,
+  ...datePickersCustomizations,
+  ...treeViewCustomizations,
+};
 
 const primaryListItems = [
   { text: 'Home', path: '/', icon: <HouseRoundedIcon /> },
@@ -56,27 +56,35 @@ const primaryListItems = [
 ];
 
 const secondaryListItems = [
-  { text: 'About', path: 'https://github.com/alegil0206/AeroFlux',  icon: <InfoRoundedIcon /> }
+  { text: 'About', path: 'https://github.com/alegil0206/AeroFlux', icon: <InfoRoundedIcon /> },
 ];
 
-export default function Dashboard(props) {
+function DashboardContent() {
+  const theme = useTheme();
+
+  // Determina il logo in base al tema attuale
+  const logoImage = theme.palette.mode === 'dark' ? nightLogoImage : dayLogoImage;
 
   const { loading } = useSettings();
 
   return (
-    <AppTheme {...props} themeComponents={xThemeComponents}>
+    <>
       <CssBaseline enableColorScheme />
-
-      { loading && 
-        <LoadingSection logo = {logoImage} />
-      }
-
-      { !loading &&
-
+      {loading ? (
+        <LoadingSection logo={logoImage} />
+      ) : (
         <BrowserRouter>
           <Box sx={{ display: 'flex' }}>
-            <SideMenu primaryListItems={primaryListItems} secondaryListItems={secondaryListItems} logo={logoImage}/>
-            <AppNavbar primaryListItems={primaryListItems} secondaryListItems={secondaryListItems} logo={logoImage} />
+            <SideMenu
+              primaryListItems={primaryListItems}
+              secondaryListItems={secondaryListItems}
+              logo={logoImage}
+            />
+            <AppNavbar
+              primaryListItems={primaryListItems}
+              secondaryListItems={secondaryListItems}
+              logo={logoImage}
+            />
             {/* Main content */}
             <Box
               component="main"
@@ -115,8 +123,15 @@ export default function Dashboard(props) {
             </Box>
           </Box>
         </BrowserRouter>
-      }
-      
+      )}
+    </>
+  );
+}
+
+export default function Dashboard(props) {
+  return (
+    <AppTheme {...props} themeComponents={xThemeComponents}>
+      <DashboardContent />
     </AppTheme>
   );
 }
