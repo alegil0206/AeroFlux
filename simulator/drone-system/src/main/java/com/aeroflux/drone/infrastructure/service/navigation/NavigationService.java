@@ -40,20 +40,23 @@ public class NavigationService  {
     private int nextWaypointIndex;
 	private int flightPlanVersion;
 	private DataStatus flightPlanStatus = DataStatus.NOT_REQUESTED;
+	private Position currentDestination;
     
-    public NavigationService(LogService logService) {
-        this(logService, STEP_SIZE, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
+    public NavigationService(LogService logService, Position destination) {
+        this(logService, destination, STEP_SIZE, INITIAL_CELL_WIDTH, ALTITUDE_LEVELS);
     }
     
     public NavigationService(
 			LogService logService,
+			Position destination,
 			double stepSize,
     		double initialCellWidth,
-    		List<Double> altitudeLevels
+    		List<Double> altitudeLevels	
     		) {
     	
         this(
 				logService,
+				destination,
 				stepSize,
         		initialCellWidth,
         		altitudeLevels,
@@ -63,6 +66,7 @@ public class NavigationService  {
     
     public NavigationService(
 			LogService logService,
+			Position destination,
 			double stepSize,
     		double initialCellWidth,
     		List<Double> altitudeLevels,
@@ -70,6 +74,7 @@ public class NavigationService  {
     		) {
     	
 		this.logService = logService;
+		this.currentDestination = destination;
         setStepSize(stepSize);
         setInitialCellWidth(initialCellWidth);
         setAltitudeLevels(altitudeLevels);
@@ -102,6 +107,7 @@ public class NavigationService  {
 			initialWaypoints = new ArrayList<>(waypoints);
 			initialFlightPlanVersion = flightPlanVersion;
 			initialWaypointIndex = nextWaypointIndex - 1;
+			currentDestination = destination;
 			flightPlanStatus = DataStatus.LOADING;
 		}
 
@@ -230,6 +236,7 @@ public class NavigationService  {
 		newFlightPlanPositions.addAll(0, waypoints.subList(0, nextWaypointIndex - 1));
 		waypoints = newFlightPlanPositions;
 
+		currentDestination = onGroundPosition;
 		flightPlanStatus = DataStatus.AVAILABLE;
 		return onGroundPosition;
 	}
@@ -260,10 +267,7 @@ public class NavigationService  {
 	}
 
 	public synchronized Position getCurrentDestination() {
-		if (waypoints == null || waypoints.isEmpty()) {
-			return null;
-		}
-		return waypoints.getLast();
+		return currentDestination;
 	}
 
 	public synchronized FlightPlanDTO getFlightPlan() {

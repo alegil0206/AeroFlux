@@ -10,9 +10,9 @@ import com.aeroflux.simulator.model.drone.SimulatedMotor;
 import com.aeroflux.simulator.model.drone.SimulatedAltimeter;
 
 import com.aeroflux.drone.domain.model.DroneProperties;
+import com.aeroflux.drone.domain.model.Position;
 import com.aeroflux.drone.infrastructure.component.HardwareAbstractionLayer;
 import com.aeroflux.drone.domain.model.AdaptiveCapabilities;
-import com.aeroflux.drone.domain.model.Coordinate;
 import com.aeroflux.simulator.dto.DronePropertiesDTO;
 
 import java.util.ArrayList;
@@ -57,14 +57,8 @@ public class DroneSystemFactory {
                     droneDTO.getAdaptiveCapabilities().getBatteryManagement()
                 ),
                 droneDTO.getBattery(),
-                new Coordinate(
-                    droneDTO.getSource().getLatitude(),
-                    droneDTO.getSource().getLongitude()
-                ),
-                new Coordinate(
-                    droneDTO.getDestination().getLatitude(),
-                    droneDTO.getDestination().getLongitude()
-                )
+                new Position(droneDTO.getSource()),
+                new Position(droneDTO.getDestination())
             );
             HardwareAbstractionLayer hardwareAbstractionLayer = new HardwareAbstractionLayer(
                 battery,

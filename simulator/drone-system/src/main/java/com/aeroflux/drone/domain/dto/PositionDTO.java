@@ -1,4 +1,4 @@
-package com.aeroflux.simulator.dto;
+package com.aeroflux.drone.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

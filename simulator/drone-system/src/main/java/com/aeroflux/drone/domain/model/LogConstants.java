@@ -66,6 +66,9 @@ public class LogConstants {
         public static final String GEOZONE_ENTERED = "GEOZONE_ENTERED";
         public static final String RAIN_CELL_ENTERED = "RAIN_CELL_ENTERED";
         public static final String UNSAFE_FLIGHT = "UNSAFE_FLIGHT";
+
+        public static final String DESTINATION_IN_GEOZONE = "DESTINATION_IN_GEOZONE";
+        public static final String DESTINATION_IN_RAIN_CELL = "DESTINATION_IN_RAIN_CELL";
     }
 
     public static class Level {

@@ -93,13 +93,10 @@ public class ConflictAvoidanceHandler implements StepHandler {
             }
         }
 
-        if (dronesToAvoid.isEmpty()) {
-            droneSafetyNavigationService.setConflictingDrones(new ArrayList<>());
-            if (needToHover) {
-                flightController.hover();
-                return true;
-            }
-            return false;
+
+        if (needToHover) {
+            flightController.hover();
+            return true;
         }
 
         droneSafetyNavigationService.setConflictingDrones(dronesToAvoid);

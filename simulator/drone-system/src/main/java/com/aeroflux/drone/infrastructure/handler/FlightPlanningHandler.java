@@ -44,7 +44,6 @@ public class FlightPlanningHandler implements StepHandler {
     private List<GeoZone> lastGeoZonesConsidered = new ArrayList<>();
     private List<RainCell> lastRainCellsConsidered = new ArrayList<>();
     private List<NearbyDroneStatus> lastConflictingDronesConsidered = new ArrayList<>();
-    private Position lastDestinationConsidered;
 
     public FlightPlanningHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
@@ -57,9 +56,6 @@ public class FlightPlanningHandler implements StepHandler {
         this.flightController = droneServices.getFlightController();
         this.logService = droneServices.getLogService();
         this.geoCalculator = new GeoCalculator();
-        this.lastDestinationConsidered = new Position(
-            ctx.getDroneProperties().getDestination(), 0
-        );
     }
 
     @Override
@@ -74,7 +70,6 @@ public class FlightPlanningHandler implements StepHandler {
             context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING);
             logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.EMERGENCY_LANDING,
                             "Emergency landing at " + landingPosition);
-            lastDestinationConsidered = landingPosition;
             return false;
         }
 
@@ -101,13 +96,10 @@ public class FlightPlanningHandler implements StepHandler {
         }
         List<RainCell> rainCellsToConsider = weatherService.getRainCells();
         List<NearbyDroneStatus> conflictingDrones = droneSafetyNavigationService.getConflictingDrones();
-        List<Object> zones = new ArrayList<>();
-        zones.addAll(geoZonesToConsider);
-        zones.addAll(rainCellsToConsider);        
+      
+        Position actualDestination = navigationService.getCurrentDestination();
 
-        Position actualDestination = lastDestinationConsidered;
-
-        if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST || geoCalculator.isPointInZone(actualDestination, zones)) {
+        if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST || context.getFlightMode() == DroneFlightMode.ALTERNATIVE_DESTINATION_REQUEST) {
 
             DataStatus supportPointStatus = supportPointService.getSupportPointsStatus();
 
@@ -117,6 +109,10 @@ public class FlightPlanningHandler implements StepHandler {
             supportPoints.add(new SupportPoint("Destination Point", "Destination Point", context.getDroneProperties().getDestination()));
             supportPoints.add(new SupportPoint("Source Point", "Source Point", context.getDroneProperties().getSource()));
             supportPoints.addAll(supportPointService.getSupportPoints());
+
+            List<Object> zones = new ArrayList<>();
+            zones.addAll(geoZonesToConsider);
+            zones.addAll(rainCellsToConsider);  
 
             Iterator<SupportPoint> iterator = supportPoints.iterator();
             while (iterator.hasNext()) {
@@ -138,7 +134,6 @@ public class FlightPlanningHandler implements StepHandler {
 
             if (selectedSupportPoint == null) {
                 Position landingPosition = navigationService.configureVerticalLanding(flightController.getCurrentPosition());
-                lastDestinationConsidered = landingPosition;
                 logService.info(LogConstants.Component.FLIGHT_PLANNING_HANDLER, LogConstants.Event.DESTINATION_UNREACHABLE,
                             "No available Support Point found: landing at " + landingPosition);
                 return false;
@@ -150,11 +145,12 @@ public class FlightPlanningHandler implements StepHandler {
         }
 
         DataStatus flightPlanStatus = navigationService.getFlightPlanStatus();
+        Position lastDestinationRequested = navigationService.getCurrentDestination();
 
         boolean needToAdaptFlightPlan = 
             !(lastGeoZonesConsidered.equals(geoZonesToConsider) &&
             lastRainCellsConsidered.equals(rainCellsToConsider) &&
-            lastDestinationConsidered.equals(actualDestination) &&
+            lastDestinationRequested.equals(actualDestination) &&
             (conflictingDrones.isEmpty() || lastConflictingDronesConsidered.equals(conflictingDrones)) );
 
         if (flightPlanStatus == DataStatus.NOT_REQUESTED ||
@@ -171,7 +167,6 @@ public class FlightPlanningHandler implements StepHandler {
             lastGeoZonesConsidered = geoZonesToConsider;
             lastRainCellsConsidered = rainCellsToConsider;
             lastConflictingDronesConsidered = conflictingDrones;
-            lastDestinationConsidered = actualDestination;
         }
         return false;
                 

@@ -1,6 +1,7 @@
 package com.aeroflux.drone.infrastructure.handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +21,7 @@ import com.aeroflux.drone.infrastructure.service.DroneServiceFacade;
 import com.aeroflux.drone.infrastructure.service.authorization.AuthorizationService;
 import com.aeroflux.drone.infrastructure.service.geozone.GeoZoneService;
 import com.aeroflux.drone.infrastructure.service.log.LogService;
+import com.aeroflux.drone.infrastructure.service.navigation.NavigationService;
 import com.aeroflux.drone.infrastructure.service.weather.WeatherService;
 
 public class GeoLocationHandler implements StepHandler {
@@ -33,7 +35,11 @@ public class GeoLocationHandler implements StepHandler {
     private final LogService logService;
     private final AuthorizationService authorizationService;
     private final GeoCalculator geoCalculator;
+    private final NavigationService navigationService;
     private int unavailableDataToleranceCounter = UNAVAILABLE_DATA_TOLERANCE;
+
+    private Position lastConsideredDestinationForAuthorization;
+    private Map<String, GeoZone> lastConsideredGeoZones = new HashMap<>();    
 
     public GeoLocationHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
@@ -42,6 +48,7 @@ public class GeoLocationHandler implements StepHandler {
         this.weatherService = droneServices.getWeatherService();
         this.logService = droneServices.getLogService();
         this.authorizationService = droneServices.getAuthorizationService();
+        this.navigationService = droneServices.getNavigationService();
         this.geoCalculator = new GeoCalculator();
     }
 
@@ -68,6 +75,24 @@ public class GeoLocationHandler implements StepHandler {
             unavailableDataToleranceCounter = UNAVAILABLE_DATA_TOLERANCE;
         }
 
+        Position destination = navigationService.getCurrentDestination();
+
+        if(geoZoneService.getGeoZonesStatus() == DataStatus.AVAILABLE && authorizationService.getAuthorizationsStatus() == DataStatus.AVAILABLE) {
+
+            boolean shouldRequestNewAuthorizations =
+                    !(destination.equals(lastConsideredDestinationForAuthorization) &&
+                    geoZoneService.getGeoZones().equals(lastConsideredGeoZones));
+            if (shouldRequestNewAuthorizations) {
+                authorizationService.requestLinearPathAuthorizations(
+                    context.getDroneProperties().getId(),
+                    flightController.getCurrentPosition(),
+                    destination,
+                    geoZoneService.getGeoZones());
+                lastConsideredDestinationForAuthorization = destination;
+                lastConsideredGeoZones = geoZoneService.getGeoZones();
+            }
+        }
+
         Map<String, GeoZone> geoZones = geoZoneService.getGeoZones();
         Map<String, Authorization> authorizations = authorizationService.getAuthorizations();
 
@@ -85,14 +110,13 @@ public class GeoLocationHandler implements StepHandler {
         List<RainCell> rainCellsToConsider = weatherService.getRainCells();
         Position currentPosition = flightController.getCurrentPosition();
 
-        boolean needsToLand = false;
+        boolean zoneViolation = false;
         if (geoZonesToConsider.isEmpty() && rainCellsToConsider.isEmpty()) {
             return false;
         }
-
         for (GeoZone geoZone : geoZonesToConsider) {
             if (geoCalculator.isPointInZone(currentPosition, geoZone)) {
-                needsToLand = true;
+                zoneViolation = true;
                 logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.GEOZONE_ENTERED, 
                     "Drone entered geo zone: " + geoZone.getId() + " at position: " + currentPosition);
             }
@@ -100,19 +124,37 @@ public class GeoLocationHandler implements StepHandler {
 
         for (RainCell rainCell : rainCellsToConsider) {
             if (geoCalculator.isPointInZone(currentPosition, rainCell)) {
-                needsToLand = true;
+                zoneViolation = true;
                 logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.RAIN_CELL_ENTERED, 
                     "Drone entered rain cell at position: " + currentPosition);
             }
         }
 
-        if (!needsToLand) return false;
-
-        if (flightController.isOnGround()) {
-            return true;
+        if (zoneViolation) {
+            if (flightController.isOnGround()) {
+                return true;
+            }
+            context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING_REQUEST);
+            return false;
         }
 
-        context.setFlightMode(DroneFlightMode.EMERGENCY_LANDING_REQUEST);
+        for (GeoZone geoZone : geoZonesToConsider) {
+            if (geoCalculator.isPointInZone(destination, geoZone)) {
+                logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.DESTINATION_IN_GEOZONE, 
+                    "Destination " + destination + " is in geo zone: " + geoZone.getId() + ", requesting alternative destination");
+                context.setFlightMode(DroneFlightMode.ALTERNATIVE_DESTINATION_REQUEST);
+                return false;
+            }
+        }
+
+        for (RainCell rainCell : rainCellsToConsider) {
+            if (geoCalculator.isPointInZone(destination, rainCell)) {
+                logService.info(LogConstants.Component.GEOLOCATION_HANDLER, LogConstants.Event.DESTINATION_IN_RAIN_CELL, 
+                    "Destination " + destination + " is in rain cell, requesting alternative destination");
+                context.setFlightMode(DroneFlightMode.ALTERNATIVE_DESTINATION_REQUEST);
+                return false;
+            }
+        }
 
         return false;
     }

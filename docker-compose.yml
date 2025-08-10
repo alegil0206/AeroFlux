@@ -198,6 +198,8 @@ services:
     build:
       context: ./weather
     container_name: spring-weather
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
     ports:
       - "8084:8080"
     networks:
@@ -232,6 +234,8 @@ services:
     build:
       context: ./simulator
     container_name: spring-simulator
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
     ports:
       - "8085:8080"
     networks:

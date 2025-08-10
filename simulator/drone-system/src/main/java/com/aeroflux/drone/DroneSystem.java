@@ -41,9 +41,9 @@ public class DroneSystem {
         this.stepHandlers = List.of(
                 new BatteryConsumptionHandler(context, droneServices),
                 new DataAcquisitionHandler(context, droneServices),
-                new GeoLocationHandler(context, droneServices),          
+                new GeoLocationHandler(context, droneServices),
+                new ConflictAvoidanceHandler(context, droneServices),        
                 new FlightPlanningHandler(context, droneServices),
-                new ConflictAvoidanceHandler(context, droneServices),
                 new FlightControlHandler(context, droneServices)
         );
     }
@@ -51,7 +51,7 @@ public class DroneSystem {
     public DroneStatus executeStep() {
 
         if (!droneServices.getFlightController().isPoweredOn()) return null;
-        
+
         droneServices.getLogService().info(LogConstants.Component.DRONE_SYSTEM, "Step", "Executing step " + context.nextStep());
 
         for (StepHandler handler : stepHandlers) {

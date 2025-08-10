@@ -1,19 +1,12 @@
 package com.aeroflux.drone.infrastructure.handler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.aeroflux.drone.domain.handler.StepHandler;
 import com.aeroflux.drone.domain.model.DataStatus;
 import com.aeroflux.drone.domain.model.DroneContext;
 import com.aeroflux.drone.domain.model.DroneFlightMode;
-import com.aeroflux.drone.domain.model.GeoZone;
-import com.aeroflux.drone.domain.model.Position;
-import com.aeroflux.drone.infrastructure.controller.FlightController;
 import com.aeroflux.drone.infrastructure.service.DroneServiceFacade;
 import com.aeroflux.drone.infrastructure.service.authorization.AuthorizationService;
 import com.aeroflux.drone.infrastructure.service.geozone.GeoZoneService;
-import com.aeroflux.drone.infrastructure.service.navigation.NavigationService;
 import com.aeroflux.drone.infrastructure.service.supportPoint.SupportPointService;
 import com.aeroflux.drone.infrastructure.service.weather.WeatherService;
 
@@ -36,21 +29,13 @@ public class DataAcquisitionHandler implements StepHandler {
     private final AuthorizationService authorizationService;
     private final WeatherService weatherService;
     private final SupportPointService supportPointService;
-    private final FlightController flightController;
-    private final NavigationService navigationService;
-
-    private Position lastConsideredDestination;
-    private Map<String, GeoZone> lastConsideredGeoZones = new HashMap<>();
-    
 
     public DataAcquisitionHandler(DroneContext ctx, DroneServiceFacade droneServices) {
         this.context = ctx;
         this.geoZoneService = droneServices.getGeoZoneService();
         this.authorizationService = droneServices.getAuthorizationService();
         this.weatherService = droneServices.getWeatherService();
-        this.flightController = droneServices.getFlightController();
         this.supportPointService = droneServices.getSupportPointService();
-        this.navigationService = droneServices.getNavigationService();
     }
 
     @Override
@@ -94,27 +79,6 @@ public class DataAcquisitionHandler implements StepHandler {
             lastGeoZoneUpdate = currentStep;
         }
 
-        if(geoZoneService.getGeoZonesStatus() != DataStatus.AVAILABLE) {
-            return false;
-        }
-
-        Position destination = navigationService.getCurrentDestination() != null ? 
-                navigationService.getCurrentDestination() :
-                new Position(context.getDroneProperties().getDestination(), 0);
-
-        boolean shouldRequestNewAuthorizations =
-                !(destination.equals(lastConsideredDestination) &&
-                geoZoneService.getGeoZones().equals(lastConsideredGeoZones));
-        if (shouldRequestNewAuthorizations) {
-            authorizationService.requestLinearPathAuthorizations(
-                context.getDroneProperties().getId(),
-                flightController.getCurrentPosition(),
-                destination,
-                geoZoneService.getGeoZones());
-            lastConsideredDestination = destination;
-            lastConsideredGeoZones = geoZoneService.getGeoZones();
-        }
-
         DataStatus authorizationStatus = authorizationService.getAuthorizationsStatus();
         boolean shouldRefreshAuthorizations =
                 authorizationStatus == DataStatus.NOT_REQUESTED ||
@@ -128,4 +92,4 @@ public class DataAcquisitionHandler implements StepHandler {
 
         return false;
     }
-}           
+}

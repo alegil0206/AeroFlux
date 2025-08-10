@@ -1,5 +1,6 @@
 package com.aeroflux.simulator.dto;
 
+import com.aeroflux.drone.domain.dto.PositionDTO;
 import com.aeroflux.drone.domain.model.DroneProperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,8 +56,8 @@ public class DronePropertiesDTO {
 		this.planDefinitionTimestamp = droneProperties.getPlanDefinitionTimestamp();
 		this.adaptiveCapabilities = new AdaptiveCapabilitiesDTO(droneProperties.getAdaptiveCapabilities());
 		this.battery = droneProperties.getBattery();
-		this.source = new PositionDTO(droneProperties.getSource().getLongitude(), droneProperties.getSource().getLatitude());
-		this.destination = new PositionDTO(droneProperties.getDestination().getLongitude(), droneProperties.getDestination().getLatitude());
+		this.source = new PositionDTO(droneProperties.getSource());
+		this.destination = new PositionDTO(droneProperties.getDestination());
 	}
 	
 	public String getId() {

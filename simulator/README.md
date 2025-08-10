@@ -1,147 +1,305 @@
-Di seguito una panoramica dell'architettura finale, suddivisa in due macro-moduli: **drone-system** e **platform**. Ognuno ha una struttura modulare che segue i principi di separazione delle responsabilità, astrazione e inversione delle dipendenze.
+# Simulator
+
+## Purpose
+
+Manages simulation control (start, pause, resume, stop), external service configuration, and access to historical simulation data.
 
 ---
 
-## 1. Drone-System
+## Service Configuration API
 
-Questo modulo contiene il "core" del drone, definito in tre livelli principali:  
-- **Domain Layer:** Definisce il modello di dominio (entità e value object) e le interfacce (contratti) dei servizi.  
-- **Application Layer:** Orchestration e casi d’uso (es. MissionManager) che coordinano il comportamento del drone.  
-- **Infrastructure Layer:** Implementazioni concrete dei servizi e accesso all’hardware (sensori, telecamera, integrazioni REST).
+**Base URL**: `/setting`
 
-### **Domain Layer (drone-system)**
-**Package:** `com.drone.domain`
+### Get All Registered Services
 
-- **Model (com.drone.domain.model)**
-  - `Coordinates.java` – Rappresenta la posizione geografica.
-  - `Path.java` – Rappresenta il percorso da seguire.
-  - `LandingZone.java` – Incapsula l'esito dell'analisi per un atterraggio sicuro.
-  - *(Opzionale)* `BatteryStatus.java` – Valore o entità per lo stato della batteria.
+Retrieves a map of all registered services and their corresponding URLs.
 
-- **Service Interfaces (com.drone.domain.service)**
-  - **Navigazione (com.drone.domain.service.navigation)**
-    - `NavigationService.java` – Metodi per calcolare il percorso, seguire il percorso, verificare se è stata raggiunta la destinazione, ottenere la posizione attuale.
-  - **Batteria (com.drone.domain.service.battery)**
-    - `BatteryService.java` – Interfaccia per ottenere il livello di batteria e verificare se è in stato critico.
-  - **Radio (com.drone.domain.service.radio)**
-    - `RadioService.java` – Interfaccia per inviare e ricevere messaggi radio.
-  - **Atterraggio (com.drone.domain.service.landing)**
-    - `LandingService.java` – Interfaccia per valutare la zona d’atterraggio (usando la telecamera) ed eseguire l’atterraggio.
+```
+GET /setting/service
+```
 
-### **Application Layer (drone-system)**
-**Package:** `com.drone.application`
+###### Response
 
-- **Mission (com.drone.application.mission)**
-  - `MissionManager.java` – Classe che coordina il flusso di missione: richiede il percorso, controlla la batteria, gestisce l'atterraggio, invia messaggi radio.
+* **Status Code**: 200 OK
+* **Content-Type**: application/json
+* **Body**: Map of service names and their URLs
 
-- **(Opzionale) Use Cases (com.drone.application.usecase)**
-  - Casi d’uso specifici che possono orchestrare scenari più complessi.
+```json
+{
+  "service": "string",
+  "service": "string"
+}
+```
 
-### **Infrastructure Layer (drone-system)**
-**Package:** `com.drone.infrastructure`
+##### Error Responses
 
-- **Service Implementations (com.drone.infrastructure.serviceimpl)**
-  - **Navigazione (com.drone.infrastructure.serviceimpl.navigation)**
-    - `NavigationServiceImpl.java` – Implementa la logica di calcolo e follow del percorso.
-  - **Batteria (com.drone.infrastructure.serviceimpl.battery)**
-    - `BatteryServiceImpl.java` – Implementa l'interfaccia BatteryService utilizzando il **HardwareAbstractionLayer** (quando applicabile).
-  - **Radio (com.drone.infrastructure.serviceimpl.radio)**
-    - `RadioServiceImpl.java` – (Implementazione "reale" per scenari in cui il drone dispone di una radio autonoma; in simulazione verrà sostituita).
-  - **Atterraggio (com.drone.infrastructure.serviceimpl.landing)**
-    - `LandingServiceImpl.java` – Implementa la logica di atterraggio sicuro, utilizzando il **CameraService** per l’analisi.
-
-- **Sensor Components (com.drone.infrastructure.sensor)**
-  - `HardwareAbstractionLayer.java` – Accesso a sensori generici (GPS, batteria, radio se non simulata).
-  - `CameraService.java` – Servizio per acquisire e analizzare l’immagine per l’atterraggio sicuro.
-
-- **Integration (com.drone.infrastructure.integration)**
-  - *(Opzionale)* Client per integrazione con servizi esterni (meteo, geo-awareness, autorizzazioni).
+* **500 Internal Server Error**: If an error occurs while retrieving service data.
 
 ---
 
-## 2. Platform (Simulatore)
+### Update Service URL
 
-Il simulatore gestisce la logica di simulazione, fornendo implementazioni simulate per servizi critici come la batteria e la radio.  
-Il modulo **platform** ha una dipendenza da **drone-system** ma non viceversa, quindi le interfacce per Battery e Radio sono definite nel drone-system, e il simulatore fornisce le implementazioni.
+Updates the URL associated with a registered service.
 
-### **Simulazione dei Servizi**
-**Package:** `com.platform.simulation`
+```
+PUT /setting/service/{serviceName}?newUrl={newUrl}
+```
 
-- **Battery Simulata (com.platform.simulation.battery)**
-  - `BatteryServiceSimulated.java` – Implementa `BatteryService` per fornire dati simulati (es. batteria che si scarica nel tempo).
+###### Parameters
 
-- **Radio Simulata (com.platform.simulation.radio)**
-  - `RadioServiceSimulated.java` – Implementa `RadioService` per simulare comunicazioni radio.  
-    - Gestisce una “mappa” dei droni simulati (registrati con un identificativo e posizione) e invia messaggi solo ai droni entro un raggio di trasmissione.
+* `serviceName (string)`: Name of the service to update.
+* `newUrl (string)`: New URL for the service.
 
-- **Gestione dei Droni Simulati (com.platform.simulation.drone)**
-  - `SimulatedDrone.java` – Classe che rappresenta il drone all’interno del simulatore (es. con id e posizione).
-  
-- **Runner del Simulatore**
-  - `SimulationRunner.java` – Classe principale che crea i droni, li registra nel sistema simulato e li avvia.  
-    - Qui si istanziano le implementazioni simulate (BatteryServiceSimulated e RadioServiceSimulated) e si inietta tutto nel MissionManager del drone.
+###### Response
 
-### **Integrazione nel Simulatore**
-Nel `SimulationRunner`, per ogni drone:
-- Si crea un'istanza di **SimulatedDrone** e la si registra presso il servizio radio simulato.
-- Si passa l’implementazione simulata di `BatteryService` e `RadioService` al `MissionManager` del drone.
-- Il drone, durante la sua esecuzione, userà questi servizi per ottenere informazioni sulla batteria e per comunicare con altri droni simulati.
+* **Status Code**: 200 OK
+* **Content-Type**: empty
+
+##### Error Responses
+
+* **500 Internal Server Error**: If an error occurs while updating the service URL.
 
 ---
 
-## Riassunto delle Classi/Interfacce da Implementare
+## Simulation Control API (WebSocket)
 
-### **Nel modulo drone-system:**
+**Base WebSocket Endpoint**: `/app`
+**Response Topic**: `/topic/status`
 
-**Domain:**
-- **Model:**  
-  - `Coordinates.java`  
-  - `Path.java`  
-  - `LandingZone.java`  
-  - *(Opzionale)* `BatteryStatus.java`
-- **Service Interfaces:**  
-  - `NavigationService.java`  
-  - `BatteryService.java`  
-  - `RadioService.java`  
-  - `LandingService.java`
+### Start Simulation
 
-**Application:**
-- `MissionManager.java` (e eventuali casi d’uso aggiuntivi)
+Starts the simulation with the specified execution speed.
 
-**Infrastructure:**
-- **Service Implementations:**  
-  - `NavigationServiceImpl.java`  
-  - `BatteryServiceImpl.java` *(versione "reale", eventualmente non usata in simulazione)*  
-  - `RadioServiceImpl.java` *(versione "reale")*  
-  - `LandingServiceImpl.java`
-- **Sensor:**  
-  - `HardwareAbstractionLayer.java`  
-  - `CameraService.java`
-- **Integration:**  
-  - *(Opzionale, per servizi esterni: meteo, geo, autorizzazioni)*
+```
+MESSAGE /app/start
+```
 
----
+###### Request (JSON Body)
 
-### **Nel modulo platform (Simulatore):**
+```json
+{
+  "execution_speed": "integer"
+}
+```
 
-- **Battery Simulation:**  
-  - `BatteryServiceSimulated.java`
-- **Radio Simulation:**  
-  - `RadioServiceSimulated.java`
-- **Gestione dei Droni Simulati:**  
-  - `SimulatedDrone.java`
-- **Runner del Simulatore:**  
-  - `SimulationRunner.java`
+###### Response (`/topic/status`)
+
+```json
+{
+  "execution_state": "RUNNING",
+  "execution_speed": "integer"
+}
+```
 
 ---
 
-## Considerazioni Finali
+### Stop Simulation
 
-- **Dipendenze:**  
-  Il modulo drone-system definisce le interfacce che il simulatore implementa. In questo modo il drone non ha una dipendenza diretta dal simulatore, evitando ciclicità.
-- **Iniezione delle Dipendenze:**  
-  Il simulatore, all'avvio, istanzia le implementazioni simulate e le inietta nel `MissionManager` (o in altri componenti) del drone.
-- **Modularità e Scalabilità:**  
-  L'architettura permette di passare facilmente da un ambiente simulato a uno reale (ad es. sostituendo le implementazioni simulate con quelle concrete) senza modificare la logica di dominio o applicativa.
+Stops the current simulation.
 
-Questa architettura finale garantisce che il drone, pur essendo parte di un sistema simulato, mantenga una separazione chiara tra logica di business, infrastruttura e simulazione, rendendo il sistema altamente manutenibile, testabile e scalabile.
+```
+MESSAGE /app/stop
+```
+
+###### Response (`/topic/status`)
+
+```json
+{
+  "execution_state": "STOPPED",
+  "execution_speed": "integer"
+}
+```
+
+---
+
+### Pause Simulation
+
+Pauses the currently running simulation.
+
+```
+MESSAGE /app/pause
+```
+
+###### Response (`/topic/status`)
+
+```json
+{
+    "execution_state": "PAUSED",
+    "execution_speed": "integer"
+}
+```
+
+---
+
+### Resume Simulation
+
+Resumes a paused simulation.
+
+```
+MESSAGE /app/resume
+```
+
+###### Response (`/topic/status`)
+
+```json
+{
+    "execution_state": "RUNNING",
+    "execution_speed": "integer"
+}
+```
+
+---
+
+### Get Simulation Status
+
+Retrieves the current status of the simulation.
+
+```
+MESSAGE /app/status
+```
+
+###### Response (`/topic/status`)
+
+```json
+{
+    "execution_state": "status",
+    "execution_speed": "integer"
+}
+```
+
+---
+
+## Simulation History API
+
+**Base URL**: `/simulation-history`
+
+### Get Simulation History
+
+Returns a list of past simulations.
+
+```
+GET /simulation-history
+```
+
+###### Response
+
+* **Status Code**: 200 OK
+* **Content-Type**: application/json
+* **Body**: List of simulations
+
+```json
+[
+  {
+    "id": "string",
+    "date": "YYYY-MM-DDTHH:MM:SSZ",
+  },
+  {
+    "id": "124",
+    "date": "YYYY-MM-DDTHH:MM:SSZ",
+  }
+]
+```
+
+---
+
+### Get Simulation Details
+
+Returns full details for a specific simulation.
+
+```
+GET /simulation-history/{id}
+```
+
+###### Path Variable
+
+* `id (string)`: ID of the simulation to retrieve.
+
+###### Response
+
+* **Status Code**: 200 OK
+* **Content-Type**: application/json
+* **Body**: Full simulation details
+
+```json
+{
+  "id": "string",
+  "date": "YYYY-MM-DDTHH:MM:SSZ",
+  "duration": "long",
+  "executionSpeed": "integer",
+  "logs": [
+    {
+      "system_id": "string",
+      "level": "string",
+      "component": "string",
+      "event": "string",
+      "message": "string",
+      "timestamp": "YYYY-MM-DDTHH:MM:SSZ"
+    },
+  ],
+  "drones": [
+    {
+      "drone_properties": {
+        "id": "string",
+        "name": "string",
+        "model": "string",
+        "owner": "string",
+        "operation_category": "string",
+        "plan_definition_timestamp": "string",
+        "adaptive_capabilities": {
+          "collision_avoidance": true,
+          "geo_awareness": true,
+          "auto_authorization": true,
+          "battery_management": true
+        },
+        "source": {
+          "longitude": "double",
+          "latitude": "double",
+          "altitude": "double"
+        },
+        "destination": {
+          "longitude": "double",
+          "latitude": "double",
+          "altitude": "double"
+        }
+      },
+      "drone_status": [
+        {
+          "droneId": "string",
+          "position": {
+            "longitude": "double",
+            "latitude": "double",
+            "altitude": "double"
+          },
+          "battery_level": "integer",
+          "flight_mode": "string",
+          "flight_plan": [
+            {
+              "longitude": "double",
+              "latitude": "double",
+              "altitude": "double"
+            }
+          ],
+          "logs": [
+            {
+              "system_id": "string",
+              "level": "string",
+              "component": "string",
+              "event": "string",
+              "message": "string",
+              "timestamp": "YYYY-MM-DDTHH:MM:SSZ"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## License
+
+This project is licensed under the Apache License 2.0 – see the [LICENSE](LICENSE) file for details.
+
+---

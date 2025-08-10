@@ -2,148 +2,211 @@
 
 ## Purpose
 
-Provides weather data based on city name or geographic coordinates (latitude and longitude).
+Provides weather data, including information about rain clusters and configuration for weather simulation, such as wind direction and intensity.
 
-## Weather Data
+## Rain Cell
 
 ### Properties
-- <code>location</code>: Information about the location (city and country).
-- <code>current</code>: Current weather details such as temperature, humidity, wind speed, and visibility.
-- <code>timestamp</code>: The timestamp of the weather data in ISO format.
+- `coordinates`: List of coordinates of the rain cell.
 
-#### Location
-- <code>name (string)</code>: Name of the city.
-- <code>country (string)</code>: Country of the city.
-- <code>lat (double)</code>: Latitude of the city.
-- <code>lng (double)</code>: Longitude of the city.
-
-#### Current Weather
-- <code>temperature (double)</code>: Current temperature in Celsius.
-- <code>feels_like (double)</code>: Apparent temperature in Celsius, what the weather "feels like."
-- <code>weather</code>: Weather conditions.
-  - <code>main (string)</code>: General weather condition (e.g., Clear, Rain).
-  - <code>description (string)</code>: Detailed description of the weather condition.
-- <code>wind</code>: Wind data.
-  - <code>speed (double)</code>: Wind speed in meters per second.
-  - <code>direction (string)</code>: Wind direction in cardinal points (e.g., N, NE).
-- <code>humidity (int)</code>: Humidity percentage.
-- <code>visibility (int)</code>: Visibility in meters.
-- <code>pressure (int)</code>: Atmospheric pressure in hPa.
-
-### Example Response (Coordinates)
+### Example
 
 ```json
 {
-  "location": {
-    "name": "CityName",
-    "country": "CountryName",
-    "lat": 52.52,
-    "lng": 13.405
-  },
-  "current": {
-    "temperature": 18.5,
-    "feels_like": 17.3,
-    "weather": {
-      "main": "Clear",
-      "description": "clear sky"
-    },
-    "wind": {
-      "speed": 3.5,
-      "direction": "NNE"
-    },
-    "humidity": 60,
-    "visibility": 10000,
-    "pressure": 1012
-  },
-  "timestamp": "2025-01-21T15:30:00Z"
+  "coordinates": [
+    ["double", "double"],
+    ["double", "double"],
+    ["double", "double"],
+    ["double", "double"],
+    ["double", "double"]
+  ]
 }
 ```
 
-### Example Response (City Name)
+## Weather Configuration
+
+### Properties
+- `windDirection (double)`: Wind direction (North azimuth degrees).
+- `windIntensity (double)`: Wind intensity affecting rain movement (km/h).
+- `minClusters (int)`: Minimum number of rain clusters.
+- `maxClusters (int)`: Maximum number of rain clusters.
+- `maxClusterRadius (double)`: Maximum radius of a rain cluster (km).
+
+
+### Example
 
 ```json
 {
-  "location": {
-    "name": "CityName",
-    "country": "CountryName",
-    "lat": 52.52,
-    "lng": 13.405
-  },
-  "current": {
-    "temperature": 18.5,
-    "feels_like": 17.3,
-    "weather": {
-      "main": "Clear",
-      "description": "clear sky"
-    },
-    "wind": {
-      "speed": 3.5,
-      "direction": "NNE"
-    },
-    "humidity": 60,
-    "visibility": 10000,
-    "pressure": 1012
-  },
-  "timestamp": "2025-01-21T15:30:00Z"
+  "windDirection": "double",
+  "windIntensity": "double",
+  "minClusters": "integer",
+  "maxClusters": "integer",
+  "maxClusterRadius": "double"
 }
 ```
 
-## API
+## Simulation Configuration
+
+### Properties
+- `latitude (double)`: latitude of the center of simulation area.
+- `longitude (double)`: longitude of the center of simulation area.
+
+### Example
+
+```json
+{
+  "latitude": "double",
+  "longitude": "double"
+}
+```
+
+## Weather API
 
 Base URL: `/weather`
 
-### Coordinates
+### Rain Cells
 
-#### Get Weather by Coordinates
-Retrieves weather data for a specific location by its geographic coordinates (latitude and longitude).
+#### Get RainCells
+Retrieves information about the currently active rain cells in the simulation.
 
 ```
-GET /weather/coordinates?longitude={longitude}&latitude={latitude}
+GET /weather/rain-cell
 ```
-
-##### Parameters
-- **longitude** (query parameter, required): Longitude of the location.
-- **latitude** (query parameter, required): Latitude of the location.
 
 ###### Response
 - **Status Code**: 200 OK
 - **Content-Type**: application/json
-- **Body**: Weather data for the specified coordinates.
-
-##### Error Responses
-- **500 Internal Server Error**: If the weather data retrieval fails.
+- **Body**: List of rain cells with coordinates.
 
 ```json
-{
-  "error": "Error message"
-}
+[
+  {
+    "coordinates": [
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"]
+    ]
+  },
+  {
+    "coordinates": [
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"],
+      ["double", "double"]
+    ]
+  }
+]
 ```
 
-### City Name
+##### Error Responses
+- **500 Internal Server Error**: If there is an issue retrieving rain cells.
 
-#### Get Weather by City
-Retrieves weather data for a specific location by its city name.
+
+---
+
+### Weather Configuration
+
+
+#### Get Weather Configuration
+Retrieves the current weather simulation configuration (wind direction, wind intensity, rain clusters, and maximum cluster size).
 
 ```
-GET /weather/city/{city}
+GET /weather/config
 ```
-
-##### Parameters
-- **city** (path parameter, required): Name of the city.
 
 ###### Response
 - **Status Code**: 200 OK
 - **Content-Type**: application/json
-- **Body**: Weather data for the specified city.
-
-##### Error Responses
-- **500 Internal Server Error**: If the weather data retrieval fails.
+- **Body**: Current weather simulation configuration.
 
 ```json
 {
-  "error": "Error message"
+  "windDirection": "double",
+  "windIntensity": "double",
+  "minClusters": "integer",
+  "maxClusters": "integer",
+  "maxClusterRadius": "double"
 }
 ```
+
+##### Error Responses
+- **500 Internal Server Error**: If there is an issue retrieving the weather configuration.
+
+#### Update Weather Configuration
+Allows for updating the weather simulation configuration (wind direction, wind intensity, number of clusters, etc.).
+
+```
+PUT /weather/config
+```
+
+###### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Updated weather simulation configuration.
+
+```json
+{
+  "windDirection": "double",
+  "windIntensity": "double",
+  "minClusters": "integer",
+  "maxClusters": "integer",
+  "maxClusterRadius": "double"
+}
+```
+
+##### Error Responses
+- **500 Internal Server Error**: If there is an issue updating the weather configuration.
+
+
+### Simulation Configuration API
+
+Base URL: `/setting`
+
+#### Get Simulation Configuration
+Retrieves the current simulation configuration (latitude and longitude of the center of the simulation area).
+
+```
+GET /setting/coordinates
+```
+
+###### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Current simulation configuration.
+
+```json
+{
+  "latitude": "double",
+  "longitude": "double"
+}
+```
+
+##### Error Responses
+- **500 Internal Server Error**: If there is an issue retrieving the simulation configuration.
+
+#### Update Simulation Configuration
+Allows for updating the simulation configuration (latitude and longitude of the center of the simulation area).
+
+```
+PUT /setting/coordinates
+```
+
+###### Request
+- **Content-Type**: application/json
+- **Body**: Simulation configuration object.
+
+
+##### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Updated simulation configuration.
+
+##### Error Responses
+- **500 Internal Server Error**: If there is an issue updating the simulation configuration.
+
 
 ## License
 

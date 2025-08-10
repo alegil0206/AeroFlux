@@ -2,6 +2,7 @@ package com.aeroflux.drone.domain.model;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import com.aeroflux.drone.domain.dto.PositionDTO;
 import com.aeroflux.drone.domain.geo.GeoCalculatorFactory;
 
 public final class Position extends Coordinate {
@@ -21,6 +22,13 @@ public final class Position extends Coordinate {
 		assert altitude >= 0;
 		
 		this.altitude = altitude;
+	}
+
+	public Position(PositionDTO positionDTO) {
+		super(positionDTO.getLatitude(), positionDTO.getLongitude());
+		assert positionDTO.getAltitude() >= 0;
+		
+		this.altitude = positionDTO.getAltitude();
 	}
 		
 	public double getAltitude() {

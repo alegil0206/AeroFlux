@@ -2,27 +2,33 @@
 
 ## Purpose
 
-Representation of three-dimensional spacial regions where drones need authorizations to access. 
+Handle representation of three-dimensional spacial regions where drones need authorizations to access. 
 
+Handle representation of ground locations where drones can receive assistance or perform operations such as battery swaps, maintenance, or emergency landings.
+
+---
 ## Geozones
 
 ### Properties
- - <code>id (string)</code>: id of the geozone.
- - <code>name (string)</code>: name of the geozone.
- - <code>type (string)</code>: type of the geozone. See [Type](#type) for details.
- - <code>category (string)</code>: category of the geozone. See [Category](#category) for details.
- - <code>status (string)</code>: status of the geozone. See [Status](#status) for details.
- - <code>altitude_level (string)</code>: altitude level of the geozone. See [Altitude level](#altitude-level) for details.
- - <code>altitude (double)</code>: starting altitude value of the geozone. See [Altitude Level](#altitude-level) for details.
+ - `id (string)`: id of the geozone.
+ - `name (string)`: name of the geozone.
+ - `type (string)`: type of the geozone. See [Type](#type) for details.
+ - `category (string)`: category of the geozone. See [Category](#category) for details.
+ - `status (string)`: status of the geozone. See [Status](#status) for details.
+ - `altitude_level_limit_inferior (string)`: starting altitude level of the geozone. See [Altitude level](#altitude-level) for details.
+ - `altitude_limit_inferior (double)`: starting altitude value of the geozone. See [Altitude Level](#altitude-level) for details.
+  - `altitude_level_limit_superior (string)`: ending altitude level of the geozone. See [Altitude level](#altitude-level) for details.
+  - `altitude_limit_superior (double)`: ending altitude value of the geozone. See [Altitude Level](#altitude-level) for details.
+
 
 ### Type
 
 #### Circular geozone
 Geozone with a center and a radius.
 ##### Properties
-- <code>latitude (double)</code>: latitude of the center.
-- <code>longitude (double)</code>: longitude of the center.
-- <code>radius (double)</code>: radius of the center in meters.
+- `latitude (double)`: latitude of the center.
+- `longitude (double)`: longitude of the center.
+- `radius (double)`: radius of the center in meters.
 ##### Example
 ```json
 {
@@ -31,8 +37,10 @@ Geozone with a center and a radius.
       "type": "CIRCULAR",
       "category": "string",
       "status": "string",
-      "altitude_level": "string",
-      "altitude": "double",
+      "altitude_level_inferior": "string",
+      "altitude_limit_inferior": "double",
+      "altitude_level_superior": "string",
+      "altitude_limit_superior": "double",
       "latitude": "double",
       "longitude": "double",
       "radius": "double",
@@ -42,7 +50,7 @@ Geozone with a center and a radius.
 #### Polygonal geozone
 Geozone delimited by multiple points (at least three).
 ##### Properties
-- <code>coordintes</code>: array of pairs <code>(longitude, latitude)</code> of the delimiting points. There must be at least three points.
+- `coordintes`: array of pairs `(longitude, latitude)` of the delimiting points. There must be at least three points.
 ##### Example
 ```json
 {
@@ -51,8 +59,10 @@ Geozone delimited by multiple points (at least three).
       "type": "POLYGONAL",
       "category": "string",
       "status": "string",
-      "altitude_level": "string",
-      "altitude": "double",
+      "altitude_level_inferior": "string",
+      "altitude_limit_inferior": "double",
+      "altitude_level_superior": "string",
+      "altitude_limit_superior": "double",
       "coordinates": [["double", "double"], ["double", "double"], "...", ["double", "double"]]
     }
 ```
@@ -70,16 +80,37 @@ Geozone which is actually active.
 Geozone which is actually not active.
 
 ### Altitude level
-Altitude levels represents the height at which geozones start. There are five levels:
- - <code>L0</code>: the geozone starts at 0 meters, drones cannot circulate without an authorization.
- - <code>L1</code>: the geozone starts at 25 meters, drones can circulate without an authorization at any height in the range $[0, 25]$.
- - <code>L2</code>: the geozone starts at 45 meters, drones can circulate without an authorization at any height in the range $[0, 45]$.
- - <code>L3</code>: the geozone starts at 60 meters, drones can circulate without an authorization at any height in the range $[0, 60]$.
- - <code>L4</code>: the geozone starts at 120 meters, drones can circulate without an authorization at any height in the range $[0, 120]$.
+Altitude levels represents the altitude. There are five levels:
+ - `L0`: 0 meters
+ - `L1`: 25 meters
+ - `L2`: 45 meters
+ - `L3`: 60 meters
+ - `L4`: 120 meters
 
 Drones cannot circulate at altitudes highers than 120 meters.
 
-## API
+## Support Points
+
+### Properties
+
+- `id (string)`: Unique identifier of the support point.
+- `name (string)`: Name of the support point.
+- `latitude (double)`: Latitude coordinate of the support point.
+- `longitude (double)`: Longitude coordinate of the support point.
+
+### Example
+
+```json
+{
+  "id": "string",
+  "name": "string",
+  "latitude": "double",
+  "longitude": "double"
+}
+```
+
+
+## GeoZone API
 Base URL: `/geozone`
 
 ### Type
@@ -289,7 +320,7 @@ POST /geozone
 ##### Error Responses
 - **400 Bad Request**: If the request body is invalid
 ##### Payload
-- It is possible to pass just one between <code>altitude</code> and <code>altitude_level</code>
+- It is possible to pass just one between `altitude` and `altitude_level`
 
 #### Delete All Geozones
 Deletes all geozones.
@@ -350,6 +381,109 @@ DELETE /geozone/{id}
 ### Additional Notes
 
 - All endpoints that modify data (POST, PUT, DELETE) will trigger a publication event on the message broker.
+- The API uses standard HTTP response codes to indicate success or failure.
+- All requests and responses are in JSON format.
+- IDs are automatically generated for new geozones.
+
+
+## Support Points API
+
+Base URL: /support-point
+
+### Get All Support Points
+Retrieves a list of all registered support points.
+```
+GET /support-point
+```
+###### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Array of support point objects
+```json
+[
+  {
+    "id": "string",
+    "name": "string",
+    "latitude": "double",
+    "longitude": "double"
+  },
+  {
+    "id": "string",
+    "name": "string",
+    "latitude": "double",
+    "longitude": "double"
+  }
+]
+```
+#### Create New Support Point
+Creates a new support point.
+```
+POST /support-point
+```
+##### Request
+- **Content-Type**: application/json
+- **Body**: Support point object without id (generated by the system)
+```json
+{
+  "name": "string",
+  "latitude": "double",
+  "longitude": "double"
+}
+```
+##### Response
+- **Status Code**: 201 Created
+- **Headers**: Location: /support-point/{id}
+- **Content-Type**: application/json
+- **Body**: Created support point object
+##### Error Responses
+- **400 Bad Request**: If the request body is invalid
+
+#### Get Support point by ID
+Retrieves a specific support point by its ID.
+```
+GET /support-point/{id}
+```
+##### Parameters
+- **id** (path parameter, required): The ID of the support point
+##### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Support point object
+##### Error Responses
+- **404 Not Found**: If the support point with the specified ID does not exist.
+
+#### Update Support Point
+Updates an existing support point.
+```
+PUT /support-point/{id}
+```
+##### Parameters
+- **id** (path parameter, required): The ID of the support point to update
+##### Request
+- **Content-Type**: application/json
+- **Body**: Complete support point object with updated values
+##### Response
+- **Status Code**: 200 OK
+- **Content-Type**: application/json
+- **Body**: Updated support point object
+##### Error Responses
+- **400 Bad Request**: If the request body is invalid
+- **404 Not Found**: If the support point with the specified ID does not exist
+
+#### Delete Support point by ID
+Deletes a specific support point.
+```
+DELETE /support-point/{id}
+```
+##### Parameters
+- **id** (path parameter, required):  The ID of the support point to delete
+###### Response
+- **Status Code**: 204 No Content
+###### Error Responses
+- **404 Not Found**: If the support point with the specified ID does not exist
+
+### Additional Notes
+
 - The API uses standard HTTP response codes to indicate success or failure.
 - All requests and responses are in JSON format.
 - IDs are automatically generated for new geozones.

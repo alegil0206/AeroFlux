@@ -13,8 +13,12 @@ Management and identification of drones and their operation categories through a
 - `owner (string)`: owner of the drone.
 - `operation_category (string)`: operation category of the drone. See [Operation Category](#operation-category) for details.
 - `plan_definition_timestamp (string)`: timestamp of the last time the drone was updated. It does not have to be specified in POST and PUT requests.
+- `adaptive_capabilities (object)`: list of adaptive capabilities of the drone, such as "battery_management", "collision_avoidance".
+- `battery (double)`: battery capacity of the drone.
 - `source (string)`: geographical source of the drone.
 - `destination (string)`: geographical destination of the drone.
+
+
 
 ### Example
 ```json
@@ -25,6 +29,12 @@ Management and identification of drones and their operation categories through a
     "owner": "string",
     "operation_category": "string",
     "plan_definition_timestamp": "string",
+    "adaptive_capabilities": {
+      "collision_avoidance": true,
+      "geo_awareness": true,
+      "auto_authorization": true,
+      "battery_management": true
+    },
     "source": {
       "longitude": "double",
       "latitude": "double",

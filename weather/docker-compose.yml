@@ -4,6 +4,8 @@ services:
     build:
       context: .
     container_name: spring-weather
+    environment:
+      SPRING_PROFILE: ${SPRING_PROD_PROFILE}
     ports:
       - "8084:8080"
     networks:

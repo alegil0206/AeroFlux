@@ -2,6 +2,7 @@ package com.aeroflux.simulator.dto;
 
 import java.util.List;
 
+import com.aeroflux.drone.domain.dto.PositionDTO;
 import com.aeroflux.drone.domain.model.DroneFlightMode;
 import com.aeroflux.drone.domain.model.DroneStatus;
 import com.aeroflux.drone.domain.model.LogEntry;
