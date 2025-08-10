@@ -2,7 +2,7 @@
 
 # AeroFlux UAV Simulator
 
-AeroFlux is a comprehensive platform for drone (UAV) traffic management based on U-space principles. The system provides a distributed environment for managing, identifying, authorizing, and simulating drone operations in complex airspaces.
+AeroFlux UAV Simulator is a simulator for autonomous drones, focused on complex urban environments and compliance with European regulations. It supports generic missions using real-world coordinates and satellite maps, integrating a MAPE-K cycle for dynamic adaptation to environmental conditions and flight constraints. The simulator emphasizes strategic and decision-making aspects, introducing uncertainty factors such as changing weather, urban air traffic, and regulated geo-zones. Traffic management is decentralized, with drones adopting collaborative strategies to ensure safety and efficiency.
 
 ## Key Features
 
