@@ -61,7 +61,7 @@ public class SimulationEngine {
                         if (droneStatus != null) {
                             logService.sendDroneStatus(droneStatus);
                             logService.registerLogEntries(droneStatus.getLogs());
-                            ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(100);
+                            ((SimulatedBattery) drone.getHardwareAbstractionLayer().getBattery()).drainBattery(15);
                             droneStatusMap.get(drone.getDroneProperties()).add(droneStatus);                  
                         }
                     }

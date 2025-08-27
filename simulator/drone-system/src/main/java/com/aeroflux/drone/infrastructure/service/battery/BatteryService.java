@@ -6,8 +6,8 @@ import com.aeroflux.drone.infrastructure.service.log.LogService;
 
 public class BatteryService {
 
-    private static final double CRITICAL_BATTERY_LEVEL = 1000.0;
-    private static final double BATTERY_CONSUMPTION_RATE = 100.0;
+    private static final double CRITICAL_BATTERY_LEVEL = 200.0;
+    private static final double BATTERY_CONSUMPTION_RATE = 0.75; // mAh per meter
 
     private Battery battery;
     private LogService logService;

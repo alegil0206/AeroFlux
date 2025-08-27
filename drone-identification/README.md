@@ -14,7 +14,7 @@ Management and identification of drones and their operation categories through a
 - `operation_category (string)`: operation category of the drone. See [Operation Category](#operation-category) for details.
 - `plan_definition_timestamp (string)`: timestamp of the last time the drone was updated. It does not have to be specified in POST and PUT requests.
 - `adaptive_capabilities (object)`: list of adaptive capabilities of the drone, such as "battery_management", "collision_avoidance".
-- `battery (double)`: battery capacity of the drone.
+- `battery (double)`: battery capacity of the drone in mAh.
 - `source (string)`: geographical source of the drone.
 - `destination (string)`: geographical destination of the drone.
 
@@ -35,6 +35,7 @@ Management and identification of drones and their operation categories through a
       "auto_authorization": true,
       "battery_management": true
     },
+    "battery": "double",
     "source": {
       "longitude": "double",
       "latitude": "double",

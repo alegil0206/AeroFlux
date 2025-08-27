@@ -39,7 +39,7 @@ public class BatteryConsumptionHandler implements StepHandler {
         if (context.getFlightMode() == DroneFlightMode.LANDING_REQUEST) return false;
         if (navigationService.getFlightPlanStatus() != DataStatus.AVAILABLE) return false;
         
-        double flightDistance = navigationService.getFlightDistanceToEnd();
+        double flightDistance = navigationService.getFlightDistanceToDestination();
         if(batteryService.isBatteryEnoughForFlight(flightDistance)) return false;
         
         logService.info(LogConstants.Component.BATTERY_HANDLER, LogConstants.Event.INSUFFICIENT_BATTERY, 

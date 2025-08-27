@@ -195,7 +195,7 @@ public class NavigationService  {
 		return false;
     }
 
-	public synchronized double getFlightDistanceToEnd() {
+	public synchronized double getFlightDistanceToDestination() {
 		if (waypoints == null || waypoints.isEmpty()) {
 			return -1.0;
 		}
