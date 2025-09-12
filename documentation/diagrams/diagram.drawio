@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36" version="28.1.1" pages="10">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" version="28.2.0" pages="10">
   <diagram id="8qyYTX_KgME_ceJo4Cuf" name="packageDiagram">
     <mxGraphModel dx="1554" dy="788" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -1351,7 +1351,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="Jifhf0ZgO5v7RMULBogA" name="domain">
-    <mxGraphModel dx="1151" dy="584" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1554" dy="788" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1369,6 +1369,11 @@
         <mxCell id="4FJBzjbigD7kvkRMyWRi-29" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="bQyN1WdFYVQGxZ2X48XD-32" vertex="1" connectable="0">
           <mxGeometry x="0.9858" y="-1" relative="1" as="geometry">
             <mxPoint x="3" y="9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="O8yOR3bKJGXIuyk-xcfP-1" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="bQyN1WdFYVQGxZ2X48XD-32" vertex="1" connectable="0">
+          <mxGeometry x="0.9512" y="-7" relative="1" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="bQyN1WdFYVQGxZ2X48XD-3" value="" style="endArrow=none;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endFill=0;" parent="1" source="58nL1p40pWrhp6DG0ThI-9" target="58nL1p40pWrhp6DG0ThI-17" edge="1">
@@ -1593,7 +1598,7 @@
         </mxCell>
         <mxCell id="4FJBzjbigD7kvkRMyWRi-19" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="bQyN1WdFYVQGxZ2X48XD-21" vertex="1" connectable="0">
           <mxGeometry x="-0.8353" relative="1" as="geometry">
-            <mxPoint x="-6" y="3" as="offset" />
+            <mxPoint x="-7" y="-8" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="58nL1p40pWrhp6DG0ThI-24" value="&lt;p style=&quot;margin: 4px 0px 0px; text-align: center;&quot;&gt;&lt;b style=&quot;&quot;&gt;Network Identification Service&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;url&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
@@ -1641,7 +1646,7 @@
         <mxCell id="58nL1p40pWrhp6DG0ThI-26" value="&lt;p style=&quot;margin: 4px 0px 0px; text-align: center;&quot;&gt;&lt;b style=&quot;&quot;&gt;UAS Flight Authorization Service&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;url&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
           <mxGeometry x="350" y="439" width="140" height="61" as="geometry" />
         </mxCell>
-        <mxCell id="bQyN1WdFYVQGxZ2X48XD-2" value="" style="endArrow=none;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;endFill=0;exitX=0.334;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" edge="1" target="58nL1p40pWrhp6DG0ThI-18" source="58nL1p40pWrhp6DG0ThI-9">
+        <mxCell id="bQyN1WdFYVQGxZ2X48XD-2" value="" style="endArrow=none;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;align=left;verticalAlign=bottom;rounded=0;endFill=0;exitX=0.334;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="58nL1p40pWrhp6DG0ThI-9" target="58nL1p40pWrhp6DG0ThI-18" edge="1">
           <mxGeometry x="-1" y="3" relative="1" as="geometry">
             <mxPoint x="270" y="60" as="sourcePoint" />
             <mxPoint x="640" y="90" as="targetPoint" />
@@ -1774,7 +1779,7 @@
         </mxCell>
         <mxCell id="4FJBzjbigD7kvkRMyWRi-20" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="bQyN1WdFYVQGxZ2X48XD-31" vertex="1" connectable="0">
           <mxGeometry x="0.9351" y="-1" relative="1" as="geometry">
-            <mxPoint x="-5" as="offset" />
+            <mxPoint x="-5" y="-1" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="9x4WywznsmxucqyviloC-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
@@ -1819,12 +1824,12 @@
             <mxPoint x="16" y="-12" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iNd1Ja30bx_vL05HTgds-7" value="*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" vertex="1" connectable="0" parent="9x4WywznsmxucqyviloC-16">
+        <mxCell id="iNd1Ja30bx_vL05HTgds-7" value="*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" parent="9x4WywznsmxucqyviloC-16" vertex="1" connectable="0">
           <mxGeometry x="0.9081" relative="1" as="geometry">
             <mxPoint x="-6" y="-4" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="iNd1Ja30bx_vL05HTgds-4" value="UAV" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="iNd1Ja30bx_vL05HTgds-4" value="UAV" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="80" y="670" width="600" height="239" as="geometry" />
         </mxCell>
         <mxCell id="58nL1p40pWrhp6DG0ThI-20" value="&lt;p style=&quot;margin: 4px 0px 0px; text-align: center;&quot;&gt;&lt;b style=&quot;&quot;&gt;UAV Property&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;border-style:solid;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;id&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;name&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;model&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;owner&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;source coordinate&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;destination coordinate&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;battery capacity&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:8px;&quot;&gt;mission category = {specific, certified}&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;" parent="iNd1Ja30bx_vL05HTgds-4" vertex="1">
